@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300" role="img" aria-label="Paper abstract">
+  <rect width="400" height="300" fill="#ECE3D0"></rect>
+  
+  <g>
+    <rect x="80" y="70" width="220" height="180" fill="#F4EEE1" stroke="#0E1116" stroke-width="2" transform="rotate(-4 190 160)"></rect>
+    <rect x="100" y="60" width="220" height="180" fill="#FBF7EC" stroke="#0E1116" stroke-width="2" transform="rotate(3 210 150)"></rect>
+  </g>
+  <g transform="rotate(3 210 150)">
+    <rect x="118" y="80" width="140" height="6" fill="#0E1116"></rect>
+    <rect x="118" y="96" width="180" height="3" fill="#5A6170"></rect>
+    <rect x="118" y="104" width="160" height="3" fill="#5A6170"></rect>
+    <rect x="118" y="112" width="170" height="3" fill="#5A6170"></rect>
+    <rect x="118" y="130" width="60" height="16" rx="3" fill="#2E4BE0"></rect>
+    <rect x="184" y="130" width="40" height="16" rx="3" fill="#F2542D"></rect>
+    <rect x="118" y="160" width="180" height="3" fill="#5A6170"></rect>
+    <rect x="118" y="168" width="170" height="3" fill="#5A6170"></rect>
+    <rect x="118" y="176" width="150" height="3" fill="#5A6170"></rect>
+    <rect x="118" y="200" width="80" height="3" fill="#5A6170"></rect>
+  </g>
+</svg>

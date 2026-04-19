@@ -1,0 +1,305 @@
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+
+
+  --pv-cream:         #FAF5EC;
+  --pv-cream-soft:    #FDFAF2;
+  --pv-cream-deep:    #F2EADB;
+  --pv-ink:           #0E1116;
+  --pv-ink-soft:      #2A2F3A;
+  --pv-ink-mute:      #5A6170;
+  --pv-ink-faint:     #8A91A0;
+
+
+  --pv-night:         #0B1020;
+  --pv-night-soft:    #141A2E;
+  --pv-night-deep:    #070B18;
+
+
+
+  --pv-cobalto:       #2E4BE0;
+  --pv-cobalto-deep:  #1E34B0;
+  --pv-cobalto-soft:  #E0E6FF;
+
+  --pv-magma:         #F2542D;
+  --pv-magma-deep:    #C73F1D;
+  --pv-magma-soft:    #FDE4DA;
+
+  --pv-sol:           #F5B638;
+  --pv-sol-deep:      #C48A1A;
+  --pv-sol-soft:      #FDEEC8;
+
+  --pv-clorofila:     #2E8B57;
+  --pv-clorofila-deep:#1F6B3F;
+  --pv-clorofila-soft:#D6EEDE;
+
+  --pv-sinapsis:      #8B4FE0;
+  --pv-sinapsis-deep: #6A2FC0;
+  --pv-sinapsis-soft: #E8DCF9;
+
+  --pv-oceano:        #1BA5B8;
+  --pv-oceano-deep:   #0F7E8E;
+  --pv-oceano-soft:   #CDEEF2;
+
+  --pv-rosa:          #E03E8C;
+  --pv-rosa-deep:     #B32168;
+  --pv-rosa-soft:     #FADCEA;
+
+
+  --pv-success:       var(--pv-clorofila);
+  --pv-warning:       var(--pv-sol);
+  --pv-danger:        var(--pv-magma);
+  --pv-info:          var(--pv-cobalto);
+
+
+  --fg-1: var(--pv-ink);
+  --fg-2: var(--pv-ink-soft);
+  --fg-3: var(--pv-ink-mute);
+  --fg-4: var(--pv-ink-faint);
+  --fg-inverse: var(--pv-cream);
+  --fg-accent: var(--pv-cobalto);
+
+  --bg-canvas: var(--pv-cream);
+  --bg-surface: var(--pv-cream-soft);
+  --bg-sunken: var(--pv-cream-deep);
+  --bg-inverse: var(--pv-ink);
+
+  --border-1: rgba(14, 17, 22, 0.08);
+  --border-2: rgba(14, 17, 22, 0.14);
+  --border-3: rgba(14, 17, 22, 0.24);
+  --border-ink: var(--pv-ink);
+
+
+  --font-display: 'Instrument Serif', 'Iowan Old Style', Georgia, serif;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+
+  --text-display-xl: 88px;
+  --text-display-lg: 64px;
+  --text-display-md: 48px;
+  --text-display-sm: 36px;
+
+
+  --text-h1: 32px;
+  --text-h2: 24px;
+  --text-h3: 20px;
+  --text-h4: 17px;
+  --text-body-lg: 17px;
+  --text-body: 15px;
+  --text-body-sm: 13px;
+  --text-caption: 12px;
+  --text-overline: 11px;
+
+
+  --lh-tight: 1.05;
+  --lh-snug: 1.2;
+  --lh-normal: 1.5;
+  --lh-loose: 1.65;
+
+
+  --ls-tight: -0.02em;
+  --ls-snug: -0.01em;
+  --ls-normal: 0;
+  --ls-wide: 0.04em;
+  --ls-overline: 0.12em;
+
+
+  --space-0: 0;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+
+
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 28px;
+  --radius-pill: 999px;
+
+
+
+  --shadow-xs: 0 1px 2px rgba(14, 17, 22, 0.05);
+  --shadow-sm: 0 2px 6px rgba(14, 17, 22, 0.06), 0 1px 2px rgba(14, 17, 22, 0.04);
+  --shadow-md: 0 8px 20px rgba(14, 17, 22, 0.08), 0 2px 6px rgba(14, 17, 22, 0.05);
+  --shadow-lg: 0 24px 48px rgba(14, 17, 22, 0.12), 0 4px 12px rgba(14, 17, 22, 0.06);
+  --shadow-inset: inset 0 1px 2px rgba(14, 17, 22, 0.06);
+
+  --shadow-ink: 3px 3px 0 var(--pv-ink);
+  --shadow-ink-sm: 2px 2px 0 var(--pv-ink);
+
+
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.65, 0.05, 0.35, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-slow: 360ms;
+  --dur-sheet: 420ms;
+}
+
+.pv-dark {
+  --fg-1: #F4F1E8;
+  --fg-2: #C7C2B0;
+  --fg-3: #8C8878;
+  --fg-4: #5F5C52;
+  --fg-inverse: var(--pv-ink);
+
+  --bg-canvas: var(--pv-night);
+  --bg-surface: var(--pv-night-soft);
+  --bg-sunken: var(--pv-night-deep);
+  --bg-inverse: var(--pv-cream);
+
+  --border-1: rgba(244, 241, 232, 0.08);
+  --border-2: rgba(244, 241, 232, 0.14);
+  --border-3: rgba(244, 241, 232, 0.24);
+  --border-ink: var(--pv-cream);
+
+  --shadow-ink: 3px 3px 0 #000;
+  --shadow-ink-sm: 2px 2px 0 #000;
+
+
+  --pv-cobalto:       #6D8AFF;
+  --pv-cobalto-soft:  #1A2250;
+  --pv-magma:         #FF8360;
+  --pv-magma-soft:    #3A1A12;
+  --pv-sol:           #FFD066;
+  --pv-sol-soft:      #3A2810;
+  --pv-clorofila:     #5FC88A;
+  --pv-clorofila-soft:#12341F;
+  --pv-sinapsis:      #B68CFF;
+  --pv-sinapsis-soft: #2A1548;
+  --pv-oceano:        #5DD6E4;
+  --pv-oceano-soft:   #0E3338;
+  --pv-rosa:          #FF7AB4;
+  --pv-rosa-soft:     #3A112A;
+}
+
+.pv {
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  line-height: var(--lh-normal);
+  color: var(--fg-1);
+  background: var(--bg-canvas);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'ss01', 'cv11';
+}
+
+.pv h1, .pv .h1 {
+  font-family: var(--font-display);
+  font-size: var(--text-display-sm);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-tight);
+  font-weight: 400;
+  color: var(--fg-1);
+  text-wrap: balance;
+}
+
+.pv h2, .pv .h2 {
+  font-family: var(--font-sans);
+  font-size: var(--text-h2);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--ls-snug);
+  font-weight: 700;
+  color: var(--fg-1);
+  text-wrap: balance;
+}
+
+.pv h3, .pv .h3 {
+  font-family: var(--font-sans);
+  font-size: var(--text-h3);
+  line-height: var(--lh-snug);
+  font-weight: 600;
+  color: var(--fg-1);
+}
+
+.pv h4, .pv .h4 {
+  font-size: var(--text-h4);
+  font-weight: 600;
+  color: var(--fg-1);
+}
+
+.pv p, .pv .body {
+  font-size: var(--text-body);
+  line-height: var(--lh-normal);
+  color: var(--fg-2);
+  text-wrap: pretty;
+}
+
+.pv .body-reading {
+  font-size: var(--text-body-lg);
+  line-height: var(--lh-loose);
+  color: var(--fg-1);
+  max-width: 64ch;
+  text-wrap: pretty;
+}
+
+.pv .meta {
+  font-size: var(--text-body-sm);
+  color: var(--fg-3);
+}
+
+.pv .overline {
+  font-family: var(--font-sans);
+  font-size: var(--text-overline);
+  letter-spacing: var(--ls-overline);
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--fg-3);
+}
+
+.pv .display {
+  font-family: var(--font-display);
+  font-size: var(--text-display-md);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-tight);
+  font-weight: 400;
+  text-wrap: balance;
+}
+
+.pv code, .pv .mono {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  color: var(--fg-2);
+  background: var(--bg-sunken);
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+}
+
+.pv .doi {
+  font-family: var(--font-mono);
+  font-size: var(--text-body-sm);
+  color: var(--fg-3);
+  letter-spacing: -0.01em;
+}
+
+.pv .script {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--fg-accent);
+}
+
+.pv-grain {
+  position: relative;
+}
+.pv-grain::after {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.05 0 0 0 0 0.07 0 0 0 0 0.1 0 0 0 0.5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  opacity: 0.06;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+}

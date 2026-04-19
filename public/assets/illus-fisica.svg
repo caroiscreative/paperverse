@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300" role="img" aria-label="Atomic orbitals">
+  <rect width="300" height="300" fill="#0B1020"></rect>
+  <g fill="none" stroke-width="2">
+    <ellipse cx="150" cy="150" rx="110" ry="42" stroke="#F2542D"></ellipse>
+    <ellipse cx="150" cy="150" rx="110" ry="42" stroke="#2E4BE0" transform="rotate(60 150 150)"></ellipse>
+    <ellipse cx="150" cy="150" rx="110" ry="42" stroke="#F5B638" transform="rotate(120 150 150)"></ellipse>
+  </g>
+  <circle cx="150" cy="150" r="14" fill="#F4EEE1"></circle>
+  <circle cx="150" cy="150" r="14" fill="none" stroke="#0E1116" stroke-width="2"></circle>
+  <circle cx="260" cy="150" r="5" fill="#F2542D"></circle>
+  <circle cx="95" cy="55" r="5" fill="#2E4BE0"></circle>
+  <circle cx="95" cy="245" r="5" fill="#F5B638"></circle>
+</svg>

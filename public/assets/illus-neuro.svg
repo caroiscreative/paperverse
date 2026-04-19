@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300" role="img" aria-label="Brain synapses">
+  <rect width="300" height="300" fill="#E8DCF9"></rect>
+  <g stroke="#8B4FE0" stroke-width="2" fill="none" stroke-linecap="round">
+    <path d="M150 250 C 150 200, 150 180, 150 150"></path>
+    <path d="M150 150 C 125 130, 100 120, 80 100"></path>
+    <path d="M150 150 C 175 130, 200 120, 220 100"></path>
+    <path d="M150 150 C 135 115, 120 90, 115 65"></path>
+    <path d="M150 150 C 165 115, 180 90, 185 65"></path>
+    <path d="M80 100 C 65 95, 55 95, 50 85"></path>
+    <path d="M80 100 C 70 115, 60 120, 52 132"></path>
+    <path d="M220 100 C 235 95, 245 95, 250 85"></path>
+    <path d="M220 100 C 230 115, 240 120, 248 132"></path>
+  </g>
+  <g fill="#8B4FE0">
+    <circle cx="50" cy="85" r="5"></circle>
+    <circle cx="52" cy="132" r="4"></circle>
+    <circle cx="115" cy="65" r="5"></circle>
+    <circle cx="185" cy="65" r="5"></circle>
+    <circle cx="250" cy="85" r="5"></circle>
+    <circle cx="248" cy="132" r="4"></circle>
+  </g>
+  <circle cx="150" cy="250" r="16" fill="#0E1116"></circle>
+  <circle cx="150" cy="250" r="7" fill="#F5B638"></circle>
+</svg>

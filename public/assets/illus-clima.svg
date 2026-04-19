@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300" role="img" aria-label="Climate waves">
+  <rect width="300" height="300" fill="#CDEEF2"></rect>
+  <circle cx="78" cy="78" r="24" fill="#F5B638"></circle>
+  <circle cx="78" cy="78" r="24" fill="none" stroke="#0E1116" stroke-width="2"></circle>
+  <g fill="#FDFAF2" stroke="#0E1116" stroke-width="2">
+    <ellipse cx="215" cy="72" rx="34" ry="13"></ellipse>
+    <ellipse cx="198" cy="62" rx="20" ry="10"></ellipse>
+  </g>
+  <g fill="none" stroke-linecap="round">
+    <path d="M30 145 Q 80 118 130 145 T 230 145 T 300 145" stroke="#1BA5B8" stroke-width="2.5"></path>
+    <path d="M30 180 Q 80 153 130 180 T 230 180 T 300 180" stroke="#2E4BE0" stroke-width="2.5" opacity="0.75"></path>
+    <path d="M30 215 Q 80 188 130 215 T 230 215 T 300 215" stroke="#0F7E8E" stroke-width="2.5"></path>
+    <path d="M30 250 Q 80 223 130 250 T 230 250 T 300 250" stroke="#2E4BE0" stroke-width="2.5" opacity="0.5"></path>
+  </g>
+</svg>
