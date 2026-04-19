@@ -1,6 +1,6 @@
 # Paperverse
 
-La ciencia real, servida para curiosos reales. Papers científicos indexados por OpenAlex, con traducción al castellano claro vía Claude.
+La ciencia real, servida para curiosos reales. Papers científicos indexados por OpenAlex, con traducción al español.
 
 ---
 
@@ -8,7 +8,7 @@ La ciencia real, servida para curiosos reales. Papers científicos indexados por
 
 - **Feed en vivo**: papers de los últimos 60 días en 14 temas, ordenados por citas.
 - **Búsqueda** por texto completo (autor, título, tema).
-- **Detalle** con abstract original + Explicámelo (AI, rioplatense) + acceso al paper completo.
+- **Detalle** con abstract original + Explicámelo (AI) + acceso al paper completo.
 - **Referencias** y **Citado por** — al tocarlos, la pantalla principal se convierte en el buscador, filtrado por esos papers.
 - **Papers similares** y **Próximos temas** al final de cada detalle.
 - Todo guardado en `localStorage`: los temas que elegiste y las explicaciones que ya pediste.
