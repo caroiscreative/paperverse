@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300" role="img" aria-label="Leaf with veins and floating particles">
+  <rect width="300" height="300" fill="#DFEEDF"></rect>
+  <g>
+    <path d="M 150 70
+             C 205 95, 205 205, 150 230
+             C 95 205, 95 95, 150 70 Z" fill="#4FA068"></path>
+    <path d="M 150 74 L 150 226" stroke="#2F7040" stroke-width="1.6" stroke-linecap="round" fill="none"></path>
+    <path d="M 150 100 Q 170 108 186 120" stroke="#2F7040" stroke-width="1.2" fill="none" stroke-linecap="round"></path>
+    <path d="M 150 100 Q 130 108 114 120" stroke="#2F7040" stroke-width="1.2" fill="none" stroke-linecap="round"></path>
+    <path d="M 150 130 Q 174 140 192 155" stroke="#2F7040" stroke-width="1.2" fill="none" stroke-linecap="round"></path>
+    <path d="M 150 130 Q 126 140 108 155" stroke="#2F7040" stroke-width="1.2" fill="none" stroke-linecap="round"></path>
+    <path d="M 150 165 Q 172 175 188 188" stroke="#2F7040" stroke-width="1.2" fill="none" stroke-linecap="round"></path>
+    <path d="M 150 165 Q 128 175 112 188" stroke="#2F7040" stroke-width="1.2" fill="none" stroke-linecap="round"></path>
+    <path d="M 150 195 Q 166 204 178 214" stroke="#2F7040" stroke-width="1.2" fill="none" stroke-linecap="round"></path>
+    <path d="M 150 195 Q 134 204 122 214" stroke="#2F7040" stroke-width="1.2" fill="none" stroke-linecap="round"></path>
+  </g>
+  <g fill="#2F7040">
+    <circle cx="62"  cy="140" r="2.2"></circle>
+    <circle cx="52"  cy="200" r="1.8"></circle>
+    <circle cx="238" cy="110" r="2"></circle>
+    <circle cx="250" cy="170" r="2.2"></circle>
+    <circle cx="76"  cy="80"  r="1.6"></circle>
+    <circle cx="224" cy="230" r="1.6"></circle>
+  </g>
+</svg>

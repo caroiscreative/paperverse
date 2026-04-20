@@ -1,5 +1,7 @@
 # Dependencies
 node_modules
+.pnp
+.pnp.js
 
 # Build output
 dist
@@ -15,7 +17,26 @@ dist-ssr
 # Environment files (never commit these — they contain your API keys)
 .env
 .env.local
+.env.development
+.env.development.local
+.env.test
+.env.test.local
+.env.production
+.env.production.local
 .env.*.local
+
+# Secrets & credentials
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+credentials*
+secrets*
+*.secret
+service-account*.json
+gcp-*.json
 
 # Logs
 *.log
@@ -23,9 +44,16 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+lerna-debug.log*
 
 # Editor / OS
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 .idea
 .vscode/*
 !.vscode/extensions.json
@@ -34,7 +62,34 @@ pnpm-debug.log*
 *.njsproj
 *.sln
 *.sw?
+*.swp
+*.swo
 
 # Vite timestamp files
 vite.config.ts.timestamp-*
 vite.config.js.timestamp-*
+
+# Local notes & internal docs (not meant for public repo)
+NOTES.md
+TODO.md
+SCRATCH.md
+CLAUDE.md
+MEMORY.md
+.claude/
+memory/
+sessions/
+
+# Working artifacts / design system exports (not part of the app)
+*.zip
+*.docx
+preview_*.html
+
+# Backups
+*.bak
+*.old
+*.orig
+*~
+
+# Coverage
+coverage/
+.nyc_output/

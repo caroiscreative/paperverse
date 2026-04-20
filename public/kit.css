@@ -1,3 +1,7 @@
+/* UI kit — aligned with the design system.
+   Principles: square corners, 2px ink strokes on interactive surfaces,
+   no drop shadows, paper-light palette, mono labels with wide tracking. */
+
 html, body { margin: 0; padding: 0; }
 body {
   font-family: var(--font-sans);
@@ -9,12 +13,25 @@ body {
 
 .app { min-height: 100vh; position: relative; }
 
+/* ————————————————————————————————————————— Header ————————— */
 .pv-header {
   position: sticky; top: 0; z-index: 50;
+  /* -webkit prefix para Safari/iOS y Brave en mobile, que sin él
+     ignora el blur y deja la barra translucida sin filtro. */
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
-  background: rgba(250, 245, 236, 0.85);
-  border-bottom: 1.5px solid var(--pv-ink);
+  /* Alpha alta (0.92) para que el contenido que pasa por debajo se
+     vea apagado pero NO ilegible — antes 0.85 dejaba el texto del
+     paper compitiendo con el wordmark al scrollear sobre títulos
+     gigantes. En browsers que sí soportan blur, el backdrop ayuda
+     extra; en los que no, el alpha alta es el fallback honesto. */
+  background: rgba(250, 245, 236, 0.92);
+  border-bottom: 2px solid var(--pv-ink);
   padding: 14px 0;
+  /* isolate fuerza un nuevo stacking context para el header — evita
+     que algún z-index aspirante de un componente hijo (ej. carrusel
+     de papers o un overlay de tile) suba por encima accidentalmente. */
+  isolation: isolate;
 }
 .pv-header-inner {
   display: grid;
@@ -42,16 +59,18 @@ body {
 .pv-header nav button:hover:not(.active) { color: var(--fg-1); }
 .pv-header nav button .count { font-family: var(--font-mono); font-size: 10px; opacity: 0.6; margin-left: 4px; }
 
+/* ————————————————————————————————————————— Layout ————————— */
 .main { display: grid; grid-template-columns: 240px 1fr; gap: 40px; max-width: 1180px; margin: 0 auto; padding: 32px; }
 .main-full { max-width: 1180px; margin: 0 auto; padding: 32px; }
 .col-feed { min-width: 0; }
 .sidebar { position: sticky; top: 96px; align-self: start; display: flex; flex-direction: column; gap: 24px; }
 
+/* ————————————————————————————————————————— Topic chips ————————— */
 .topic-chip {
   display: inline-flex; align-items: center; gap: 8px;
   font-family: var(--font-sans); font-size: 13px; font-weight: 600;
   border-radius: 0; padding: 6px 14px 6px 8px;
-  border: 1.5px solid transparent;
+  border: 2px solid transparent;
   background: var(--bg-surface); color: var(--pv-ink);
   cursor: pointer;
   transition: background var(--dur-fast) var(--ease-out);
@@ -65,8 +84,48 @@ body {
   flex-shrink: 0;
 }
 .topic-chip .tico svg { width: 13px; height: 13px; display: block; }
-.topic-chip.plus { background: transparent; border: 1.5px dashed var(--fg-3); color: var(--fg-3); padding: 6px 14px; gap: 6px; }
+.topic-chip.plus { background: transparent; border: 2px dashed var(--fg-3); color: var(--fg-3); padding: 6px 14px; gap: 6px; }
 
+/* "Limpiar (N)" — chip de reset para los filtros de "Tus temas" del sidebar. : antes era una palabra ("limpiar") con underline
+   sutil en mono uppercase, indistinguible visualmente de un label. El QA
+   lo leyó como texto inerte y no intuyó que era clickeable. Ahora comparte
+   el vocabulary de los TopicChip (border ink, Sentence case, padding
+   similar) pero con el ícono ✕ al frente y sin el tile de tema — se lee
+   como "chip fantasma" que cancela los chips llenos.
+   Densidad un toque más chica que TopicChip (gap 6 vs 8, padding 4/10 vs
+   6/14, fontSize 12) para que quede subordinado al heading y no compita
+   con los chips reales de abajo. Hover invierte a tinta llena como feedback
+   claro; el ✕ empuja la interpretación hacia "cerrar/quitar" en vez de
+   "agregar". */
+.pv-clear-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--pv-ink);
+  background: transparent;
+  border: 2px solid var(--pv-ink);
+  border-radius: 0;
+  padding: 4px 10px 4px 8px;
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.pv-clear-chip:hover {
+  background: var(--pv-ink);
+  color: var(--pv-cream);
+}
+.pv-dark .pv-clear-chip {
+  color: var(--fg-1);
+  border-color: var(--fg-1);
+}
+.pv-dark .pv-clear-chip:hover {
+  background: var(--fg-1);
+  color: var(--pv-night);
+}
+
+/* ————————————————————————————————————————— Buttons ————————— */
 .btn {
   font-family: var(--font-sans); font-size: 14px; font-weight: 600;
   border-radius: 2px; padding: 9px 16px;
@@ -81,11 +140,17 @@ body {
 .btn-secondary { background: var(--bg-surface); color: var(--pv-ink); border-color: var(--pv-ink); }
 .btn-secondary:hover { background: var(--bg-sunken); }
 .btn-ghost { background: transparent; color: var(--fg-2); border-color: transparent; }
-.btn-ghost:hover { color: var(--fg-1); background: var(--bg-sunken); }
+.btn-ghost:hover:not(:disabled) { color: var(--fg-1); background: var(--bg-sunken); }
+/* Estado disabled transversal para .btn — usado por Ver referencias /
+   Ver quién lo citó cuando el contador es 0. Opacidad baja y cursor
+   not-allowed comunican "existe este camino pero hoy no hay destino"
+   sin tener que cambiar el layout. */
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .btn-link { background: transparent; color: var(--pv-cobalto); border: 0; padding: 0; font-weight: 600; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; display: inline-flex; align-items: center; gap: 6px; }
 .btn-link:hover { color: var(--pv-cobalto-deep); }
 .btn-link svg { width: 14px; height: 14px; }
 
+/* Icon-only square */
 .icon-btn {
   width: 36px; height: 36px; padding: 0;
   display: inline-flex; align-items: center; justify-content: center;
@@ -97,27 +162,30 @@ body {
 .icon-btn.active { background: var(--pv-ink); color: var(--pv-cream); }
 .icon-btn svg { width: 16px; height: 16px; display: block; }
 
+/* ————————————————————————————————————————— Search input ————————— */
 .search {
   display: flex; align-items: center; gap: 10px;
   background: var(--bg-surface);
-  border: 1.5px solid var(--pv-ink); border-radius: 0;
+  border: 2px solid var(--pv-ink); border-radius: 0;
   padding: 8px 14px; max-width: 420px;
 }
 .search input { border: 0; background: transparent; outline: none; font-size: 14px; flex: 1; color: var(--pv-ink); font-family: inherit; }
 .search input::placeholder { color: var(--fg-4); }
 .search svg { width: 15px; height: 15px; flex-shrink: 0; }
 
+/* Text input */
 .inp {
   background: var(--bg-surface);
-  border: 1.5px solid rgba(14,17,22,0.25); border-radius: 0;
+  border: 2px solid rgba(14,17,22,0.25); border-radius: 0;
   padding: 10px 14px; font-family: var(--font-sans); font-size: 15px;
   color: var(--pv-ink); outline: none; width: 100%; box-sizing: border-box;
 }
 .inp:focus { border-color: var(--pv-cobalto); box-shadow: 0 0 0 3px rgba(46,75,224,0.12); }
 
+/* Toggle */
 .toggle {
   display: inline-flex; background: var(--bg-sunken);
-  border: 1.5px solid var(--pv-ink); border-radius: 0; padding: 3px; gap: 2px;
+  border: 2px solid var(--pv-ink); border-radius: 0; padding: 3px; gap: 2px;
 }
 .toggle button {
   border: 0; border-radius: 0; padding: 7px 14px;
@@ -127,16 +195,94 @@ body {
 }
 .toggle button.on { background: var(--pv-ink); color: var(--pv-cream); }
 
+/* ————————————————————————————————————————— Section header ————————— */
 .section-head { display: flex; align-items: baseline; justify-content: space-between; margin: 32px 0 14px 0; gap: 16px; }
 .section-head:first-child { margin-top: 0; }
 .section-head h2 { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--fg-3); font-weight: 600; margin: 0; }
 .section-head .count { font-family: var(--font-mono); font-size: 10.5px; color: var(--fg-4); letter-spacing: 0.02em; }
 
+/* Feed top bar — sticky para que el contador de papers + el toggle
+   Lista/Tarjetas estén siempre a mano mientras se scrollea. Las cards
+   le pasan por debajo: background sólido las tapa y el border-bottom
+   las separa visualmente. Z-index 40 queda por debajo del header (50)
+   y por encima de las paper cards. Los valores de `top` están tuneados
+   para que la barra se "pegue" justo debajo del header sticky en cada
+   breakpoint — si el header cambia de altura, acá hay que ajustar.
+   Align-items center (no baseline) porque el toggle es más alto que el
+   h2 y se veía descolgado. Padding vertical en lugar de margin para que
+   el fondo se extienda al borde del col-feed cuando está stuck. */
+/* Sticky feed top bar — se pega debajo del header y mantiene visible
+   "N papers · Xd" + toggle Lista/Tarjetas mientras las cards scrollean.
+
+   Trampa pasada : el primer intento usaba top: 96px (copiado
+   del sidebar viejo). Pero el header sticky es ~70-75px en desktop; eso
+   dejaba un GAP de ~20px entre el borde inferior del header y el borde
+   superior de la barra donde las cards pasaban a la vista completamente.
+   se reportó "se siguen viendo por detrás, debería poder esconderse"
+   porque lo que se veía NO era transparencia de la barra (el bg es
+   #FDFAF2 opaco), sino cards en ese gap donde NADA sticky las tapaba.
+
+   Fix: usar top conservador que se superponga ~10px con el borde del
+   header. El header tiene z-index: 50 e isolation: isolate, así que
+   queda por encima visualmente y no se ve overlap — pero ya no hay gap.
+   El isolation + z-index: 40 en la barra crea su propio stacking context
+   para evitar que algún hijo de la card (transform, will-change) suba
+   accidentalmente. */
+.feed-top-bar {
+  position: sticky;
+  top: 60px; /* header desktop ~70px → solapamos 10px para cerrar el gap */
+  z-index: 40;
+  isolation: isolate;
+  /* Usamos --bg-canvas (#FAF5EC) en lugar de --bg-surface (#FDFAF2) para
+     que la barra se FUNDA con el fondo de la página. Antes con --bg-surface
+     se veía una "franja" crema más clara que el resto porque los dos tonos
+     son casi iguales pero no idénticos — el ojo pilla la diferencia de
+     ~3% de luminosidad y se lee como un artefacto. Con --bg-canvas la
+     barra desaparece visualmente y sólo el contenido (h2 + toggle) + el
+     border-bottom marcan su presencia. Sigue siendo opaco, así que las
+     cards siguen escondiéndose por detrás al scrollear. */
+  background: var(--bg-canvas);
+  align-items: center;
+  margin: 0 0 0 0;
+  padding: 18px 0 14px 0;
+  border-bottom: 1px solid var(--border-1);
+  /* Negative margin-x + padding compensatorio para que el fondo opaco se
+     extienda hasta los bordes del col-feed y cubra los 2px extra de
+     seguridad contra cualquier redondeo de subpíxeles. El overflow-x
+     hidden del body impide que esto empuje el layout horizontal. */
+  margin-left: -2px;
+  margin-right: -2px;
+  padding-left: 2px;
+  padding-right: 2px;
+}
+/* Safety net: pseudo-elemento que extiende el fondo opaco de la barra
+   12px hacia arriba. Cubre cualquier micro-gap residual entre el borde
+   inferior del header y el borde superior de la barra (por ejemplo si
+   el header crece ligeramente por contenido inesperado). Pointer-events
+   none para no interceptar clicks; z-index negativo para quedar ATRÁS
+   de los controles de la barra pero DELANTE de las cards que pasan. */
+.feed-top-bar::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  height: 12px;
+  /* Mismo --bg-canvas que la barra para que no se vea transición de color */
+  background: var(--bg-canvas);
+  pointer-events: none;
+  z-index: -1;
+}
+/* Primer elemento del col-feed (la barra) no debe tener el margin-top: 0
+   del .section-head:first-child porque acá ya usamos padding. La regla
+   original sigue aplicando pero como margin ya es 0, es no-op. */
+
+/* ————————————————————————————————————————— Paper card ————————— */
 .feed-list { display: flex; flex-direction: column; gap: 14px; }
 
 .paper-card {
   background: var(--bg-surface);
-  border: 1.5px solid var(--pv-ink); border-radius: 0;
+  border: 2px solid var(--pv-ink); border-radius: 0;
   padding: 18px 20px;
   display: grid; grid-template-columns: 112px 1fr auto; gap: 18px;
   align-items: start;
@@ -146,7 +292,16 @@ body {
 .paper-card:hover { background: var(--bg-sunken); }
 .paper-card .thumb {
   width: 112px; height: 112px; overflow: hidden;
-  border: 1.5px solid rgba(14,17,22,0.35);
+  /* Peso del borde : subimos de 0.35 → 0.55 porque las líneas
+     internas del SVG de la ilustración se dibujan en ink casi sólido y el
+     35% dejaba al frame "washed out" frente al contenido — usuario lo
+     flaggeó mirando Ciencia (donde el soft tint #E3E6EB es neutro gris
+     claro, así que el desbalance frame/ilustración era más evidente). 55%
+     es el sweet spot: sigue leyéndose como marco secundario (no compite
+     con el SVG) pero ya no se funde con la tinta de fondo. Cambio aplica
+     a los 15 temas porque el bug estructural era global, no sólo de
+     Ciencia. */
+  border: 2px solid rgba(14,17,22,0.55);
   display: flex; align-items: center; justify-content: center;
   background: var(--bg-surface);
 }
@@ -167,6 +322,7 @@ body {
 .paper-card .lede { font-size: 14px; line-height: 1.5; color: var(--fg-2); margin: 0 0 10px 0; max-width: 62ch; }
 .paper-card .actions-col { display: flex; flex-direction: column; gap: 8px; align-items: center; }
 
+/* ————————————————————————————————————————— Byline (info grid) ————————— */
 .byline {
   font-family: var(--font-mono); font-size: 11px; line-height: 1.55;
   letter-spacing: 0.01em;
@@ -183,6 +339,7 @@ body {
 .byline .where { display: inline-flex; align-items: center; gap: 6px; }
 .byline .sep { color: var(--fg-4); padding: 0 5px; }
 
+/* ————————————————————————————————————————— Hero card ————————— */
 .hero-card {
   background: var(--bg-surface);
   border: 2px solid var(--pv-ink); border-radius: 2px;
@@ -201,7 +358,7 @@ body {
   font-family: var(--font-mono); font-size: 10.5px; font-weight: 600;
   letter-spacing: 0.18em; text-transform: uppercase;
   background: var(--pv-sol); color: var(--pv-ink);
-  padding: 7px 14px; border: 1.5px solid var(--pv-ink); line-height: 1;
+  padding: 7px 14px; border: 2px solid var(--pv-ink); line-height: 1;
 }
 .hero-card .banner .eye svg { width: 16px; height: 16px; display: block; flex-shrink: 0; }
 .hero-card .hero-main { padding: 24px 28px 22px 28px; display: block; min-width: 0; }
@@ -221,7 +378,7 @@ body {
 }
 .vote-row .lbl { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--fg-3); font-weight: 600; }
 .vote-row .up {
-  width: 34px; height: 34px; border: 1.5px solid var(--pv-ink);
+  width: 34px; height: 34px; border: 2px solid var(--pv-ink);
   background: var(--pv-magma); color: var(--pv-cream);
   display: flex; align-items: center; justify-content: center;
   cursor: pointer; padding: 0;
@@ -232,17 +389,19 @@ body {
 .vote-row .spark i { width: 4px; background: var(--pv-ink); display: block; }
 .vote-row .trend { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: #1F6B3F; font-weight: 600; white-space: nowrap; }
 
+/* Hero illustration animations */
 .orbit-slow { transform-origin: center; animation: pv-orbit 32s linear infinite; }
 .orbit-fast { transform-origin: center; animation: pv-orbit 18s linear infinite reverse; }
 .planet-wob { animation: pv-wob 6s ease-in-out infinite; transform-origin: center; }
-.twinkle    { animation: pv-tw 3s ease-in-out infinite; }
-.twinkle.a  { animation-delay: 0.6s; }
-.twinkle.b  { animation-delay: 1.4s; }
-.twinkle.c  { animation-delay: 2.2s; }
+.twinkle { animation: pv-tw 3s ease-in-out infinite; }
+.twinkle.a { animation-delay: 0.6s; }
+.twinkle.b { animation-delay: 1.4s; }
+.twinkle.c { animation-delay: 2.2s; }
 @keyframes pv-orbit { to { transform: rotate(360deg); } }
-@keyframes pv-wob   { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
-@keyframes pv-tw    { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
+@keyframes pv-wob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+@keyframes pv-tw { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
 
+/* ————————————————————————————————————————— Dato random FAB ————————— */
 .fab {
   position: fixed; bottom: 24px; right: 24px; z-index: 40;
   background: var(--pv-cobalto); color: var(--pv-cream);
@@ -268,6 +427,7 @@ body {
 .fab .dice i:nth-child(5) { bottom: 2px; right: 2px; }
 @keyframes pv-dice { 0%,80%,100% { transform: rotate(0); } 85% { transform: rotate(14deg); } 90% { transform: rotate(-10deg); } 95% { transform: rotate(6deg); } }
 
+/* ————————————————————————————————————————— Paper detail ————————— */
 .detail-wrap { max-width: 760px; margin: 0 auto; padding: 32px; }
 .detail-wrap .back {
   background: transparent; border: 0; font-family: var(--font-mono); font-size: 11px;
@@ -296,13 +456,14 @@ body {
 .abstract-body em { font-family: var(--font-mono); font-style: normal; font-size: 15px; font-weight: 500; color: var(--pv-ink); background: var(--bg-sunken); padding: 1px 6px; letter-spacing: 0.01em; }
 .ai-credit {
   display: flex; align-items: center; gap: 10px;
-  background: var(--bg-sunken); border: 1.5px solid rgba(14,17,22,0.15);
+  background: var(--bg-sunken); border: 2px solid rgba(14,17,22,0.15);
   padding: 10px 14px; margin-top: 20px;
   font-family: var(--font-mono); font-size: 11px; color: var(--fg-3); letter-spacing: 0.04em;
 }
 .ai-credit .spark { color: var(--pv-cobalto); }
 .actions { display: flex; gap: 10px; margin-top: 28px; padding-top: 20px; border-top: 1px solid rgba(14,17,22,0.15); }
 
+/* ————————————————————————————————————————— Dato random sheet ————————— */
 .sheet-scrim {
   position: fixed; inset: 0; background: rgba(14,17,22,0.55); z-index: 100;
   display: flex; align-items: flex-end; justify-content: center;
@@ -331,7 +492,7 @@ body {
 }
 .sheet .paper-chip {
   background: rgba(250,245,236,0.05);
-  border: 1.5px solid rgba(250,245,236,0.18);
+  border: 2px solid rgba(250,245,236,0.18);
   padding: 14px 16px;
 }
 .sheet .paper-chip .small { font-family: var(--font-mono); font-size: 10px; color: rgba(250,245,236,0.55); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 6px; }
@@ -351,26 +512,399 @@ body {
 .sheet .stars span { position: absolute; width: 2px; height: 2px; background: var(--pv-cream); }
 .sheet .stars .big { width: 3px; height: 3px; }
 
+/* ————————————————————————————————————————— Library ————————— */
 .lib-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
 .lib-empty { text-align: center; padding: 80px 20px; color: var(--fg-3); }
 .lib-empty .display { font-family: var(--font-display); font-size: 40px; color: var(--pv-ink); margin-bottom: 8px; font-weight: 400; line-height: 1.15; }
 .lib-empty .lead { font-size: 15px; color: var(--fg-2); max-width: 42ch; margin: 0 auto; }
 
+/* ————————————————————————————————————————— Onboarding —————————
+   Layout vertical stack: logo → tagline → h1 → lead → chips → contador →
+   botón. Cada bloque centrado horizontalmente. El card contenedor NO
+   tiene max-width explícito a los chips para que puedan wrappear en
+   varias filas sin saltar de golpe. */
 .onb { min-height: 100vh; display: grid; place-items: center; padding: 40px 20px; }
 .onb-card { max-width: 780px; width: 100%; text-align: center; }
+
+/* Wordmark grande — entra el isotipo y la palabra "Paperverse." en un
+   solo SVG. 220px en desktop es legible sin dominar; el ratio 4:1 del
+   viewBox mantiene la altura proporcional (~55px). */
+.onb-logo {
+  display: block;
+  width: 220px;
+  max-width: 60vw;
+  height: auto;
+  margin: 0 auto 10px auto;
+}
+/* Tagline editorial, mono, color cobalto como los eyebrows del resto
+   del producto — mantiene la familia visual. */
+.onb-tagline {
+  font-family: var(--font-mono); font-size: 11px; font-weight: 600;
+  letter-spacing: 0.22em; text-transform: uppercase; color: var(--pv-cobalto);
+  margin-bottom: 8px;
+}
+/* Back-compat: antes había .eye como eyebrow. Lo dejamos por si alguna
+   variante vieja del Welcome se cachea en clients con SW activo. */
 .onb-card .eye {
   font-family: var(--font-mono); font-size: 10.5px; font-weight: 600;
   letter-spacing: 0.22em; text-transform: uppercase; color: var(--pv-cobalto);
 }
 .onb-card h1 {
-  font-family: var(--font-display); font-size: 64px; line-height: 1.08;
+  font-family: var(--font-display); font-size: 56px; line-height: 1.08;
   letter-spacing: -0.02em; margin: 14px 0 14px 0; color: var(--pv-ink);
   font-weight: 400; text-wrap: pretty;
 }
-.onb-card .lead { font-size: 17px; color: var(--fg-2); margin: 0 auto 32px; max-width: 46ch; line-height: 1.55; }
-.onb-card .topics { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 32px; }
+.onb-card .lead { font-size: 17px; color: var(--fg-2); margin: 0 auto 28px; max-width: 52ch; line-height: 1.55; }
+.onb-card .topics { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 24px; }
 .onb-card .topics .topic-chip { font-size: 14px; padding: 8px 18px 8px 10px; }
+
+/* Contador — línea propia, arriba del botón. Mismo tratamiento mono/gris
+   que la barra de "estado" del Feed, así se lee como metadato, no como CTA. */
+.onb-count {
+  font-family: var(--font-mono); font-size: 11.5px; color: var(--fg-3);
+  letter-spacing: 0.12em; text-transform: uppercase;
+  margin-bottom: 16px;
+}
+/* Wrapper para el CTA — centra el botón en su propia línea. */
+.onb-action { display: flex; justify-content: center; }
+
+/* Back-compat con la estructura vieja .next (contador + botón inline).
+   Si algún componente consumidor todavía la usa, no se rompe visualmente. */
 .onb-card .next { display: inline-flex; align-items: center; gap: 12px; }
 .onb-card .next .count { font-family: var(--font-mono); font-size: 11px; color: var(--fg-3); letter-spacing: 0.08em; }
 
+/* Filter row helper */
 .filter-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ════════════════════════════════════════════════════════════════════
+   Responsive — 3 tiers
+   ──────────────────────────────────────────────────────────────────
+   - Desktop : ≥ 1024px (base styles above — no media query)
+   - Tablet : 640 – 1023 (sidebar colapsa arriba del feed)
+   - Mobile : < 640 (todo stacked + buscador como overlay)
+
+   Escribimos desktop-first porque Paperverse nació en desktop y estamos
+   retrofitteando. Los media queries de abajo SOLO sobreescriben lo que
+   cambia por viewport; lo compartido vive en las reglas base.
+   ════════════════════════════════════════════════════════════════════ */
+
+/* El botón-lupa del header solo aparece en mobile. En desktop/tablet el
+   buscador está inline. Lo declaramos oculto acá y el @media lo muestra. */
+.pv-header .search-icon { display: none; }
+
+/* ─── Tablet : 640 – 1023 ────────────────────────────────────────── */
+@media (max-width: 1023px) {
+  .pv-header { padding: 12px 0; }
+  .pv-header-inner {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 14px;
+    padding: 0 20px;
+  }
+  .pv-header .search { max-width: 100%; }
+  .pv-header .wordmark { font-size: 22px; }
+  .pv-header nav button { padding: 8px 10px; font-size: 10.5px; }
+
+  /* Layout general — stack: sidebar arriba, feed abajo. El sidebar
+     pierde la posición sticky porque no tiene sentido cuando vive sobre
+     el feed en lugar de al lado. Padding-bottom 80px para dejar lugar
+     al ThemeDock que se muda al bottom-center en este breakpoint. */
+  .main { grid-template-columns: 1fr; gap: 24px; padding: 24px 20px 80px 20px; }
+  .main-full { padding: 24px 20px 80px 20px; }
+  .sidebar {
+    position: relative; top: 0;
+    display: flex; flex-direction: column; gap: 12px;
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+
+  /* Feed top bar sticky — en tablet el header es intermedio (~58-62px).
+     Bajamos a 52px para solapar ~6-10px con el borde del header y cerrar
+     cualquier gap por donde las cards pudieran asomarse al scrollear.
+     El header tiene z-index 50, así que el solape no se ve visualmente. */
+  .feed-top-bar {
+    top: 52px;
+    padding: 14px 0 12px 0;
+  }
+
+  /* Paper card — thumb más chico, padding reducido */
+  .paper-card { grid-template-columns: 88px 1fr auto; gap: 14px; padding: 16px; }
+  .paper-card .thumb { width: 88px; height: 88px; }
+  .paper-card .title { font-size: 22px; }
+
+  /* Hero card — se achica pero sigue siendo horizontal */
+  .hero-card .banner { height: 140px; }
+  .hero-card .hero-main { padding: 20px; }
+  .hero-card .title { font-size: 30px; }
+
+  /* Detail wrap — menos padding, h1 más chico. Bottom 80px reserva
+     espacio para el ThemeDock flotante al bottom-center. */
+  .detail-wrap { padding: 28px 20px 80px 20px; }
+  .detail-wrap h1 { font-size: 40px; }
+
+  /* Library — 2 columnas en lugar de 3 */
+  .lib-grid { grid-template-columns: repeat(2, 1fr); }
+
+  /* Onboarding — tablet: logo baja un paso, h1 intermedio. */
+  .onb-logo { width: 190px; }
+  .onb-card h1 { font-size: 48px; }
+}
+
+/* ─── Mobile : < 640 ─────────────────────────────────────────────── */
+@media (max-width: 639px) {
+  /* Header — 3 slots: brand (izq) + tabs (centro) + lupa (der).
+     El buscador inline se oculta y lo reemplaza el ícono, que abre un
+     overlay (search-overlay) montado desde Header.tsx. */
+  .pv-header { padding: 10px 0; }
+  .pv-header-inner {
+    grid-template-columns: auto 1fr auto;
+    gap: 8px;
+    padding: 0 14px;
+  }
+  .pv-header .brand img { width: 26px; height: 26px; }
+  .pv-header .wordmark { font-size: 18px; }
+  .pv-header .search { display: none; }
+  .pv-header .search-icon {
+    display: inline-flex;
+    width: 36px; height: 36px;
+    align-items: center; justify-content: center;
+    background: transparent; border: 0; color: var(--pv-ink);
+    cursor: pointer; padding: 0;
+    justify-self: end;
+  }
+  .pv-header .search-icon:hover { background: var(--bg-sunken); }
+  .pv-header .search-icon svg { width: 18px; height: 18px; display: block; }
+
+  .pv-header nav { gap: 0; justify-self: center; }
+  .pv-header nav button { padding: 8px 10px; font-size: 10px; letter-spacing: 0.1em; }
+
+  /* Overlay del buscador — barra que desciende debajo del header sticky.
+     Header tiene z-index 50, acá usamos 49 para quedar debajo del borde
+     inferior del header. El input se auto-focusea al abrir (ver Header.tsx). */
+  .search-overlay {
+    position: fixed; top: 58px; left: 0; right: 0; z-index: 49;
+    background: var(--bg-surface);
+    border-bottom: 2px solid var(--pv-ink);
+    padding: 12px 14px;
+    display: flex; align-items: center; gap: 8px;
+    animation: pv-slide-down var(--dur-base, 200ms) var(--ease-out, ease);
+  }
+  .search-overlay .search { flex: 1; max-width: 100%; }
+  /* Botón "enviar" — avioncito de papel al lado del input. Pedido de
+     usuario : cobalto lleno con borde ink, para que lea
+     como botón primario-secundario (fill coloreado + borde negro es el
+     lenguaje del kit para CTAs de peso medio — más grito que un ghost,
+     menos que un primario puro). 38x38 cuadrado igual que el input
+     adyacente para que ambos compartan la línea de base.
+
+     Disabled state: cuando el input está vacío, baja opacidad a 40%
+     y pierde el cursor pointer — dar un tap ahí no haría nada útil y
+     el feedback visual lo deja claro antes de intentarlo. */
+  .search-overlay .send-btn {
+    flex-shrink: 0;
+    width: 38px; height: 38px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--pv-cobalto);
+    color: var(--pv-cream);
+    border: 2px solid var(--pv-ink);
+    border-radius: 2px;
+    cursor: pointer;
+    padding: 0;
+    transition: background var(--dur-fast, 120ms) var(--ease-out, ease);
+  }
+  .search-overlay .send-btn:hover:not(:disabled) {
+    background: var(--pv-cobalto-deep);
+  }
+  .search-overlay .send-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .search-overlay .send-btn svg { display: block; }
+  @keyframes pv-slide-down {
+    from { transform: translateY(-8px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  /* Layout general — stack con padding más chico aún. Bottom padding
+     extra (80px) para dejar espacio al ThemeDock que en mobile vive
+     anclado al bottom-center — si no, el dock tapa el último paper. */
+  .main { grid-template-columns: 1fr; gap: 20px; padding: 16px 14px 80px 14px; }
+  .main-full { padding: 16px 14px 80px 14px; }
+
+  /* Section heads con menos aire */
+  .section-head { margin: 20px 0 10px 0; gap: 10px; }
+
+  /* Feed top bar sticky — en mobile el header es ~50-55px. Usamos top:48px
+     para solapar ~5px con el borde del header y eliminar cualquier gap
+     donde las cards pudieran verse al scrollear. Padding vertical compacto
+     para no robar demasiado espacio de lectura en pantallas chicas. */
+  .feed-top-bar {
+    top: 48px;
+    padding: 12px 0 10px 0;
+  }
+
+  /* Topics — carrusel horizontal en mobile. se pidió volver al
+     scroll horizontal pero con affordance clara: antes (sin nada) se leía
+     como un bug. Ahora damos dos pistas:
+       1. Fade-out en el borde derecho via mask-image — sugiere "hay más
+          ahí". Se compone con la transparencia que ya tiene el chip.
+       2. scroll-snap-type proximity para que cada chip "ancle" al borde
+          y se sienta como un carrusel discreto, no un free scroll.
+     El sidebar va min-width:0 para que el overflow del .filter-row se
+     contenga adentro del grid item y no empuje la página al horizontal.
+     Importante: NO usar margin negativo ni width:100vw para "llegar al
+     borde de la viewport" — eso rompía el layout y empujaba la lupa del
+     header fuera del viewport (overflow-x del documento). El fade queda
+     14px adentro del padding y sigue comunicando "hay más". Scrollbar
+     oculto (no agrega valor en touch) pero sigue funcionando con momentum.
+     -webkit-overflow-scrolling para iOS suave. */
+  .sidebar { min-width: 0; }
+  .sidebar .filter-row {
+    flex-wrap: nowrap;
+    gap: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+    padding: 2px 32px 2px 0;
+    /* Mask: fade-out sólo en el borde derecho. El izquierdo queda nítido
+       porque el primer chip arranca pegado al borde izquierdo del sidebar. */
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent);
+            mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent);
+  }
+  .sidebar .filter-row::-webkit-scrollbar { display: none; }
+  .sidebar .filter-row { scrollbar-width: none; }
+  .sidebar .filter-row > * { flex-shrink: 0; scroll-snap-align: start; }
+
+  /* Paper card — vertical stack. Thumb como banner superior, acciones
+     abajo en fila. Damos contexto visual completo sin apretar. */
+  .paper-card {
+    grid-template-columns: 1fr;
+    gap: 12px; padding: 14px;
+  }
+  .paper-card .thumb { width: 100%; height: 140px; }
+  .paper-card .actions-col {
+    flex-direction: row;
+    border-top: 1px solid rgba(14,17,22,0.15);
+    padding-top: 12px;
+    justify-content: flex-start;
+  }
+  .paper-card .title { font-size: 20px; margin-top: 6px; }
+  .paper-card .lede { font-size: 13.5px; }
+
+  /* Byline más compacto */
+  .byline { grid-template-columns: 46px 1fr; font-size: 10.5px; column-gap: 10px; }
+  .byline .k { font-size: 9px; }
+
+  /* Hero card */
+  .hero-card .banner { height: 120px; }
+  .hero-card .hero-main {
+    padding: 16px;
+    /* El hero usa inline style grid 1fr auto en desktop; en mobile
+       apilamos vertical (texto arriba, actions debajo). !important
+       porque el inline style gana especificidad. */
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+  .hero-card .title { font-size: 24px; }
+  .hero-card .hook { font-size: 14px; }
+  /* Actions-col del hero en mobile: de columna → fila horizontal,
+     alineado a la izquierda. Mismo tratamiento que la paper-card. */
+  .hero-card .hero-main > .actions-col {
+    flex-direction: row !important;
+    align-items: center !important;
+    border-top: 1px solid rgba(14,17,22,0.15);
+    padding-top: 12px !important;
+    justify-content: flex-start;
+    gap: 14px !important;
+  }
+  .vote-row { gap: 10px; padding-top: 12px; }
+  .vote-row .n { font-size: 22px; }
+
+  /* Detail wrap — 80px bottom para que el ThemeDock flotante al
+     bottom-center no tape el último botón / link editorial. */
+  .detail-wrap { padding: 20px 16px 80px 16px; }
+  .detail-wrap h1 { font-size: 30px; margin: 10px 0 14px 0; }
+  .detail-wrap .authors { font-size: 14px; }
+  .detail-wrap .meta-rail { font-size: 10.5px; margin-bottom: 22px; }
+
+  .abstract-body { font-size: 15.5px; line-height: 1.65; }
+
+  /* En mobile el toggle-row se apila: toggle arriba, perilla abajo.
+     Le damos un poco más de aire entre elementos porque ahora cada
+     uno ocupa todo el ancho y la respiración visual importa más. */
+  .toggle-row { flex-direction: column; align-items: stretch; gap: 20px; }
+
+  /* Toggle (Abstract original / Explicámelo) en mobile:
+     el contenedor se estira full-width por el `align-items: stretch`
+     del toggle-row, así que los dos botones tienen que crecer en
+     partes iguales para rellenar el ancho. Si no, los botones se
+     quedan pegados a la izquierda y queda un rectángulo crema vacío
+     a la derecha — eso era el "botón roto" que usuario reportó. */
+  .toggle { display: flex; width: 100%; }
+  .toggle button { flex: 1; justify-content: center; padding: 9px 12px; }
+
+  /* Perilla de nivel en mobile: full-width (antes era inline-grid,
+     que la hacía hugear el contenido). Padding vertical para que
+     respire con el toggle de arriba y el cuerpo de texto de abajo. */
+  .toggle-row .pv-perilla-wrap { width: 100%; padding: 6px 0 2px; }
+  .toggle-row .pv-perilla { display: grid; width: 100%; column-gap: 0; overflow: hidden; }
+
+  /* Ya no hace falta forzar alineación izquierda/derecha en las labels
+     extremas (antes estaba acá como workaround al corte de "5 AÑOS").
+     Ahora las columnas del grid son 80px 1fr 80px (ver index.css), así
+     que las labels caben centradas bajo su knob sin overflow. Resetear
+     explícitamente por si el user-agent o alguna regla heredada empuja
+     align-self al valor viejo en mobile. */
+  .toggle-row .pv-perilla-stop:first-child .pv-perilla-label,
+  .toggle-row .pv-perilla-stop:last-child .pv-perilla-label {
+    align-self: center;
+    text-align: center;
+  }
+
+  /* Paper actions en mobile: dos filas distintas.
+     Arriba (--explore): "Ver referencias" + "Ver quién lo citó" en
+     la MISMA línea siempre, cada uno 50% del ancho. Sin flex-wrap. */
+  .detail-wrap .paper-actions { flex-direction: column; align-items: stretch; gap: 10px; }
+  .detail-wrap .paper-actions .paper-actions-row--explore {
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+  .detail-wrap .paper-actions .paper-actions-row--explore .btn {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  /* Fila de abajo: Leído (44x44) + Guardado (44x44) se quedan
+     igual; el CTA azul "Leer paper completo" crece para rellenar
+     el espacio restante. */
+  .detail-wrap .paper-actions .paper-actions-row:not(.paper-actions-row--explore) {
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+  .detail-wrap .paper-actions .paper-actions-row:not(.paper-actions-row--explore) .btn.btn-primary {
+    flex: 1 1 auto;
+    justify-content: center;
+    min-width: 0;
+  }
+
+  /* Library — 1 columna */
+  .lib-grid { grid-template-columns: 1fr; }
+
+  /* FAB más chico (por si reaparece algún botón flotante) */
+  .fab { bottom: 80px; right: 14px; padding: 10px 14px; font-size: 12px; }
+
+  /* Sheet */
+  .sheet { padding: 20px 16px 24px 16px; }
+  .sheet .hook { font-size: 26px; }
+
+  /* Onboarding — logo más chico y h1 proporcional para mobile. El
+     wordmark baja a ~160px: sigue siendo el ancla visual pero deja
+     más aire para el título. */
+  .onb-logo { width: 170px; }
+  .onb-card h1 { font-size: 36px; }
+  .onb-card .lead { font-size: 15px; }
+  .onb-card .topics .topic-chip { font-size: 13px; padding: 7px 14px 7px 8px; }
+  .onb-count { font-size: 11px; }
+}

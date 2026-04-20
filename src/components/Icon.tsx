@@ -1,3 +1,6 @@
+// Minimal Lucide-style icon set used across the app.
+// Adapted from Paperverse Design System/ui_kits/web/Shell.jsx.
+
 import type { SVGProps } from 'react';
 
 type IconName =
@@ -27,7 +30,9 @@ type IconName =
   | 'list'
   | 'grid'
   | 'plus'
-  | 'refresh';
+  | 'refresh'
+  | 'file-text'
+  | 'send';
 
 interface Props extends Omit<SVGProps<SVGSVGElement>, 'name'> {
   name: IconName;
@@ -200,6 +205,10 @@ export function Icon({
           <path d="M16 3.13a4 4 0 0 1 0 7.75" />
         </svg>
       );
+    // "Leído" actions — just a check tick (✓). The button's geometry is the
+    // frame; its color signals state (outline = pendiente, green fill = ya
+    // leído). The filled variant is the same path, only heavier, so the
+    // "read" state reads as a confident confirmation.
     case 'check':
       return (
         <svg {...common}>
@@ -212,7 +221,12 @@ export function Icon({
           <path d="M5 12.5l4.5 4.5L19 7" />
         </svg>
       );
+    // Explicámelo level knob icons. Custom-drawn so they share the
+    // stroke/linecap geometry of the rest of the set — Lucide doesn't ship a
+    // "baby" or "guitar" that matches our aesthetic.
     case 'baby':
+      // Round head + big eyes + little smile + pacifier nub. Keeps it
+      // recognizable at 16–20 px.
       return (
         <svg {...common}>
           <circle cx="12" cy="12" r="8" />
@@ -223,6 +237,9 @@ export function Icon({
         </svg>
       );
     case 'guitar':
+      // Paths tomados del ícono oficial `guitar` de Lucide — headstock con
+      // clavija arriba-derecha, mástil diagonal con traste, cuerpo redondo
+      // abajo-izquierda y marca del agujero. Mismo stroke que el resto del set.
       return (
         <svg {...common}>
           <path d="m11.9 12.1 4.514-4.514" />
@@ -233,6 +250,8 @@ export function Icon({
         </svg>
       );
     case 'microscope':
+      // Base + arm + eyepiece + stage. Simplified to the silhouette cues
+      // (tilted head at top, triangular base) that make it read instantly.
       return (
         <svg {...common}>
           <path d="M6 21h12" />
@@ -244,6 +263,9 @@ export function Icon({
           <path d="M14.5 8l2 2" />
         </svg>
       );
+    // View toggles — rows of lines (lista) vs. square grid (tarjetas). Sit
+    // side-by-side in the feed's view group, so their geometries need to
+    // feel like a pair: both 3-unit metaphors, equal visual weight.
     case 'list':
       return (
         <svg {...common}>
@@ -264,6 +286,8 @@ export function Icon({
           <rect x="14" y="14" width="7" height="7" />
         </svg>
       );
+    // Usado en "Cargar más" (paginación de citas/referencias). Dos trazos
+    // cruzados, idénticos al de Lucide.
     case 'plus':
       return (
         <svg {...common}>
@@ -272,12 +296,41 @@ export function Icon({
         </svg>
       );
     case 'refresh':
+      // Reload glyph: un bucle circular con dos flechitas. Estático (a
+      // diferencia de 'loader' que spinnea infinitamente) porque lo usamos
+      // como trigger, no como estado.
       return (
         <svg {...common}>
           <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
           <path d="M21 3v5h-5" />
           <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
           <path d="M3 21v-5h5" />
+        </svg>
+      );
+    // Paper/documento — hoja con esquina doblada y líneas de texto. Lo
+    // usamos en el ThemeDock como entrada al Manifiesto: "un papel" es la
+    // metáfora más directa para "lee el texto editorial". Misma geometría
+    // Lucide que el resto del set.
+    case 'file-text':
+      return (
+        <svg {...common}>
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <path d="M14 2v6h6" />
+          <path d="M16 13H8" />
+          <path d="M16 17H8" />
+          <path d="M10 9H8" />
+        </svg>
+      );
+    // Avioncito de papel — usado en el header mobile como acción "enviar"
+    // de la búsqueda cuando el overlay está abierto. Dos paths Lucide
+    // estándar: el cuerpo triangular del avión y la pliegue diagonal
+    // interna que da la sensación de "doblez". Mismo stroke que el resto
+    // del set para que conviva con search/x sin sentirse de otro kit.
+    case 'send':
+      return (
+        <svg {...common}>
+          <path d="m22 2-7 20-4-9-9-4Z" />
+          <path d="M22 2 11 13" />
         </svg>
       );
     default:

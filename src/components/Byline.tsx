@@ -9,6 +9,7 @@ interface Props {
 /** Country code → display name in Spanish. Falls back to the code itself. */
 function countryName(code: string): string {
   const map: Record<string, string> = {
+    // Europe
     AT: 'Austria',
     BE: 'Bélgica',
     BG: 'Bulgaria',
@@ -41,6 +42,7 @@ function countryName(code: string): string {
     SI: 'Eslovenia',
     SK: 'Eslovaquia',
     UA: 'Ucrania',
+    // Americas
     AR: 'Argentina',
     BO: 'Bolivia',
     BR: 'Brasil',
@@ -60,6 +62,7 @@ function countryName(code: string): string {
     US: 'Estados Unidos',
     UY: 'Uruguay',
     VE: 'Venezuela',
+    // Asia & Oceania
     AU: 'Australia',
     BD: 'Bangladesh',
     CN: 'China',
@@ -81,6 +84,7 @@ function countryName(code: string): string {
     TW: 'Taiwán',
     VN: 'Vietnam',
     AE: 'Emiratos Árabes Unidos',
+    // Africa
     DZ: 'Argelia',
     EG: 'Egipto',
     ET: 'Etiopía',

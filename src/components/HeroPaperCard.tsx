@@ -1,11 +1,11 @@
 import type { Paper } from '../lib/openalex';
-import { topicForConcepts } from '../lib/topics';
+import { topicOrCiencia, resolveTopicVisual } from '../lib/topics';
 import { Byline } from './Byline';
-import { HeroBanner } from './HeroBanner';
 import { TopicBanner } from './TopicBanner';
 import { Icon } from './Icon';
 import { useLibrary } from '../lib/library';
 import { useReadPapers } from '../lib/read';
+import { showToast } from '../lib/toast';
 import { useTranslated } from '../lib/translate';
 
 interface Props {
@@ -15,43 +15,67 @@ interface Props {
 }
 
 export function HeroPaperCard({ paper, onClick, weekLabel }: Props) {
-  const topic = topicForConcepts(paper.conceptsRaw);
-  const topicColor = topic?.color ?? '#2E4BE0';
-  const topicName = topic?.name ?? 'Ciencia';
+  // Tema "honesto" para el eyebrow — ahora siempre devuelve un Topic real
+  // (cae al Topic "ciencia" si no hay match específico). Antes era null +
+  // fallbacks literales; ahora tratamos Ciencia como tema de primera clase.
+  const topic = topicOrCiencia(paper.conceptsRaw);
+  // Tema "visual" para la animación DS2 del banner — nunca Ciencia porque
+  // topic-anim.js no tiene renderer para ese id (resolveTopicVisual excluye
+  // Ciencia del pool de fallback y forzá uno de los 14 animados).
+  const topicVisual = resolveTopicVisual(paper.conceptsRaw, paper.id);
+  const topicColor = topic.color;
+  const topicName = topic.name;
 
+  // Spanish editorial title + lede (cached, falls back to pre-cleaned
+  // original while loading). See src/lib/translate.ts.
   const { title: titleEs, lede: ledeEs } = useTranslated(paper);
   const lede = ledeEs ||
     'Este paper es el más citado entre los que coinciden con tus temas en los últimos 60 días.';
 
   const { has, toggle } = useLibrary();
   const saved = has(paper.id);
+  // toast al guardar/quitar. Estado previo leído
+  // ANTES del toggle para que el texto acompañe la transición correcta.
   const onBookmark = (e: React.MouseEvent) => {
     e.stopPropagation();
+    const wasSaved = saved;
     toggle(paper);
+    showToast(wasSaved ? 'Quitado de tu biblioteca' : 'Guardado en tu biblioteca');
   };
 
   const { has: readHas, toggle: readToggle } = useReadPapers();
   const read = readHas(paper.id);
   const onMarkRead = (e: React.MouseEvent) => {
     e.stopPropagation();
+    const wasRead = read;
     readToggle(paper);
+    showToast(wasRead ? 'Desmarcado como leído' : 'Marcado como leído');
   };
 
   return (
     <article className={`hero-card${read ? ' is-read' : ''}`} onClick={onClick}>
-      {}
+      {/*
+        DS2 per-topic animation. TopicBanner mounts the vanilla IIFE from
+        /public/topic-anim.js — cada tema pinta su propio motif (neuronas para
+        neuro, planeta/órbita para espacio, matraz para química, etc.).
+        Usamos `topicVisual` (resolveTopicVisual) en vez de `topic` para que
+        SIEMPRE haya una animación DS2 — antes, cuando el clasificador fallaba,
+        caíamos a HeroBanner (la escena cósmica DS1 vieja) y eso es lo que
+        usuario vio rota en "espacio".
+      */}
       <div className="banner">
-        {topic ? (
-          <TopicBanner topicId={topic.id} />
-        ) : (
-          <HeroBanner color={topicColor} />
-        )}
+        <TopicBanner topicId={topicVisual.id} />
         <span className="eye">
           <Icon name="trending" size={14} strokeWidth={2} />
           {weekLabel ?? 'El más citado · últimos 60 días'}
         </span>
       </div>
-      {}
+      {/*
+        hero-main becomes a two-column grid: content on the left, the CITADO
+        block + bookmark on the top-right (mirrors PaperCard's actions-col).
+        This kills the tall vote-row footer and reclaims the wasted space the
+        user flagged.
+      */}
       <div
         className="hero-main"
         style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 24, alignItems: 'start' }}

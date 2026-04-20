@@ -1,6 +1,13 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useSearchParams, useNavigate, Link } from 'react-router-dom';
+// Main page — one component that handles four modes driven by URL:
+// (none) → feed filtered by selected topics
+// ?q=… → search results
+// ?cites=W123 → papers cited by W123 (references)
+// ?citedBy=W123 → papers citing W123
+
+import { useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { useSearchParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { TOPICS, type TopicId } from '../lib/topics';
+import { rememberFeedUrl } from '../lib/feedReturn';
 import {
   fetchFeed,
   fetchPaper,
@@ -14,9 +21,15 @@ import { TopicChip } from '../components/TopicChip';
 import { PaperCard } from '../components/PaperCard';
 import { PaperCardTile } from '../components/PaperCardTile';
 import { Icon } from '../components/Icon';
+import { useTheme } from '../lib/theme';
+import { useDocumentTitle } from '../lib/useDocumentTitle';
 
 const TOPIC_STORAGE_KEY = 'pv_topics_v1';
-const WINDOW_STORAGE_KEY = 'pv_window_days_v2';
+// Bump v2 → v3 porque cambió el default (30 días → 5 años). Si dejamos
+// la key vieja, los usuarios que ya visitaron traen su preferencia
+// cacheada y el default nuevo no se les aplica nunca. Preferimos
+// invalidar una vez y que el nuevo valor por defecto tome efecto.
+const WINDOW_STORAGE_KEY = 'pv_window_days_v3';
 const VIEW_STORAGE_KEY = 'pv_feed_view_v1';
 
 type ViewMode = 'list' | 'cards';
@@ -37,13 +50,24 @@ function readStoredView(): ViewMode {
  * the haul while still fitting OpenAlex's 200-per-page ceiling.
  */
 const WINDOWS: { label: string; short: string; days: number; limit: number; endText: string }[] = [
-  { label: 'Hoy',      short: 'Hoy',  days: 1,   limit: 20,  endText: 'No hay más papers publicados hoy' },
-  { label: '7 días',   short: '7d',   days: 7,   limit: 40,  endText: 'No hay más papers publicados esta semana' },
-  { label: '1 mes',    short: '1m',   days: 30,  limit: 60,  endText: 'No hay más papers publicados este mes' },
-  { label: '6 meses',  short: '6m',   days: 180, limit: 100, endText: 'No hay más papers publicados en los últimos 6 meses' },
-  { label: '1 año',    short: '1a',   days: 365, limit: 150, endText: 'No hay más papers publicados este año' },
+  { label: 'Hoy', short: 'Hoy', days: 1, limit: 20, endText: 'No hay más papers publicados hoy' },
+  { label: '7 días', short: '7d', days: 7, limit: 40, endText: 'No hay más papers publicados esta semana' },
+  { label: '1 mes', short: '1m', days: 30, limit: 60, endText: 'No hay más papers publicados este mes' },
+  { label: '6 meses', short: '6m', days: 180, limit: 100, endText: 'No hay más papers publicados en los últimos 6 meses' },
+  { label: '1 año', short: '1a', days: 365, limit: 150, endText: 'No hay más papers publicados este año' },
+  // 5 años — ventana amplia para buscar papers ya establecidos (no recién
+  // publicados). Topeamos el limit en 200 porque la API de OpenAlex corta
+  // ahí per_page; con 5 años de cobertura, 200 papers por tanda alcanza
+  // para que el feed se sienta generoso sin que el primer scroll tarde
+  // eternidades en renderizar.
+  { label: '5 años', short: '5a', days: 1825, limit: 200, endText: 'No hay más papers publicados en los últimos 5 años' },
 ];
-const DEFAULT_WINDOW_DAYS = 30;
+// Default = 5 años. Antes era 30 días, pero se pidió que el feed
+// arranque con la ventana más ancha — tiene sentido: los papers más citados
+// y consolidados viven en un horizonte de años, no de semanas. Los usuarios
+// que quieren "novedades de la semana" siempre pueden achicar la ventana
+// manualmente con la perilla.
+const DEFAULT_WINDOW_DAYS = 1825;
 
 function windowFor(days: number) {
   return WINDOWS.find(w => w.days === days) ?? WINDOWS.find(w => w.days === DEFAULT_WINDOW_DAYS)!;
@@ -71,75 +95,15 @@ function readStoredTopics(): TopicId[] {
   }
 }
 
-/**
- * Buzón de recomendaciones — form pequeño en el sidebar. Sin backend: al
- * enviar abrimos el cliente de mail del usuario con un mailto: prellenado
- * apuntando a mi inbox personal. El trade-off: si el usuario no tiene
- * cliente de mail configurado, no pasa nada. Pero la mayoría lo tiene, y
- * esta solución evita tener que correr un servidor / pagar un form endpoint
- * sólo para recibir feedback esporádico.
- */
-function BuzonForm() {
-  const [msg, setMsg] = useState('');
-  const onSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!msg.trim()) return;
-    const subject = encodeURIComponent('Paperverse · recomendación');
-    const body = encodeURIComponent(msg.trim());
-    window.location.href = `mailto:francomatacarolina@gmail.com?subject=${subject}&body=${body}`;
-    setMsg('');
-  };
-  return (
-    <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
-      <div
-        style={{
-          fontFamily: 'var(--font-mono)',
-          fontSize: 10.5,
-          color: 'var(--fg-4)',
-          letterSpacing: '0.14em',
-          textTransform: 'uppercase',
-        }}
-      >
-        Buzón de recomendaciones
-      </div>
-      <textarea
-        value={msg}
-        onChange={e => setMsg(e.target.value)}
-        placeholder="¿Qué te gustaría ver? ¿Algo que falta?"
-        rows={3}
-        style={{
-          resize: 'vertical',
-          minHeight: 64,
-          padding: '8px 10px',
-          border: '1px solid var(--border-1)',
-          borderRadius: 6,
-          background: 'var(--bg-1)',
-          color: 'var(--fg-1)',
-          fontFamily: 'var(--font-sans)',
-          fontSize: 13,
-          lineHeight: 1.45,
-          outline: 'none',
-        }}
-      />
-      <button
-        type="submit"
-        disabled={!msg.trim()}
-        className="pv-cargar-mas"
-        style={{
-          alignSelf: 'flex-start',
-          opacity: msg.trim() ? 1 : 0.5,
-          cursor: msg.trim() ? 'pointer' : 'not-allowed',
-        }}
-      >
-        Mandar
-      </button>
-    </form>
-  );
-}
-
 export function Feed() {
   const [params] = useSearchParams();
   const nav = useNavigate();
+  // useLocation nos da pathname+search en un solo
+  // objeto reactivo. Lo usamos para memorizar la URL exacta del feed en
+  // sessionStorage cada vez que cambia — ver effect abajo. El Header
+  // consume esa memoria para devolver al usuario al mismo estado del
+  // feed en vez de a la raíz pelada.
+  const loc = useLocation();
 
   const q = params.get('q') ?? '';
   const cites = params.get('cites') ?? '';
@@ -155,16 +119,49 @@ export function Feed() {
   const [selected, setSelected] = useState<TopicId[]>(readStoredTopics);
   const [daysBack, setDaysBack] = useState<number>(readStoredWindow);
   const [view, setView] = useState<ViewMode>(readStoredView);
+  // Theme toggle vive acá — se renderiza como tercer bloque del meta-row
+  // del sidebar (junto a "¿Qué es Paperverse?" y "Creado por"). Antes
+  // estaba en un footer fijo mobile, pero usuario prefirió integrarlo
+  // al flujo del sidebar para no meter una barra extra encima del feed.
+  const { theme, setTheme } = useTheme();
+  const isDark = theme === 'dark';
   const [papers, setPapers] = useState<Paper[]>([]);
   const [referencePaper, setReferencePaper] = useState<Paper | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [randomLoading, setRandomLoading] = useState(false);
+  // Paginación para modo citas/referencias. Arrancamos en 50 y subimos en
+  // tandas con "Cargar más". OpenAlex tapa per_page en 200, así que ese es
+  // nuestro techo. Se resetea cada vez que cambia el paper de referencia.
   const [relatedLimit, setRelatedLimit] = useState<number>(50);
+  // Paginación del feed — arranca con el límite base de la ventana activa
+  // (Hoy = 20, 7d = 40, …) y crece en tandas del mismo tamaño. Mismo techo
+  // duro de 200 por la API.
   const [feedLimit, setFeedLimit] = useState<number>(() => windowFor(readStoredWindow()).limit);
   const [loadingMore, setLoadingMore] = useState(false);
 
   const currentWindow = useMemo(() => windowFor(daysBack), [daysBack]);
+
+  // títulos de pestaña por ruta. El Feed soporta 4
+  // modos y cada uno tiene un "lead" distinto:
+  // · feed → null (mantenemos el landing title "Paperverse — …")
+  // · search → el query textual, al estilo Google
+  // · cites / citedBy → etiqueta + título del paper de referencia, para que
+  // la pestaña diga algo como "Citaron a Hybrid quantum… — Paperverse"
+  // en vez de repetir el landing title y dejar al usuario sin pista de
+  // dónde está parado cuando tiene varias pestañas.
+  // Cuando `referencePaper` todavía no se resolvió (primer render antes del
+  // fetch), pasamos null → default. En cuanto llega el paper, el effect del
+  // hook se reengancha y el título se actualiza.
+  const titleLead =
+    mode === 'search'
+      ? q
+      : mode === 'cites' && referencePaper
+      ? `Referencias de ${referencePaper.title}`
+      : mode === 'citedBy' && referencePaper
+      ? `Citaron a ${referencePaper.title}`
+      : null;
+  useDocumentTitle(titleLead);
 
   useEffect(() => {
     localStorage.setItem(TOPIC_STORAGE_KEY, JSON.stringify(selected));
@@ -175,24 +172,48 @@ export function Feed() {
   useEffect(() => {
     localStorage.setItem(VIEW_STORAGE_KEY, view);
   }, [view]);
+  // Memoriza la URL actual del feed. Cuando el usuario navega a paper
+  // detail o biblioteca y vuelve a clickear "Feed", lo llevamos de vuelta
+  // a este estado exacto en vez de perder ?q=/?cites=/?citedBy=.
+  // Sólo ejecuta cuando el pathname es '/' (defensivo — la guarda debería
+  // ser redundante porque Feed sólo renderiza bajo esa ruta, pero no
+  // cuesta nada y protege contra refactors futuros).
+  useEffect(() => {
+    if (loc.pathname !== '/') return;
+    rememberFeedUrl(`${loc.pathname}${loc.search}`);
+  }, [loc.pathname, loc.search]);
 
   const activeTopics = useMemo(() => {
     const set = new Set(selected);
     return selected.length === 0 ? TOPICS : TOPICS.filter(t => set.has(t.id));
   }, [selected]);
 
+  // Al cambiar de paper de referencia (o salir del modo citas), reseteamos
+  // la paginación. Si no lo hicieras, abrir un nuevo paper heredaría el
+  // límite acumulado del anterior y pedirías 200 papers de una de arranque.
   useEffect(() => {
     setRelatedLimit(50);
   }, [mode, cites, citedBy]);
 
+  // Reseteamos el límite del feed cuando cambia la ventana o los temas: si
+  // estabas en "6 meses · cargar más" y volvés a "Hoy", no queremos seguir
+  // pidiendo 100 papers de un día (la API los daría pero los de abajo no
+  // serían representativos de lo "publicado hoy").
   useEffect(() => {
     setFeedLimit(currentWindow.limit);
   }, [currentWindow.limit, selected]);
 
+  // Guardamos la última cantidad pedida para saber si llegamos al fondo:
+  // si la API devolvió menos que lo solicitado, no hay sentido en seguir
+  // pidiendo más. Tracked separately del papers.length para no depender
+  // del timing de setState.
   const [lastRequested, setLastRequested] = useState<number>(0);
 
   useEffect(() => {
     let cancelled = false;
+    // Si ya teníamos papers y sólo subió el límite (paginación), tratamos
+    // el fetch como "cargar más" — no borramos la lista ni mostramos el
+    // spinner gigante central. Aplica tanto al feed como a citas.
     const relevantLimit =
       mode === 'cites' || mode === 'citedBy' ? relatedLimit : mode === 'feed' ? feedLimit : 0;
     const isLoadMore =
@@ -210,16 +231,23 @@ export function Feed() {
     async function run() {
       try {
         if (mode === 'search') {
+          // Only pass topics when user has a *proper subset* selected. If no topics
+          // are selected (= "todos los temas") we don't want to restrict search at all.
           const topicsForSearch = selected.length > 0 && selected.length < TOPICS.length
             ? activeTopics
             : undefined;
-          const results = await searchPapers(q, { topics: topicsForSearch, limit: 50 });
+          // Pasamos daysBack para que la perilla de Período también filtre la
+          // búsqueda (). Antes el search era global y la perilla, aunque
+          // visible, no hacía nada en modo query — ahora son coherentes.
+          const results = await searchPapers(q, { topics: topicsForSearch, limit: 50, daysBack });
           if (!cancelled) {
             setPapers(results);
             setLastRequested(50);
           }
         } else if (mode === 'cites' || mode === 'citedBy') {
           const id = mode === 'cites' ? cites : citedBy;
+          // Reusamos el paper de referencia si ya lo tenemos cargado (caso
+          // "cargar más"): evita un round-trip innecesario a OpenAlex.
           const ref = referencePaper && referencePaper.id === id
             ? referencePaper
             : await fetchPaper(id);
@@ -260,11 +288,21 @@ export function Feed() {
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, q, cites, citedBy, activeTopics, daysBack, feedLimit, selected.length, relatedLimit]);
 
   const toggleTopic = (id: TopicId) =>
     setSelected(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]));
 
+  // "Paper al azar" — pull a semi-random paper biased toward the user's
+  // active topics. If the API hiccups or returns nothing we keep the user on
+  // the feed rather than flashing a broken state.
+  //
+  // el botón antes se llamaba "Dato random" — un
+  // spanglish que mezclaba "dato" (ES) con "random" (EN) y además era
+  // impreciso, porque lo que abre no es "un dato" sino un paper entero.
+  // Renombrado a "Paper al azar": mismo ritmo, deja claro que es un paper,
+  // y el "al azar" comunica aleatoriedad en ES sin necesidad de anglicismo.
   const handleRandom = async () => {
     if (randomLoading) return;
     setRandomLoading(true);
@@ -274,17 +312,60 @@ export function Feed() {
       });
       if (p) nav(`/paper/${p.id}`);
     } catch {
+      // swallow; the user can just click again
     } finally {
       setRandomLoading(false);
     }
   };
 
+  // Antes la home tenía una sección "Destacados por tema" (grilla de 6 tiles)
+  // arriba del feed. Se sacó: la visualización bonita de ese tile ahora es
+  // una opción para TODO el feed via button group (lista ↔ tarjetas).
+
   return (
     <div className="main">
       <aside className="sidebar">
         <div>
+          {/* Section-head con counter + "Limpiar (N)" como chip a la derecha.
+              El chip-row abajo es un carrusel horizontal en mobile (y scrolleable
+              en desktop si la lista se pasa), así que fuera del viewport no ves
+              cuántos temas tenés seleccionados. El counter "(N)" resuelve eso
+              de un vistazo. El "Limpiar" aparece SÓLO cuando hay al menos un
+              filtro activo — si no, no habría nada que limpiar y la palabra
+              estaría pidiéndole al usuario una acción inútil. : antes el limpiar era texto mono uppercase
+              con underline sutil, que el QA leyó como label inerte en vez de
+              botón. Ahora es un chip-pill con ícono ✕ + "Limpiar (N)" en Sentence
+              case, mismo lenguaje visual que los TopicChip de abajo — quien ve
+              los chips entiende que este también es clickeable. El contador
+              local al botón refuerza el vínculo con los N temas activos. */}
           <div className="section-head" style={{ margin: '0 0 12px 0' }}>
-            <h2>Tus temas</h2>
+            <h2>
+              Tus temas
+              <span
+                style={{
+                  marginLeft: 8,
+                  color: 'var(--fg-4)',
+                  fontWeight: 400,
+                  // Un toque de espaciado más suave que el 0.18em del h2 —
+                  // el "(N)" es info complementaria, no parte del título.
+                  letterSpacing: '0.04em',
+                }}
+              >
+                ({selected.length})
+              </span>
+            </h2>
+            {selected.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setSelected([])}
+                title="Quitar todos los filtros de temas"
+                className="pv-clear-chip"
+                aria-label={`Limpiar ${selected.length} filtros de temas`}
+              >
+                <Icon name="x" size={12} />
+                Limpiar ({selected.length})
+              </button>
+            )}
           </div>
           <div className="filter-row">
             {TOPICS.map(t => (
@@ -297,59 +378,52 @@ export function Feed() {
             ))}
           </div>
         </div>
-        <div style={{ borderTop: '1px solid var(--border-1)', paddingTop: 20 }}>
-          <div className="section-head" style={{ margin: '0 0 10px 0' }}>
-            <h2>Estado</h2>
-          </div>
-          <div style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--fg-3)', lineHeight: 1.6, marginBottom: 14 }}>
-            {mode === 'cites' ? (
-              <>
-                <div>{papers.length} referencias</div>
-                <div>ordenadas por citaciones</div>
-                <div>OpenAlex · live</div>
-              </>
-            ) : mode === 'citedBy' ? (
-              <>
-                <div>{papers.length} citaciones</div>
-                <div>ordenadas por impacto</div>
-                <div>OpenAlex · live</div>
-              </>
-            ) : mode === 'search' ? (
-              <>
-                <div>{papers.length} resultados</div>
-                <div>{selected.length === 0 ? 'todos los temas' : `${selected.length} temas activos`}</div>
-                <div>OpenAlex · live</div>
-              </>
-            ) : (
-              <>
-                <div>{papers.length} papers</div>
-                <div>{selected.length === 0 ? 'todos los temas' : `${selected.length} temas activos`}</div>
-                <div>OpenAlex · live</div>
-              </>
-            )}
-          </div>
+        {/* ────────────────────────────────────────────────────────────
+            Período + "Paper al azar" (feed mode only). Ambos son controles
+            del feed, así que viven juntos directamente debajo de "Tus
+            temas". "Estado" + "Creado por" quedan abajo como meta-info.
+            Decisión: "Paper al azar" se queda en el sidebar (no se mueve
+            al ThemeDock). El dock es para acciones utilitarias (theme), y
+            este botón es exploratorio — necesita estar visible con label,
+            no un ícono pelado en un toolbar flotante.
+            ──────────────────────────────────────────────────────────── */}
+        {(mode === 'feed' || mode === 'search') && (
+          // Antes había un `borderTop` acá separando "Tus temas" de
+          // "Período", pero usuario lo pidió borrar: en mobile
+          // los chips ya dan un cierre visual claro al bloque de temas y la
+          // línea extra sentía ruido. Mantenemos `paddingTop: 20` para
+          // respiración, sin hairline.
+          //
+          // incluimos también `mode === 'search'` para
+          // que la perilla de Período no desaparezca cuando el usuario activa
+          // la búsqueda. Antes la perilla se ocultaba al escribir en el
+          // buscador y eso rompía la expectativa: el usuario que llegó al
+          // resultado con "últimos 7 días" perdía el control y no entendía
+          // por qué. Ahora persiste y, gracias al `daysBack` que pasamos a
+          // `searchPapers`, el filtro temporal sigue siendo efectivo.
+          //
+          // "Paper al azar" sigue siendo exclusivo del feed — en search no
+          // tiene sentido un botón "abrime un paper al azar" porque ya
+          // estás buscando uno específico.
+          <div style={{ paddingTop: 20 }}>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10.5, color: 'var(--fg-4)', letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 8 }}>
+              Período
+            </div>
+            <div className="pv-window-group" role="group" aria-label="Ventana de tiempo">
+              {WINDOWS.map(w => (
+                <button
+                  key={w.days}
+                  type="button"
+                  className={daysBack === w.days ? 'on' : ''}
+                  onClick={() => setDaysBack(w.days)}
+                  title={`${w.label} · hasta ${w.limit} papers`}
+                >
+                  {w.short}
+                </button>
+              ))}
+            </div>
 
-          {}
-          {mode === 'feed' && (
-            <>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10.5, color: 'var(--fg-4)', letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 8 }}>
-                Período
-              </div>
-              <div className="pv-window-group" role="group" aria-label="Ventana de tiempo">
-                {WINDOWS.map(w => (
-                  <button
-                    key={w.days}
-                    type="button"
-                    className={daysBack === w.days ? 'on' : ''}
-                    onClick={() => setDaysBack(w.days)}
-                    title={`${w.label} · hasta ${w.limit} papers`}
-                  >
-                    {w.short}
-                  </button>
-                ))}
-              </div>
-              {}
-
+            {mode === 'feed' && (
               <button
                 type="button"
                 className="pv-dato-random"
@@ -358,106 +432,152 @@ export function Feed() {
                 title="Abrir un paper al azar dentro de tus temas"
               >
                 <Icon name={randomLoading ? 'loader' : 'dice'} size={15} />
-                {randomLoading ? 'Buscando…' : 'Dato random'}
+                {randomLoading ? 'Buscando…' : 'Paper al azar'}
               </button>
-            </>
-          )}
+            )}
+          </div>
+        )}
 
-          {}
-          <div
-            style={{
-              marginTop: 32,
-              paddingTop: 24,
-              borderTop: '1px solid var(--border-1)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 16,
-            }}
-          >
-            <div>
-              <div
-                style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: 10.5,
-                  color: 'var(--fg-4)',
-                  letterSpacing: '0.14em',
-                  textTransform: 'uppercase',
-                  marginBottom: 8,
-                }}
-              >
-                Creado por
-              </div>
-              <div style={{ fontSize: 14, color: 'var(--fg-1)', lineHeight: 1.45 }}>
-                caro is creative
-              </div>
-              <a
-                href="https://x.com/caroiscreativee"
-                target="_blank"
-                rel="noreferrer"
-                style={{
-                  marginTop: 4,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 4,
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: 11,
-                  letterSpacing: '0.04em',
-                  color: 'var(--fg-3)',
-                  textDecoration: 'none',
-                }}
-              >
-                @caroiscreativee <Icon name="external" size={10} />
-              </a>
-            </div>
+        {/* ────────────────────────────────────────────────────────────
+            Meta-row del sidebar — tres bloques hermanos en formato
+            "label — valor" inline (label arriba a la izquierda, valor
+            justo a su derecha). Antes los blocks eran stacked (label
+            arriba en su propia línea, valor debajo) pero usuario
+            (, tercera iteración): "siento que se pierde
+            mucho espacio podríamos hacer algo como Título: contenido".
+            Cada bloque ahora es un flex row con `align-items: baseline`
+            y `flex-wrap: wrap` — en sidebars angostos el valor cae
+            debajo del label como antes; en mobile (sidebar wide) cabe
+            todo en una sola línea, que es donde se notaba más el
+            desperdicio. Bajamos también el gap entre bloques (16 → 10)
+            para apretar el conjunto.
 
-            <nav
+              1) ¿Qué es Paperverse? → link al Manifiesto. El "?" del
+                 label hace de separador natural con el valor — por eso
+                 acá no agrego dos puntos (quedaría "¿…?:" doble
+                 puntuación fea). Acorté "Leer el Manifiesto →" a
+                 "Manifiesto →" porque el label ya plantea la pregunta:
+                 el verbo "leer" se vuelve redundante.
+              2) Creado por → firma (@caroiscreativee).
+              3) Tema → toggle claro/oscuro. El ícono va ADELANTE del
+                 texto (a diferencia de los dos links de nav, donde va
+                 al final con arrow-right/external) — así se distingue
+                 visualmente "cambiar estado" de "ir a otra ruta". El
+                 texto muestra el tema DESTINO ("Modo claro" cuando
+                 estás en oscuro, y viceversa). Sin transition: el
+                 toggle es instantáneo (memoria del proyecto: snap, no
+                 fade).
+
+            Los tres comparten la misma gramática: label mono 10.5px
+            uppercase fg-4 + valor mono 11px fg-3. La diferencia de
+            color (fg-4 vs fg-3) hace de separador sin necesidad de
+            agregar dos puntos en cada label.
+            ──────────────────────────────────────────────────────────── */}
+        {(() => {
+          // Estilos compartidos por los tres bloques del meta-row. Los
+          // declaro como const adentro de un IIFE para no contaminar el
+          // scope del componente con detalles de presentación que sólo
+          // se usan acá. Si el patrón se repite en otra page, los
+          // promovemos a una clase en index.css.
+          const labelStyle: CSSProperties = {
+            fontFamily: 'var(--font-mono)',
+            fontSize: 10.5,
+            color: 'var(--fg-4)',
+            letterSpacing: '0.14em',
+            textTransform: 'uppercase',
+            whiteSpace: 'nowrap',
+          };
+          const valueStyle: CSSProperties = {
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 4,
+            fontFamily: 'var(--font-mono)',
+            fontSize: 11,
+            letterSpacing: '0.04em',
+            color: 'var(--fg-3)',
+            textDecoration: 'none',
+            whiteSpace: 'nowrap',
+          };
+          // Cada row: flex baseline + wrap. En contenedores angostos
+          // wrappea (valor cae debajo del label), en anchos queda
+          // inline. Gap 10px funciona como separador visual horizontal
+          // y como respiro vertical post-wrap.
+          const rowStyle: CSSProperties = {
+            display: 'flex',
+            alignItems: 'baseline',
+            flexWrap: 'wrap',
+            gap: 10,
+          };
+          return (
+            <div
+              className="pv-meta-row"
               style={{
+                borderTop: '1px solid var(--border-1)',
+                paddingTop: 20,
                 display: 'flex',
                 flexDirection: 'column',
-                gap: 6,
+                gap: 10,
               }}
             >
-              <Link
-                to="/manifiesto"
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  fontSize: 13,
-                  color: 'var(--fg-2)',
-                  textDecoration: 'none',
-                  padding: '6px 0',
-                  borderBottom: '1px solid var(--border-1)',
-                }}
-              >
-                <span>Manifiesto</span>
-                <Icon name="arrow-right" size={12} />
-              </Link>
-              <Link
-                to="/colophon"
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  fontSize: 13,
-                  color: 'var(--fg-2)',
-                  textDecoration: 'none',
-                  padding: '6px 0',
-                  borderBottom: '1px solid var(--border-1)',
-                }}
-              >
-                <span>Colophon</span>
-                <Icon name="arrow-right" size={12} />
-              </Link>
-            </nav>
-
-            {}
-            <BuzonForm />
-          </div>
-        </div>
+              <div style={rowStyle}>
+                <span style={labelStyle}>¿Qué es Paperverse?</span>
+                <Link to="/manifiesto" style={valueStyle}>
+                  Manifiesto <Icon name="arrow-right" size={10} />
+                </Link>
+              </div>
+              <div style={rowStyle}>
+                <span style={labelStyle}>Creado por</span>
+                <a
+                  href="https://x.com/caroiscreativee"
+                  target="_blank"
+                  rel="noreferrer"
+                  style={valueStyle}
+                >
+                  @caroiscreativee <Icon name="external" size={10} />
+                </a>
+              </div>
+              <div style={rowStyle}>
+                <span style={labelStyle}>Tema</span>
+                <button
+                  type="button"
+                  onClick={() => setTheme(isDark ? 'light' : 'dark')}
+                  aria-label={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+                  title={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+                  style={{
+                    ...valueStyle,
+                    gap: 6,
+                    background: 'transparent',
+                    border: 0,
+                    padding: 0,
+                    cursor: 'pointer',
+                    transition: 'none',
+                  }}
+                >
+                  <Icon name={isDark ? 'sun' : 'moon'} size={11} />
+                  {isDark ? 'Modo claro' : 'Modo oscuro'}
+                </button>
+              </div>
+            </div>
+          );
+        })()}
       </aside>
 
       <main className="col-feed">
+        {/* jerarquía de encabezados.
+            El Feed en modo 'feed' y 'search' no tenía un <h1> visible —
+            la página arrancaba en <h2> ("20 papers · 5 años" / "X
+            resultados para 'quantum'") lo que creaba un "skip from H2"
+            en el outline semántico y confundía a screen readers.
+            Para 'cites' y 'citedBy' sí hay un <h1> visible más abajo
+            (el título del paper referenciado) así que ahí no agregamos.
+            Para 'feed' y 'search' ponemos un h1 *sr-only* contextual:
+            es audible pero no visible, así el visual no cambia y el
+            H2 informativo sigue haciendo su trabajo. La copy del h1
+            es descriptiva — "Resultados para 'quantum'" le da al
+            screen reader un ancla mucho más útil que "Feed genérico". */}
+        {mode === 'feed' && <h1 className="pv-sr-only">Feed de papers</h1>}
+        {mode === 'search' && <h1 className="pv-sr-only">Resultados de búsqueda para "{q}"</h1>}
+
         {(mode === 'cites' || mode === 'citedBy') && referencePaper && (
           <div style={{ marginBottom: 24, paddingBottom: 16, borderBottom: '1px solid var(--border-1)' }}>
             <button
@@ -479,26 +599,94 @@ export function Feed() {
           </div>
         )}
 
-        {mode === 'search' && (
-          <div className="section-head" style={{ marginTop: 0 }}>
-            <h2>Resultados para "{q}"</h2>
-            <span className="count">{papers.length} papers</span>
-          </div>
-        )}
-
-        {mode === 'feed' && (
-          <div className="section-head">
-            <h2>Recién publicado</h2>
+        {(mode === 'feed' || mode === 'search') && (
+          // Antes el título era "Recién publicado" + el conteo al costado.
+          // se pidió usar el conteo DIRECTO como título — es más honesto:
+          // el header de sección se vuelve el resultado concreto en vez de una
+          // etiqueta genérica. Menos jerarquía, más información.
+          //
+          // La clase extra `feed-top-bar` lo hace sticky debajo del header:
+          // el contador y el toggle Lista/Tarjetas quedan siempre visibles
+          // mientras el usuario scrollea. Las cards pasan por debajo gracias
+          // al background sólido del bar + z-index.
+          //
+          // unificamos search + feed en la misma barra
+          // sticky con ViewToggle. Antes search tenía su propio section-head
+          // no-sticky y sin toggle, lo que rompía la consistencia: el usuario
+          // que buscaba perdía el acceso a lista/tarjetas sin explicación.
+          // En search el título muestra el query literal entre comillas; en
+          // feed muestra la ventana temporal activa.
+          <div className="section-head feed-top-bar">
+            <h2>
+              {mode === 'search'
+                ? `${papers.length} resultados para "${q}"`
+                : `${papers.length} papers · ${currentWindow.label.toLowerCase()}`}
+            </h2>
             <div className="head-right">
-              <span className="count">
-                {papers.length} papers · {currentWindow.label.toLowerCase()}
-              </span>
               <ViewToggle view={view} onChange={setView} />
             </div>
           </div>
         )}
 
-        {loading && <LoadingState />}
+        {/* : indicador de alcance del buscador. El QA
+            observó que al buscar con un subset de "Tus temas" activo, los
+            chips del sidebar quedan resaltados pero la conexión con los
+            resultados no está clara — el usuario no sabe si la búsqueda
+            está filtrada o es global. Internamente YA lo está (searchPapers
+            recibe `topicsForSearch` cuando hay un subset propio), pero no
+            lo comunicamos.
+            Esta barra aparece sólo en mode='search' cuando hay un subset
+            PROPIO seleccionado (no 0, no todos). Muestra los nombres de los
+            temas activos en formato legible y ofrece un shortcut para
+            "buscar en todos los temas" (= des-seleccionar todo = scope global).
+            En feed mode no hace falta: el contador de papers ya implica el
+            filtro y los chips son el control primario. */}
+        {mode === 'search' && selected.length > 0 && selected.length < TOPICS.length && (
+          <div
+            style={{
+              padding: '10px 0 0 0',
+              fontFamily: 'var(--font-mono)',
+              fontSize: 11,
+              letterSpacing: '0.04em',
+              color: 'var(--fg-3)',
+              display: 'flex',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              columnGap: 10,
+              rowGap: 4,
+            }}
+            role="status"
+            aria-live="polite"
+          >
+            <span>
+              Buscando en{' '}
+              <span style={{ color: 'var(--fg-2)' }}>
+                {activeTopics.map(t => t.name).join(', ')}
+              </span>
+            </span>
+            <button
+              type="button"
+              onClick={() => setSelected([])}
+              style={{
+                background: 'transparent',
+                border: 0,
+                padding: 0,
+                color: 'var(--fg-accent)',
+                fontFamily: 'inherit',
+                fontSize: 'inherit',
+                letterSpacing: 'inherit',
+                textDecoration: 'underline',
+                textUnderlineOffset: 2,
+                cursor: 'pointer',
+              }}
+              title="Quita los filtros de tema para buscar sobre todo el catálogo"
+            >
+              Buscar en todos los temas
+            </button>
+          </div>
+        )}
+
+        {loading && <LoadingState view={view} />}
         {error && <ErrorState message={error} />}
         {!loading && !error && (
           view === 'cards' ? (
@@ -518,10 +706,19 @@ export function Feed() {
           )
         )}
 
-        {}
+        {/* Paginación — feed y citas/referencias comparten el mismo patrón.
+            El botón aparece cuando la API devolvió al menos tantos resultados
+            como el límite pedido (señal de que hay más). Si devolvió menos
+            o ya llegamos al techo de 200, aparece un divider con texto gris
+            mono que explica *por qué* no hay más. Search no pagina: ya trae
+            los top 50 por relevancia, más abajo la calidad cae rápido. */}
         {!loading && !error && mode === 'feed' && papers.length > 0 && (
           (() => {
             const hitCap = feedLimit >= 200;
+            // "canLoad" = la API devolvió ≥ lo pedido → probablemente hay más.
+            // Usamos `lastRequested` en vez de `feedLimit` porque al cambiar
+            // de ventana el límite nuevo puede ser < que los resultados ya
+            // en pantalla, y queremos seguir la señal de la ÚLTIMA petición.
             const canLoad = papers.length >= lastRequested && lastRequested > 0 && !hitCap;
             return (
               <CargarMas
@@ -541,6 +738,8 @@ export function Feed() {
         {!loading && !error && (mode === 'cites' || mode === 'citedBy') && papers.length > 0 && (
           (() => {
             const hitCap = relatedLimit >= 200;
+            // En "cites" el máximo real es el tamaño del array referencedWorks.
+            // Si ya mostramos todas, no tiene sentido ofrecer cargar más.
             const citesExhausted =
               mode === 'cites' && referencePaper && papers.length >= referencePaper.referencedWorks.length;
             const canLoad = papers.length >= relatedLimit && !hitCap && !citesExhausted;
@@ -582,6 +781,10 @@ function CargarMas({
   endText: string;
 }) {
   if (canLoad) {
+    // Sin divider — el botón solo alcanza para señalar "hay más abajo".
+    // El divider/border aparece únicamente cuando realmente llegamos al
+    // fondo, para que se lea como un cierre visual y no como decoración
+    // repetida. Tampoco icono: el label solo ya dice todo.
     return (
       <div style={{ marginTop: 28, textAlign: 'center' }}>
         <button
@@ -622,6 +825,17 @@ function CargarMas({
  * que tiene que leerse rápido sin pelearse con el título.
  */
 function ViewToggle({ view, onChange }: { view: ViewMode; onChange: (v: ViewMode) => void }) {
+  // Decisión de diseño : sólo el botón activo muestra texto.
+  // El inactivo colapsa a ícono-only para ahorrar espacio horizontal y que
+  // "N papers · Xd" quepa en una línea dentro del section-head sticky en
+  // tablet/mobile. usuario lo pidió explícitamente porque el conteo se
+  // estaba partiendo a dos líneas cuando ambos botones mostraban texto.
+  //
+  // El label va dentro de un <span className="label"> para que el CSS lo
+  // oculte selectivamente con transición suave (max-width 0 → auto no
+  // anima, pero sí con valor fijo). Mantenemos el aria-label en el botón
+  // así los screen readers siguen anunciando "Lista" / "Tarjetas" aunque
+  // visualmente sólo se vea el ícono en el estado inactivo.
   return (
     <div className="pv-view-group" role="group" aria-label="Vista del feed">
       <button
@@ -629,33 +843,122 @@ function ViewToggle({ view, onChange }: { view: ViewMode; onChange: (v: ViewMode
         className={view === 'list' ? 'on' : ''}
         onClick={() => onChange('list')}
         aria-pressed={view === 'list'}
+        aria-label="Vista de lista"
         title="Vista de lista"
       >
         <Icon name="list" size={14} />
-        Lista
+        <span className="label">Lista</span>
       </button>
       <button
         type="button"
         className={view === 'cards' ? 'on' : ''}
         onClick={() => onChange('cards')}
         aria-pressed={view === 'cards'}
+        aria-label="Vista de tarjetas"
         title="Vista de tarjetas"
       >
         <Icon name="grid" size={14} />
-        Tarjetas
+        <span className="label">Tarjetas</span>
       </button>
     </div>
   );
 }
 
-function LoadingState() {
-  return (
-    <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--fg-3)' }}>
-      <Icon name="loader" size={24} />
-      <div style={{ marginTop: 12, fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
-        Buscando en OpenAlex…
+/**
+ * Skeletons del feed — reemplazan al spinner central (, ).
+ *
+ * Antes mostrábamos un único ícono `loader` centrado con la etiqueta
+ * "Buscando en OpenAlex…". Problemas que reportó el QA:
+ * · El salto de spinner a grilla era brusco — cambio total de layout
+ * cuando llegaban los resultados.
+ * · En redes lentas el usuario no tiene feedback de qué aspecto va a
+ * tener la página, sólo un "algo está pasando".
+ * · El spinner central se sentía genérico, no propio del proyecto.
+ *
+ * Ahora renderizamos N cards placeholder con la misma shape que PaperCard /
+ * PaperCardTile. El layout real ya está armado cuando llegan los datos, así
+ * que el swap se siente continuo — sólo se pintan los bloques con datos
+ * reales encima del armazón que ya ocupa el espacio.
+ *
+ * Sin animación shimmer: los toggles/estados en Paperverse son instant-snap
+ * (ver memory/feedback_toggle_animations.md), y un shimmer barriendo sería
+ * ruido extra de movimiento. Basta con el contraste sutil del fill sobre
+ * el fondo crema para indicar "aquí viene algo".
+ */
+function LoadingState({ view }: { view: ViewMode }) {
+  if (view === 'cards') {
+    return (
+      <div className="feed-tiles" aria-busy="true" aria-label="Cargando resultados">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <SkeletonTile key={i} />
+        ))}
       </div>
+    );
+  }
+  return (
+    <div className="feed-list" aria-busy="true" aria-label="Cargando resultados">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <SkeletonRow key={i} />
+      ))}
     </div>
+  );
+}
+
+/** Placeholder para la vista "lista" — matchea la geometría de PaperCard:
+ * thumb 112×112 a la izquierda, body (eyebrow + title + lede), actions a
+ * la derecha. Todos los "slots" de texto son <div> con un fill sutil. */
+function SkeletonRow() {
+  const line: CSSProperties = {
+    background: 'var(--bg-sunken)',
+    borderRadius: 2,
+  };
+  return (
+    <article className="paper-card" aria-hidden="true" style={{ pointerEvents: 'none' }}>
+      <div className="thumb" style={{ background: 'var(--bg-sunken)' }} />
+      <div className="paper-body">
+        <div style={{ ...line, height: 10, width: '45%', marginBottom: 12 }} />
+        <div style={{ ...line, height: 18, width: '85%', marginBottom: 8 }} />
+        <div style={{ ...line, height: 18, width: '60%', marginBottom: 14 }} />
+        <div style={{ ...line, height: 12, width: '90%', marginBottom: 6 }} />
+        <div style={{ ...line, height: 12, width: '70%' }} />
+      </div>
+      <div className="actions-col">
+        <div style={{ ...line, height: 36, width: 48 }} />
+      </div>
+    </article>
+  );
+}
+
+/** Placeholder para la vista "tarjetas" — PaperCardTile es más compacto:
+ * thumb cuadrada arriba + 2 líneas de texto abajo. */
+function SkeletonTile() {
+  const line: CSSProperties = {
+    background: 'var(--bg-sunken)',
+    borderRadius: 2,
+  };
+  return (
+    <article
+      aria-hidden="true"
+      style={{
+        border: '2px solid var(--border-2)',
+        background: 'var(--bg-surface)',
+        pointerEvents: 'none',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      <div
+        style={{
+          aspectRatio: '1 / 1',
+          background: 'var(--bg-sunken)',
+        }}
+      />
+      <div style={{ padding: 14 }}>
+        <div style={{ ...line, height: 10, width: '50%', marginBottom: 10 }} />
+        <div style={{ ...line, height: 16, width: '90%', marginBottom: 6 }} />
+        <div style={{ ...line, height: 16, width: '70%' }} />
+      </div>
+    </article>
   );
 }
 

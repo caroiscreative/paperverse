@@ -1,58 +1,84 @@
+/* ==========================================================================
+   Paperverse — Colors & Type
+   La ciencia real, para curiosos reales.
+   ========================================================================== */
+
+/* Fonts via Google Fonts — flagged as substitutions pending real font files.
+   - Instrument Serif → editorial display (serif with real personality)
+   - Inter → workhorse sans for UI + body
+   - JetBrains Mono → technical accent (DOIs, citations, numbers)
+   ========================================================================== */
 @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
+  /* ---------- Brand core ---------- */
+  /* A saturated, Kurzgesagt-adjacent multi-color palette on a warm cream base.
+     Hero accent = Cobalto, a deep, scientific blue. */
+  --pv-cream: #FAF5EC; /* app canvas — warm paper, Claude-like softness */
+  --pv-cream-soft: #FDFAF2; /* raised surfaces — almost white-cream */
+  --pv-cream-deep: #F2EADB; /* sunken / dividers — gentle warmth */
+  --pv-ink: #0E1116; /* primary text — near-black with blue undertone */
+  --pv-ink-soft: #2A2F3A; /* secondary text */
+  --pv-ink-mute: #5A6170; /* tertiary text / meta */
+  /* subí pv-ink-faint de #8A91A0 a #686E7C para cumplir
+     WCAG AA en modo claro. Valores y justificación:
+       · Antes: #8A91A0 sobre --pv-cream (#FAF5EC) → ~2.91:1 (FALLA AA)
+         afectaba labels de 10-11px mono uppercase del sidebar ("Tus temas",
+         "Período", counts), meta-row del PaperDetail ("Paperverse label",
+         "Creado por", "Tema"), placeholder de búsqueda, byline separator,
+         y el label "Citado" de la PaperCard. Texto chiquito + mayúsculas
+         mono = legibilidad crítica, justo donde más duele fallar contraste.
+       · Ahora: #686E7C sobre cream → ~4.78:1 (AA comfortable)
+     Chequeo de jerarquía contra fg-3 (#5A6170 → 5.92:1): la distancia entre
+     fg-3 y fg-4 se achica de ~3 puntos de ratio a ~1.1, pero se mantiene
+     discernible (fg-4 sigue visiblemente más apagado que fg-3 y el fondo
+     cream los separa bien). El dark mode ya cumplía AA vía esta
+     fix sólo toca el token del modo claro. */
+  --pv-ink-faint: #686E7C; /* tertiary meta — WCAG AA on cream (4.78:1) */
 
+  /* Dark mode canvas (cosmic night) */
+  --pv-night: #0B1020; /* deep space */
+  --pv-night-soft: #141A2E; /* raised surfaces on night */
+  --pv-night-deep: #070B18; /* sunken */
 
-  --pv-cream:         #FAF5EC;
-  --pv-cream-soft:    #FDFAF2;
-  --pv-cream-deep:    #F2EADB;
-  --pv-ink:           #0E1116;
-  --pv-ink-soft:      #2A2F3A;
-  --pv-ink-mute:      #5A6170;
-  --pv-ink-faint:     #8A91A0;
+  /* ---------- Signal colors (topic + semantic) ---------- */
+  /* Each topic gets a saturated hue. Used as chip fills, illustration accents,
+     and paper-card left indicators. NEVER use all at once on one screen. */
+  --pv-cobalto: #2E4BE0; /* IA / Tech — hero accent */
+  --pv-cobalto-deep: #1E34B0;
+  --pv-cobalto-soft: #E0E6FF;
 
+  --pv-magma: #F2542D; /* Física / Energía */
+  --pv-magma-deep: #C73F1D;
+  --pv-magma-soft: #FDE4DA;
 
-  --pv-night:         #0B1020;
-  --pv-night-soft:    #141A2E;
-  --pv-night-deep:    #070B18;
+  --pv-sol: #F5B638; /* Espacio / Astronomía */
+  --pv-sol-deep: #C48A1A;
+  --pv-sol-soft: #FDEEC8;
 
-
-
-  --pv-cobalto:       #2E4BE0;
-  --pv-cobalto-deep:  #1E34B0;
-  --pv-cobalto-soft:  #E0E6FF;
-
-  --pv-magma:         #F2542D;
-  --pv-magma-deep:    #C73F1D;
-  --pv-magma-soft:    #FDE4DA;
-
-  --pv-sol:           #F5B638;
-  --pv-sol-deep:      #C48A1A;
-  --pv-sol-soft:      #FDEEC8;
-
-  --pv-clorofila:     #2E8B57;
+  --pv-clorofila: #2E8B57; /* Biología / Ecología */
   --pv-clorofila-deep:#1F6B3F;
   --pv-clorofila-soft:#D6EEDE;
 
-  --pv-sinapsis:      #8B4FE0;
+  --pv-sinapsis: #8B4FE0; /* Neurociencia / Psicología */
   --pv-sinapsis-deep: #6A2FC0;
   --pv-sinapsis-soft: #E8DCF9;
 
-  --pv-oceano:        #1BA5B8;
-  --pv-oceano-deep:   #0F7E8E;
-  --pv-oceano-soft:   #CDEEF2;
+  --pv-oceano: #1BA5B8; /* Clima / Oceanografía */
+  --pv-oceano-deep: #0F7E8E;
+  --pv-oceano-soft: #CDEEF2;
 
-  --pv-rosa:          #E03E8C;
-  --pv-rosa-deep:     #B32168;
-  --pv-rosa-soft:     #FADCEA;
+  --pv-rosa: #E03E8C; /* Medicina / Salud */
+  --pv-rosa-deep: #B32168;
+  --pv-rosa-soft: #FADCEA;
 
+  /* ---------- Semantic ---------- */
+  --pv-success: var(--pv-clorofila);
+  --pv-warning: var(--pv-sol);
+  --pv-danger: var(--pv-magma);
+  --pv-info: var(--pv-cobalto);
 
-  --pv-success:       var(--pv-clorofila);
-  --pv-warning:       var(--pv-sol);
-  --pv-danger:        var(--pv-magma);
-  --pv-info:          var(--pv-cobalto);
-
-
+  /* ---------- Foreground / Background tokens ---------- */
   --fg-1: var(--pv-ink);
   --fg-2: var(--pv-ink-soft);
   --fg-3: var(--pv-ink-mute);
@@ -65,47 +91,48 @@
   --bg-sunken: var(--pv-cream-deep);
   --bg-inverse: var(--pv-ink);
 
-  --border-1: rgba(14, 17, 22, 0.08);
-  --border-2: rgba(14, 17, 22, 0.14);
-  --border-3: rgba(14, 17, 22, 0.24);
-  --border-ink: var(--pv-ink);
+  --border-1: rgba(14, 17, 22, 0.08); /* hairline */
+  --border-2: rgba(14, 17, 22, 0.14); /* card edge */
+  --border-3: rgba(14, 17, 22, 0.24); /* strong */
+  --border-ink: var(--pv-ink); /* 1.5px ink — signature treatment */
 
-
+  /* ---------- Type system ---------- */
   --font-display: 'Instrument Serif', 'Iowan Old Style', Georgia, serif;
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 
-
-  --text-display-xl: 88px;
+  /* Display scale (serif) — for hero headlines, paper titles on detail pages.
+     Instrument Serif wants to be LARGE (72px+). Don't shrink it below 32. */
+  --text-display-xl: 88px; /* hero / splash */
   --text-display-lg: 64px;
   --text-display-md: 48px;
   --text-display-sm: 36px;
 
-
+  /* UI scale (sans) */
   --text-h1: 32px;
   --text-h2: 24px;
   --text-h3: 20px;
   --text-h4: 17px;
-  --text-body-lg: 17px;
-  --text-body: 15px;
-  --text-body-sm: 13px;
+  --text-body-lg: 17px; /* reading body */
+  --text-body: 15px; /* default UI */
+  --text-body-sm: 13px; /* meta */
   --text-caption: 12px;
-  --text-overline: 11px;
+  --text-overline: 11px; /* uppercase labels */
 
-
-  --lh-tight: 1.05;
+  /* Line heights */
+  --lh-tight: 1.05; /* serif display */
   --lh-snug: 1.2;
   --lh-normal: 1.5;
-  --lh-loose: 1.65;
+  --lh-loose: 1.65; /* long reading */
 
-
+  /* Letter spacing */
   --ls-tight: -0.02em;
   --ls-snug: -0.01em;
   --ls-normal: 0;
   --ls-wide: 0.04em;
   --ls-overline: 0.12em;
 
-
+  /* ---------- Spacing (4-based) ---------- */
   --space-0: 0;
   --space-1: 4px;
   --space-2: 8px;
@@ -120,26 +147,26 @@
   --space-20: 80px;
   --space-24: 96px;
 
-
+  /* ---------- Radii ---------- */
   --radius-xs: 4px;
   --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 18px;
-  --radius-xl: 28px;
-  --radius-pill: 999px;
+  --radius-md: 12px; /* most cards */
+  --radius-lg: 18px; /* hero cards */
+  --radius-xl: 28px; /* modal / bottom sheet */
+  --radius-pill: 999px; /* chips */
 
-
-
+  /* ---------- Shadows ---------- */
+  /* Shadows are TINTED with ink blue, never pure black. Soft & low. */
   --shadow-xs: 0 1px 2px rgba(14, 17, 22, 0.05);
   --shadow-sm: 0 2px 6px rgba(14, 17, 22, 0.06), 0 1px 2px rgba(14, 17, 22, 0.04);
   --shadow-md: 0 8px 20px rgba(14, 17, 22, 0.08), 0 2px 6px rgba(14, 17, 22, 0.05);
   --shadow-lg: 0 24px 48px rgba(14, 17, 22, 0.12), 0 4px 12px rgba(14, 17, 22, 0.06);
   --shadow-inset: inset 0 1px 2px rgba(14, 17, 22, 0.06);
-
+  /* Ink border shadow — our signature "drawn" look */
   --shadow-ink: 3px 3px 0 var(--pv-ink);
   --shadow-ink-sm: 2px 2px 0 var(--pv-ink);
 
-
+  /* ---------- Motion ---------- */
   --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
   --ease-in-out: cubic-bezier(0.65, 0.05, 0.35, 1);
   --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -149,11 +176,27 @@
   --dur-sheet: 420ms;
 }
 
+/* ==========================================================================
+   Dark mode (cosmic night) — used on Sorpréndeme, splash, marketing hero
+   ========================================================================== */
 .pv-dark {
   --fg-1: #F4F1E8;
   --fg-2: #C7C2B0;
-  --fg-3: #8C8878;
-  --fg-4: #5F5C52;
+  /* subí fg-3 y fg-4 para cumplir WCAG AA sobre
+     --bg-canvas (#0B1020). Valores previos:
+       · fg-3 = #8C8878 → 5.2:1 (AA mínimo, pero labels de 10-11px mono
+         sobre el bar sticky se sentían débiles)
+       · fg-4 = #5F5C52 → 2.8:1 (FALLA AA, afectaba labels del meta-row,
+         counts, "hace 3 días", bylines en mono)
+     Nuevos:
+       · fg-3 = #9C9786 → 6.3:1 (AAA)
+       · fg-4 = #8C8878 → 5.2:1 (AA)
+     Efectivamente promoví el fg-3 viejo a fg-4 y aclare fg-3. Se mantiene
+     la jerarquía (fg-3 más claro que fg-4) pero ahora el valor mínimo
+     cumple AA para body text, y el metadata secundario sigue siendo
+     legible sin sentirse "apagado" sobre el fondo azul profundo. */
+  --fg-3: #9C9786;
+  --fg-4: #8C8878;
   --fg-inverse: var(--pv-ink);
 
   --bg-canvas: var(--pv-night);
@@ -169,23 +212,27 @@
   --shadow-ink: 3px 3px 0 #000;
   --shadow-ink-sm: 2px 2px 0 #000;
 
-
-  --pv-cobalto:       #6D8AFF;
-  --pv-cobalto-soft:  #1A2250;
-  --pv-magma:         #FF8360;
-  --pv-magma-soft:    #3A1A12;
-  --pv-sol:           #FFD066;
-  --pv-sol-soft:      #3A2810;
-  --pv-clorofila:     #5FC88A;
+  /* Dark-mode topic hues — brightened for contrast on cosmic night.
+     Soft tints become low-chroma deep tints (chip backgrounds on dark). */
+  --pv-cobalto: #6D8AFF;
+  --pv-cobalto-soft: #1A2250;
+  --pv-magma: #FF8360;
+  --pv-magma-soft: #3A1A12;
+  --pv-sol: #FFD066;
+  --pv-sol-soft: #3A2810;
+  --pv-clorofila: #5FC88A;
   --pv-clorofila-soft:#12341F;
-  --pv-sinapsis:      #B68CFF;
+  --pv-sinapsis: #B68CFF;
   --pv-sinapsis-soft: #2A1548;
-  --pv-oceano:        #5DD6E4;
-  --pv-oceano-soft:   #0E3338;
-  --pv-rosa:          #FF7AB4;
-  --pv-rosa-soft:     #3A112A;
+  --pv-oceano: #5DD6E4;
+  --pv-oceano-soft: #0E3338;
+  --pv-rosa: #FF7AB4;
+  --pv-rosa-soft: #3A112A;
 }
 
+/* ==========================================================================
+   Semantic element styles — drop into a page to get defaults
+   ========================================================================== */
 .pv {
   font-family: var(--font-sans);
   font-size: var(--text-body);
@@ -285,6 +332,7 @@
   letter-spacing: -0.01em;
 }
 
+/* Italic script accent — use SPARINGLY for pull-quotes and callouts */
 .pv .script {
   font-family: var(--font-display);
   font-style: italic;
@@ -292,6 +340,9 @@
   color: var(--fg-accent);
 }
 
+/* ==========================================================================
+   Utility: grain overlay — use on cream backgrounds for paper texture
+   ========================================================================== */
 .pv-grain {
   position: relative;
 }

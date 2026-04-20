@@ -1,3 +1,7 @@
+// Animated cosmic banner used on the hero card. Reads a topic color and
+// paints orbits + a wobbling planet on a deep-space gradient.
+// Adapted from Paperverse Design System/ui_kits/web/Shell.jsx.
+
 interface Props {
   color: string;
 }

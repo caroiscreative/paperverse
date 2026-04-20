@@ -1,3 +1,10 @@
+// Compact "próximos temas" preview card used on PaperDetail.
+//
+// Extracted from PaperDetail so it can call useTranslated() — each card needs
+// its own hook instance since paperId varies per row. Mirrors the inline
+// article the page rendered before, but swaps paper.title for the Spanish
+// editorial title.
+
 import type { Paper } from '../lib/openalex';
 import type { Topic } from '../lib/topics';
 import { useTranslated } from '../lib/translate';

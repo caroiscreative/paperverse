@@ -1,3 +1,20 @@
+// Country flags via flagcdn.com — free CDN that serves ISO-3166 flags as SVG
+// at every possible ISO code. Replaces the hand-drawn set from before, which
+// only covered ~30 countries and fell through to an ugly ink-square-with-
+// letters for everything else (usuario flagged this: papers from Morocco,
+// Iran, Peru, Vietnam, etc. showed "MA", "IR", "PE", "VN" instead of a
+// flag). flagcdn.com covers every country OpenAlex ever returns.
+//
+// Fallback chain: if the image fails to load (offline, CDN blocked, or an
+// invalid ISO code slips through), we render the ink-square-with-letters so
+// the user at least sees *something* that identifies the country. The cream
+// placeholder (no code at all) preserves the original bug-avoidance behavior:
+// never render an invisible cream square on a cream card.
+//
+// Size: fixed 16×11 container with object-fit: cover so every flag occupies
+// the same footprint in the byline/meta row regardless of its native aspect
+// ratio (most flags are 3:2 or 2:1 — cover crops a sliver, never distorts).
+
 import { useState, type CSSProperties } from 'react';
 
 const DISPLAY_W = 16;
@@ -82,6 +99,7 @@ function Fallback({ code, title }: { code?: string; title?: string }) {
     );
   }
 
+  // No code at all: cream placeholder with a dash.
   return (
     <svg {...common} aria-label={title}>
       <rect width="16" height="11" fill="#D8D0BE" />

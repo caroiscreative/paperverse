@@ -12,14 +12,48 @@
     <link rel="preconnect" href="https://api.openalex.org" />
     <link rel="preconnect" href="https://flagcdn.com" crossorigin />
 
-    
+    <!-- DS2 topic animation styles (keyframes + .ta-stage sizing). The matching
+         IIFE that defines window.mountTopicAnim is loaded below, before the app
+         bundle, so components can call it inside useEffect. -->
     <link rel="stylesheet" href="/topic-anim.css" />
 
     <title>Paperverse — La ciencia real, para curiosos reales</title>
+
+    <!--
+      Bootstrap del tema . Corre ANTES de que React
+      monte para evitar FOUC (flash of light content): si el usuario tenía
+      modo oscuro guardado, al recargar la página durante un segundo se veía
+      el canvas crema antes de que el useEffect de useTheme aplicara la
+      clase `pv-dark` a <html>. Ese flash se sentía roto, sobre todo de
+      noche.
+
+      Script inline, síncrono, blocking. Corre antes del bundle, lee
+      `pv_theme_v1` de localStorage y aplica la clase. Si el storage está
+      bloqueado (incógnito estricto o permisos restringidos), cae al
+      default claro sin romper. Mantenemos la clave de storage
+      ("pv_theme_v1") en sync con lib/theme.ts — si ese archivo cambia la
+      key, hay que acordarse de actualizar este script también.
+
+      Por qué inline en vez de un src externo: un <script src> agregaría
+      un round-trip de red antes del primer render. Este bloque es de
+      unas pocas líneas y corre en microsegundos, no vale la pena
+      optimizarlo como archivo separado.
+    -->
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem('pv_theme_v1');
+          if (t === 'dark') document.documentElement.classList.add('pv-dark');
+        } catch (_) {
+          /* storage bloqueado — no tema oscuro forzado, default light */
+        }
+      })();
+    </script>
   </head>
   <body class="pv">
     <div id="root"></div>
-    
+    <!-- Vanilla IIFE — must run before main.tsx so window.mountTopicAnim is
+         defined by the time React mounts the hero. -->
     <script src="/topic-anim.js"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>

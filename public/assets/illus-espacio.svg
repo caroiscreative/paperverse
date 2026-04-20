@@ -1,18 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300" role="img" aria-label="Planet with orbits">
-  <rect width="300" height="300" fill="#0B1020"></rect>
-  <g stroke="#F5B638" stroke-width="1" fill="none" opacity="0.25">
+  <rect width="300" height="300" fill="#FDEEC8"></rect>
+  <g stroke="#C48A1A" stroke-width="1.2" fill="none" opacity="0.45">
     <circle cx="150" cy="150" r="110"></circle>
     <circle cx="150" cy="150" r="82"></circle>
     <circle cx="150" cy="150" r="58"></circle>
   </g>
-  <g fill="#F4EEE1">
-    <circle cx="40" cy="50" r="1.5"></circle>
-    <circle cx="265" cy="65" r="1.8"></circle>
-    <circle cx="50" cy="250" r="1.5"></circle>
-    <circle cx="260" cy="245" r="2"></circle>
-    <circle cx="220" cy="35" r="1"></circle>
+  <g fill="#C48A1A" opacity="0.55">
+    <circle cx="40" cy="50" r="1.8"></circle>
+    <circle cx="265" cy="65" r="2"></circle>
+    <circle cx="50" cy="250" r="1.8"></circle>
+    <circle cx="260" cy="245" r="2.2"></circle>
+    <circle cx="220" cy="35" r="1.4"></circle>
   </g>
-  <circle cx="150" cy="150" r="38" fill="#F5B638"></circle>
+  <circle cx="150" cy="150" r="38" fill="#F5B638" stroke="#C48A1A" stroke-width="1.5"></circle>
   <path d="M114 150 Q150 118 186 150 Q150 182 114 150 Z" fill="#F2542D" opacity="0.7"></path>
-  <ellipse cx="150" cy="150" rx="80" ry="16" fill="none" stroke="#F4EEE1" stroke-width="2" opacity="0.85" transform="rotate(-18 150 150)"></ellipse>
+  <ellipse cx="150" cy="150" rx="80" ry="16" fill="none" stroke="#C48A1A" stroke-width="2.2" opacity="0.9" transform="rotate(-18 150 150)"></ellipse>
 </svg>

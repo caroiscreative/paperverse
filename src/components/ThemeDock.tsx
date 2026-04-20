@@ -1,32 +1,33 @@
-import { useEffect, useRef, useState } from 'react';
+// Floating theme dock — small vertical pill anchored to the middle-left edge
+// of the viewport. Contiene dos cosas:
+// · Toggle claro/oscuro (sol/luna)
+// · Atajo al Manifiesto (ícono de papel)
+//
+// Por qué acá y no en el Header: el Header ya compite por atención entre
+// Feed / Biblioteca / Buscar. Meter el tema acá deja esa barra limpia y
+// agrupa las "preferencias de lectura" (cómo se ve, atajo al texto editorial)
+// en un mismo dock persistente, visible desde cualquier página.
+//
+// Nota histórica: antes este dock tenía un selector de 15 idiomas. Lo quitamos
+// porque Paperverse quedó definido como single-language (español neutro LATAM)
+// — el multi-idioma agregaba complejidad (cache por idioma, prompts por idioma,
+// rate limits multiplicados) sin un caso de uso real para usuario, que lee
+// en español.
+//
+// Y antes del file-text había un botón de refresh para forzar re-traducir
+// títulos cuando Pollinations se colgaba. Lo sacamos porque (a) la cache se
+// auto-recupera al recargar la página y (b) el dock necesitaba un atajo al
+// Manifiesto: ese link estaba en el sidebar del Feed, pero ahí solo se veía
+// desde una página. Acá es global.
+
+import { Link, useLocation } from 'react-router-dom';
 import { Icon } from './Icon';
 import { useTheme } from '../lib/theme';
-import { LANGS, useLang } from '../lib/lang';
-import { clearTranslationCache } from '../lib/translate';
 
 export function ThemeDock() {
   const { theme, setTheme } = useTheme();
-  const { lang, def, setLang, refresh } = useLang();
-  const [langOpen, setLangOpen] = useState(false);
-  const popRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (!langOpen) return;
-    const onDocClick = (e: MouseEvent) => {
-      if (popRef.current && !popRef.current.contains(e.target as Node)) {
-        setLangOpen(false);
-      }
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setLangOpen(false);
-    };
-    document.addEventListener('mousedown', onDocClick);
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('mousedown', onDocClick);
-      document.removeEventListener('keydown', onKey);
-    };
-  }, [langOpen]);
+  const location = useLocation();
+  const onManifiesto = location.pathname === '/manifiesto';
 
   return (
     <div className="pv-theme-dock" role="group" aria-label="Preferencias de lectura">
@@ -51,119 +52,18 @@ export function ThemeDock() {
         <Icon name="moon" size={16} />
       </button>
 
-      {}
-
-      <div ref={popRef} style={{ position: 'relative' }}>
-        <button
-          type="button"
-          className={`pv-theme-dock-btn${langOpen ? ' on' : ''}`}
-          onClick={() => setLangOpen(v => !v)}
-          aria-haspopup="listbox"
-          aria-expanded={langOpen}
-          aria-label={`Idioma: ${def.label}`}
-          title={`Idioma: ${def.label}`}
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 10.5,
-            letterSpacing: '0.08em',
-            fontWeight: 600,
-            borderTop: '1px solid var(--border-1)',
-          }}
-        >
-          {def.short}
-        </button>
-
-        {langOpen && (
-          <div
-            role="listbox"
-            aria-label="Seleccionar idioma"
-            style={{
-              position: 'absolute',
-              left: 'calc(100% + 10px)',
-              top: 0,
-              width: 200,
-              maxHeight: 340,
-              overflowY: 'auto',
-              background: 'var(--bg-1)',
-              border: '1px solid var(--border-1)',
-              borderRadius: 10,
-              boxShadow: '0 8px 24px -12px rgba(0,0,0,0.28)',
-              padding: 6,
-              zIndex: 50,
-            }}
-          >
-            <div
-              style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: 10,
-                letterSpacing: '0.14em',
-                textTransform: 'uppercase',
-                color: 'var(--fg-4)',
-                padding: '8px 10px 4px',
-              }}
-            >
-              Idioma · traducción IA
-            </div>
-            {LANGS.map(l => {
-              const active = l.id === lang;
-              return (
-                <button
-                  key={l.id}
-                  type="button"
-                  role="option"
-                  aria-selected={active}
-                  onClick={() => {
-                    setLang(l.id);
-                    setLangOpen(false);
-                  }}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    width: '100%',
-                    padding: '8px 10px',
-                    border: 0,
-                    borderRadius: 6,
-                    background: active ? 'var(--bg-2)' : 'transparent',
-                    color: active ? 'var(--fg-1)' : 'var(--fg-2)',
-                    cursor: 'pointer',
-                    fontSize: 13,
-                    fontFamily: 'var(--font-sans)',
-                    textAlign: 'left',
-                  }}
-                >
-                  <span>{l.label}</span>
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: 10,
-                      letterSpacing: '0.1em',
-                      color: 'var(--fg-4)',
-                    }}
-                  >
-                    {l.short}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      {}
-      <button
-        type="button"
-        className="pv-theme-dock-btn"
-        onClick={() => {
-          clearTranslationCache();
-          refresh();
-        }}
-        aria-label="Recargar traducciones"
-        title="Recargar traducciones"
-        style={{ borderTop: '1px solid var(--border-1)' }}
+      {/* Manifiesto — atajo persistente al texto editorial. Va en el mismo
+          stack que los toggles de tema, sin separador: el dock es chiquito y
+          una línea extra fragmentaba más de lo que ayudaba. El icono
+          (papel vs sol/luna) ya hace evidente que es otra cosa. */}
+      <Link
+        to="/manifiesto"
+        className={`pv-theme-dock-btn${onManifiesto ? ' on' : ''}`}
+        aria-label="Manifiesto"
+        title="Manifiesto"
       >
-        <Icon name="refresh" size={14} />
-      </button>
+        <Icon name="file-text" size={14} />
+      </Link>
     </div>
   );
 }

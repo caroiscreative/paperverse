@@ -3,9 +3,9 @@
  * word → [positions where that word appears].
  *
  * Example:
- *   { "Hello": [0], "world": [1, 4], "great": [2], "amazing": [3] }
+ * { "Hello": [0], "world": [1, 4], "great": [2], "amazing": [3] }
  * reconstructs to:
- *   "Hello world great amazing world"
+ * "Hello world great amazing world"
  *
  * This is cheap to re-hydrate (O(total words)) and surprisingly robust.
  * Reference: https://docs.openalex.org/api-entities/works/work-object#abstract_inverted_index

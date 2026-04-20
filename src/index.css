@@ -1,29 +1,246 @@
+/* Design-system tokens + kit, both live in /public so they are served as static
+   files during dev and copied on build. The CSS variables in colors_and_type.css
+   are the source of truth; kit.css layers on the components. */
+
 @import url('/colors_and_type.css');
 @import url('/kit.css');
 
+/* App-level tweaks on top of the kit. */
 html, body, #root { height: 100%; }
+/* Red de seguridad contra overflow horizontal: si algún descendiente empuja
+   accidentalmente el ancho de la página (un margin negativo, una imagen
+   sin max-width, un carrusel mal contenido), queremos que el overflow se
+   coma silenciosamente en lugar de activar el scroll horizontal del
+   documento y mandar elementos del header (tipo la lupa en mobile) fuera
+   del viewport. Se aplica solo a body — NO al html, porque overflow en
+   html puede romper position:sticky en algunos browsers. */
+body { overflow-x: hidden; }
 *, *::before, *::after { box-sizing: border-box; }
 
 a { color: inherit; text-decoration: none; }
 button { font: inherit; }
 
+/* Focus visible accesible global (WCAG 2.4.7).
+   Antes teníamos focus-visible sólo en dos lugares: el toggle del
+   PaperDetail (ring cobalto inset) y los inputs (.inp). Todo el resto
+   — enlaces, botones custom como .pv-bookmark / .pv-read / .pv-window-group,
+   chips, topic-chip, etc. — heredaba el default del browser, que en
+   Chrome es un ring azul pero en Safari se pierde y en algunas combos
+   de CSS queda tapado por el contenido adyacente. Resultado: un usuario
+   tab-navigating se perdía en la interfaz.
+
+   Esta regla aplica un fallback universal: cualquier elemento focuseable
+   por teclado (:focus-visible dispara sólo en nav por teclado o programática,
+   NO en click — eso es la diferencia con :focus) que no tenga una regla
+   más específica, recibe un anillo cobalto de 2px con offset de 2px. El
+   offset evita que el ring se pise con el borde ink de cards/buttons y
+   que recorte por overflow:hidden en contenedores chicos.
+
+   Las reglas específicas existentes (`.detail-wrap .toggle button:focus-visible`
+   con box-shadow inset, `.inp:focus` con border + shadow) siguen ganando
+   porque son más específicas que `:focus-visible` a secas — son su propio
+   lenguaje dentro del componente y se mantienen. Esta regla es el piso
+   de accesibilidad, no el techo.
+
+   Por qué `outline` y no `box-shadow`:
+   · outline no consume espacio del layout (vive en su propia capa) — el
+     ring aparece sin empujar vecinos.
+   · desde Chrome 94+ / FF 88+ / Safari 15.4+, outline sigue el
+     `border-radius` del elemento, así que chips redondeados reciben un
+     ring también redondeado sin config extra.
+   · box-shadow acepta `inset` pero compite con las box-shadows del
+     componente (hover glows, etc.); mantenerlo separado simplifica. */
+:focus-visible {
+  outline: 2px solid var(--pv-cobalto);
+  outline-offset: 2px;
+}
+/* Defensivo: reseteamos el outline default de browser en :focus NO-visible
+   (o sea, click con mouse). Sin esto, Chrome sigue pintando un ring azul
+   en algunos botones cuando los clickeás — es ruido visual porque el
+   usuario ya sabe dónde hizo click. Sólo queremos el ring cuando navega
+   por teclado, que es cuando :focus-visible sí dispara. */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Utility para ocultar texto visualmente pero mantenerlo accesible a screen
+   readers y al outline semántico (H1, labels implícitos, etc.). Lo usamos
+   principalmente para (jerarquía de headings): el Feed necesita un
+   <h1> que comunique el contexto de la vista — "Feed de papers",
+   "Resultados para 'quantum'" — sin introducir un encabezado visible que
+   duplique el H2 que ya funciona como header visual ("20 papers · últimos
+   5 años"). Esto arregla el "skip from H2" que marcaba el audit y deja la
+   vista navegable correctamente con screen readers.
+
+   Receta estándar (recomendada por WebAIM y WCAG Techniques) — mejor que
+   `display: none` (que saca del outline) o `visibility: hidden` (que deja
+   reservar espacio). No usamos `clip` deprecado; `clip-path: inset(50%)`
+   es la alternativa moderna. */
+.pv-sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* Promovemos "Mi biblioteca" a <h1> por jerarquía .
+   kit.css ya estilea `.section-head h2` como un "eyebrow" mono uppercase
+   de 10.5px. Al cambiar la etiqueta semántica a h1, necesitamos replicar
+   el mismo look para que el eyebrow siga siendo visualmente consistente
+   con los h2 "Para leer" y "Archivo · ya leídos" que conviven en la misma
+   página. Lo mismo aplica al Feed: cuando el estado es "Feed de papers"
+   podemos usar un h1 visible y el resto de los encabezados siguen siendo
+   h2. Este override duplica las propiedades del selector base del kit
+   porque queremos un único punto de cambio si algún día movemos la regla. */
+.section-head h1 {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Toast de feedback — confirma visualmente acciones
+   tipo "guardar paper" o "marcar como leído". Posición fixed al pie del
+   viewport, centrado horizontalmente. Sin animación de entrada/salida
+   por decisión de producto (toggles y feedback son instantáneos en
+   Paperverse). El z-index queda por encima del header (50) para que
+   no quede ocluido cuando se dispara desde una vista con header
+   sticky. En mobile subimos un poco el bottom por el padding que se
+   le da al main (80px) y para no competir con el ThemeDock que en
+   algunas vistas está al pie. Paddings/typography replican el estilo
+   editorial de los callouts (mono uppercase para la variante + sans
+   para el mensaje). */
+.pv-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 32px;
+  transform: translateX(-50%);
+  z-index: 100;
+  background: var(--pv-ink);
+  color: var(--pv-cream);
+  padding: 12px 18px;
+  border-radius: 3px;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.3;
+  max-width: calc(100vw - 32px);
+  box-shadow: 0 8px 24px rgba(14, 17, 22, 0.18);
+  pointer-events: none;
+}
+.pv-dark .pv-toast {
+  background: var(--pv-cream);
+  color: var(--pv-ink);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+.pv-toast--error {
+  background: var(--pv-rojo, #F2542D);
+  color: var(--pv-cream);
+}
+.pv-toast--info {
+  background: var(--pv-cobalto, #2E4BE0);
+  color: var(--pv-cream);
+}
+@media (max-width: 639px) {
+  .pv-toast {
+    bottom: 24px;
+    font-size: 13.5px;
+    padding: 11px 16px;
+  }
+}
+
+/* Loader spin — referenced by Icon "loader". */
 @keyframes pv-spin { to { transform: rotate(360deg); } }
 
+/* Caret "tipeando" que aparece al final del texto de Explicámelo mientras el
+   stream SSE sigue llegando. Es un rectángulo delgado en var(--fg-2) que
+   parpadea cada 1.1s — lo suficientemente sutil para no pelear con el texto,
+   lo suficientemente vivo para comunicar "todavía está escribiendo". El
+   display inline-block + vertical-align:-2px lo alinea con la línea base del
+   texto para que no salte en altura cuando aparece el siguiente token.
+   El width 0.55em + margin-left 2px imita el grosor de un cursor de editor. */
+@keyframes pv-caret-blink {
+  0%, 50% { opacity: 1; }
+  50.01%, 100% { opacity: 0; }
+}
+.pv-typing-caret {
+  display: inline-block;
+  width: 0.55em;
+  height: 1em;
+  margin-left: 2px;
+  vertical-align: -2px;
+  background: var(--fg-2);
+  animation: pv-caret-blink 1.1s steps(1, end) infinite;
+}
+
+/* Header — drop the heavy ink line y usamos fondo OPACO (no rgba con alpha).
+   Antes teníamos rgba(250,245,236,0.75) + backdrop-filter blur(12px) para un
+   efecto "glass". Problema (, reportado por usuario): quedaba una
+   línea sutil visible justo encima de la feed-top-bar "20 PAPERS". Causa:
+   la .feed-top-bar::before extiende 12px hacia arriba con bg-canvas OPACO
+   como safety net contra gaps; cuando la barra está sticky, esos 12px
+   opacos viven DEBAJO del header translúcido al 75%. La mezcla de un bloque
+   100% opaco con otro al 75% crea un seam de ~1px donde termina el ::before,
+   que el ojo interpreta como línea. Con el header totalmente opaco (1.0) los
+   dos bloques tienen el mismo alpha y el seam desaparece. El blur ya no hace
+   falta: al 75% las cards por debajo apenas se veían, no era un "glass"
+   convincente de todas formas. */
 .pv-header {
   border-bottom: 0 !important;
-  background: rgba(250, 245, 236, 0.75) !important;
+  background: var(--bg-canvas) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
 }
 .pv-dark .pv-header {
-  background: rgba(11, 16, 32, 0.75) !important;
+  background: var(--bg-canvas) !important;
 }
 .pv-header nav { gap: 6px !important; }
 
+/* Header mobile — layout consistente: logo SIEMPRE pegado al borde
+   izquierdo, tabs (Feed/Biblioteca) SIEMPRE alineadas al borde
+   derecho del cuerpo del header, y la lupa (cuando existe) queda
+   AFUERA de las tabs, en la última esquina. usuario :
+   "[logo ............ Feed Biblioteca (🔍)]" en Feed, "[logo ......
+   Feed Biblioteca]" en otras páginas.
+
+   El kit.css mobile base ya define el grid `auto 1fr auto` con
+   gap 8px. La placement automática asigna brand → col 1, nav →
+   col 2 (1fr), search-icon → col 3. Sin tocar el grid, sólo
+   pisamos el `justify-self` del nav: pasa de `center` a `end`,
+   con lo que se adhiere al borde derecho del 1fr (justo antes de
+   la lupa cuando existe, o en el borde derecho cuando no, porque
+   col 3 tiene width 0 si está vacía). La lupa ya tiene
+   justify-self: end, así que sigue clavada en su esquina. */
+@media (max-width: 639px) {
+  .pv-header nav {
+    justify-self: end !important;
+  }
+}
+
+/* Window presets — segmented button group used in the Estado panel. Square
+   corners + ink border match the rest of the kit. The active preset fills in
+   ink, matching how topic chips treat selection. */
 .pv-window-group {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  /* 6 columnas: Hoy · 7d · 1m · 6m · 1a · 5a. Antes eran 5 (sin 5 años).
+     Al agregar la ventana larga subimos a 6 — los labels son cortos
+     (mono 11px, 2-3 chars cada uno) así que la perilla sigue entrando
+     cómoda incluso en mobile sin hacer overflow horizontal. */
+  grid-template-columns: repeat(6, 1fr);
   gap: 0;
   width: 100%;
-  border: 1px solid var(--pv-ink, #0E1116);
+  /* Stroke 2px — alineado con chips, cards, search, toggles. se pidió consistencia: "todo debería ser consistentemente
+     de 2px en toda la interfaz". Antes era 1px y se sentía más fino que
+     el resto del kit. */
+  border: 2px solid var(--pv-ink, #0E1116);
   background: var(--bg-2, #F4EEDD);
 }
 .pv-window-group button {
@@ -48,15 +265,31 @@ button { font: inherit; }
   color: var(--pv-cream, #FAF5E6);
 }
 
+/* Lado derecho del section-head: count + toggle de vista conviven ahí
+   cuando estamos en el feed. Centra los elementos verticalmente para que
+   el toggle no "suba" sobre el count. */
 .section-head .head-right {
   display: flex;
   align-items: center;
   gap: 14px;
 }
 
+/* View toggle del feed — segmented control chiquito (lista ↔ tarjetas).
+   Mismo lenguaje que pv-window-group pero compacto y con icono + label,
+   así vive cómodo al lado del count en el section-head.
+
+   Patrón adaptativo : el botón ACTIVO muestra ícono + texto.
+   El INACTIVO colapsa a ícono-only para ahorrar ancho — así el conteo
+   "N papers · Xd" del section-head no se parte en dos líneas. Al hacer
+   click, el label del recién activado crece desde 0 (fade + slide), y
+   el del que se desactivó se colapsa. La transición usa max-width + opacity
+   + margin-left sincronizados para que el gap del button (6px) también
+   se disuelva — si no, queda un gap fantasma en el botón inactivo. */
 .pv-view-group {
   display: inline-flex;
-  border: 1px solid var(--pv-ink, #0E1116);
+  /* Stroke 2px — mismo motivo que pv-window-group (consistencia
+     editorial con el resto del kit). */
+  border: 2px solid var(--pv-ink, #0E1116);
   background: var(--bg-2, #F4EEDD);
 }
 .pv-view-group button {
@@ -73,7 +306,8 @@ button { font: inherit; }
   transition: background 120ms ease, color 120ms ease;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  /* gap removido — ahora el espacio entre ícono y label lo controla
+     el propio .label via margin-left, así puede colapsar con el label */
 }
 .pv-view-group button:last-child { border-right: 0; }
 .pv-view-group button:hover:not(.on) {
@@ -83,16 +317,50 @@ button { font: inherit; }
   background: var(--pv-ink, #0E1116);
   color: var(--pv-cream, #FAF5E6);
 }
+/* Label — visible sólo cuando el botón está activo. En el estado inactivo
+   colapsamos max-width a 0 + opacity 0 + margin 0 para que desaparezca
+   por completo (incluido el gap de 6px entre ícono y texto). En el estado
+   activo usamos un max-width generoso (10em cubre "Tarjetas" y cualquier
+   label futuro razonable) y un margin-left:6px para recrear el gap. La
+   transición de 200ms es lo bastante rápida para sentirse responsive
+   pero permite ver el movimiento y entender la relación ícono ↔ label. */
+.pv-view-group button .label {
+  display: inline-block;
+  max-width: 10em;
+  opacity: 1;
+  margin-left: 6px;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: max-width 200ms var(--ease-out, ease),
+              opacity 180ms var(--ease-out, ease),
+              margin-left 200ms var(--ease-out, ease);
+}
+.pv-view-group button:not(.on) .label {
+  max-width: 0;
+  opacity: 0;
+  margin-left: 0;
+}
 
+/* Grilla de tarjetas (feed-tiles) — auto-fit con minmax para que la columna
+   se adapte al ancho del main y no explote si el usuario tiene el sidebar
+   colapsado. Gap 20 iguala al antiguo destacados-grid. */
 .feed-tiles {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 20px;
 }
 
+/* Tile individual — reusa el lenguaje del destacados-tile original pero
+   sin atado al concepto de "destacado por tema". El banner es la señal
+   visual grande; el cuerpo lleva eyebrow + título + byline + acciones. */
 .paper-card-tile {
   background: var(--card);
-  border: 1px solid var(--border-1);
+  /* Stroke 2px para alinearse con .paper-card (del kit) y el resto de
+     elementos que enmarcan contenido. Usamos --border-1 (no --pv-ink)
+     porque el tile es un card secundario/minimal; el peso del color
+     compensa la uniformidad del grosor — 2px ink + 2px border-1 se
+     leen distinto pero igualmente consistentes en escala. */
+  border: 2px solid var(--border-1);
   display: flex;
   flex-direction: column;
   cursor: pointer;
@@ -149,6 +417,18 @@ button { font: inherit; }
   display: inline-block;
 }
 
+/* Fix el "dot" de categoría (el cuadradito de color al inicio del eyebrow).
+   Dos problemas que usuario flagueó:
+   (1) Cuando el eyebrow envuelve a 2-3 líneas (journals largos tipo
+       "Philosophical Transactions of the Royal Society B Biological
+       Sciences"), el dot se iba al centro vertical del bloque porque el
+       eyebrow tiene `align-items: center`. Ahora anclamos al top con
+       `flex-start` y un `margin-top` chiquito para alinear ópticamente
+       con la cap-height de la primera línea.
+   (2) Sin `flex-shrink: 0`, el dot se podía achicar horizontalmente en
+       eyebrows muy estrechos — eso es lo que usuario veía como
+       "rectángulos irregulares". El dot debería ser siempre 7×7 cuadrado
+       perfecto, independientemente del texto que lo acompaña. */
 .paper-card .eyebrow,
 .paper-card-tile .eyebrow,
 .detail-wrap .eyebrow {
@@ -160,7 +440,8 @@ button { font: inherit; }
   flex-shrink: 0;
   margin-top: 3px;
 }
-
+/* En el detail-wrap el eyebrow tiene un dot más grande (8×8). El margin
+   sigue funcionando igual porque el font-size es el mismo 10px. */
 .paper-card-tile .title {
   font-family: var(--font-display);
   font-size: 18px;
@@ -185,6 +466,7 @@ button { font: inherit; }
   align-items: center;
 }
 
+/* Paper card compact variant (drops the thumb column). */
 .paper-card.paper-card-compact {
   grid-template-columns: 1fr;
   padding: 14px 16px;
@@ -195,13 +477,32 @@ button { font: inherit; }
   margin: 6px 0 0 0;
 }
 
+/* Grilla de paper-cards compactos usada en "Papers similares" y
+   "Otros temas para explorar" dentro del detail. En desktop/tablet
+   vivimos cómodos con 2 columnas; en mobile (<640px) bajamos a 1
+   columna para que los títulos respiren y se lean sin cortes. */
+.paper-card-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+@media (max-width: 639px) {
+  .paper-card-grid { grid-template-columns: 1fr; }
+}
+
+/* Ensure the index page takes the full viewport even when feed is empty. */
 .app > main, .app > .main { min-height: calc(100vh - 60px); }
 
+/* Keep long titles from breaking the grid. */
 .paper-card .title, .hero-card .title, .detail-wrap h1 {
   overflow-wrap: anywhere;
   word-break: break-word;
 }
 
+/* More breathing room between the description and the byline's hairline
+   separator. The kit shipped with only 10px bottom margin on .lede, which
+   glues the line to the last word of the abstract preview. Bumped to 20px
+   so the byline reads as a distinct zone, not a continuation of the prose. */
 .paper-card .lede {
   margin-bottom: 20px;
 }
@@ -210,31 +511,60 @@ button { font: inherit; }
   padding-top: 16px;
 }
 
-.pv-header-inner {
-  grid-template-columns: 240px 1fr auto !important;
-  column-gap: 40px !important;
-  gap: 40px !important;
-}
-.pv-header .search {
-  max-width: 560px !important;
-  justify-self: start !important;
+/* Header — keep it visually aligned with the page body. Feed/Library use the
+   kit's 1180px main grid (240px sidebar + 40px gap + col-feed), so we reshape
+   the header grid to mirror that: first column matches the sidebar width, the
+   middle column (search) starts exactly where col-feed starts → the buscador's
+   left edge sits on the same vertical rail as the cards below. Nav gets pushed
+   to the right edge. This replaces the old symmetric `1fr ... 1fr` layout que
+   centered the search in the viewport y rompía el alineamiento con las cards.
+   On PaperDetail the content column narrows to 760px y matcheamos ese width
+   exactly so the header rail lines up with the paper body below.
+
+   IMPORTANTE : esto es SOLO desktop (≥1024px). Antes estaba
+   aplicado a todos los viewports con `!important` y eso rompía el header
+   en mobile/tablet — fijaba 240px para el brand, dejando migajas para tabs
+   + lupa, y las media queries de kit.css no podían pisarlo. usuario lo
+   reportó: "me da la impresión de que hay un div que está tomando mucho
+   espacio fijo y no están dándole espacio al botón de búsqueda". Ahora
+   scopeamos a desktop con min-width:1024px y ya no necesita !important
+   porque la media query le gana a las reglas base por especificidad. En
+   tablet/mobile manda kit.css con su grid propio (auto 1fr auto). */
+@media (min-width: 1024px) {
+  .pv-header-inner {
+    grid-template-columns: 240px 1fr auto;
+    column-gap: 40px;
+    gap: 40px;
+  }
+  .pv-header .search {
+    max-width: 560px;
+    justify-self: start;
+  }
+
+  .pv-header.pv-header--narrow .pv-header-inner {
+    max-width: 760px;
+    grid-template-columns: auto 1fr;
+  }
+  .pv-header.pv-header--narrow nav {
+    justify-self: end;
+  }
 }
 
-.pv-header.pv-header--narrow .pv-header-inner {
-  max-width: 760px !important;
-  grid-template-columns: auto 1fr !important;
-}
-.pv-header.pv-header--narrow nav {
-  justify-self: end;
-}
-
+/* PaperDetail Abstract ↔ Explicámelo toggle. usuario wanted the active pill
+   flush against the outer border (no inner padding gap), and the labels to
+   feel kin to the sidebar's mono/uppercase "Período" group.
+   Trampa pasada: sin focus-visible propio, el browser pintaba un outline
+   azul default por FUERA del botón activo que "empujaba" visualmente al
+   inactivo y rompía la ilusión de button group unificado. Ahora matamos el
+   outline nativo y lo reemplazamos con un ring inset cobalto que se queda
+   DENTRO del container — el grupo no cambia de tamaño al enfocar. */
 .detail-wrap .toggle {
   border-width: 2px;
-  padding: 0;
+  padding: 0; /* active pill touches the border */
   height: 40px;
   box-sizing: border-box;
-  gap: 0;
-  overflow: hidden;
+  gap: 0; /* no space between segments either */
+  overflow: hidden; /* corta cualquier shadow/outline que quiera salirse */
 }
 .detail-wrap .toggle button {
   padding: 0 16px;
@@ -247,17 +577,25 @@ button { font: inherit; }
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  outline: none;
+  outline: none; /* nada de anillo azul default */
 }
 .detail-wrap .toggle button:focus-visible {
-
+  /* Ring INSET — vive adentro del container, sin empujar el layout ni
+     mostrarse por fuera de la frontera ink. Cobalto al 35% para que lea
+     como "foco" sin gritar. */
   box-shadow: inset 0 0 0 2px var(--pv-cobalto);
 }
-
+/* Separador vertical fino entre segmentos: sin él, dos botones cream adyacentes
+   se funden en una sola mancha. Sólo aplica cuando NINGUNO es .on (si uno está
+   activo, el propio contraste ink/cream ya separa). */
 .detail-wrap .toggle button + button:not(.on):not(:first-child) {
   border-left: 1px solid var(--border-2);
 }
 
+/* "Paper al azar" — sidebar variant (not floating). Matches the FAB palette
+   but sits inline with the Estado panel so the sidebar reads as one column
+   of controls. La clase sigue llamándose .pv-dato-random (legacy, renombró sólo la copy user-facing); renombrar el selector tocaría varios
+   archivos sin beneficio funcional. */
 .pv-dato-random {
   display: inline-flex;
   align-items: center;
@@ -268,7 +606,7 @@ button { font: inherit; }
   padding: 10px 14px;
   background: var(--pv-cobalto);
   color: var(--pv-cream);
-  border: 1.5px solid var(--pv-ink);
+  border: 2px solid var(--pv-ink);
   font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 600;
@@ -279,6 +617,10 @@ button { font: inherit; }
 .pv-dato-random:hover { background: var(--pv-cobalto-deep); }
 .pv-dato-random:disabled { opacity: 0.6; cursor: progress; }
 
+/* "Cargar más" — botón secundario al pie del feed/citas. A diferencia del
+   cobalto llamativo del "Paper al azar", este lee como una acción subordinada
+   (outline ink, fill transparente). No compite visualmente con las cards
+   que tiene arriba. */
 .pv-cargar-mas {
   display: inline-flex;
   align-items: center;
@@ -286,7 +628,7 @@ button { font: inherit; }
   padding: 10px 22px;
   background: transparent;
   color: var(--pv-ink);
-  border: 1.5px solid var(--pv-ink);
+  border: 2px solid var(--pv-ink);
   font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 600;
@@ -302,11 +644,15 @@ button { font: inherit; }
 }
 .pv-dark .pv-cargar-mas:hover { background: var(--pv-cream); color: var(--pv-ink); }
 
+/* Bookmark + Read buttons — twin actions in the PaperCard column and the
+   PaperDetail meta rail. Square ink border; bookmark fills ink when saved,
+   read fills a "done" green when marked so the two signals read as distinct
+   even though they share geometry. */
 .pv-bookmark,
 .pv-read {
   width: 34px; height: 34px; padding: 0;
   display: inline-flex; align-items: center; justify-content: center;
-  border: 1.5px solid var(--pv-ink);
+  border: 2px solid var(--pv-ink);
   background: var(--bg-surface);
   color: var(--pv-ink);
   cursor: pointer;
@@ -319,13 +665,19 @@ button { font: inherit; }
   color: var(--pv-cream);
 }
 .pv-bookmark.on svg { fill: currentColor; }
-
+/* "Leído" usa el token SEMÁNTICO de éxito del DS (--pv-success, que
+   mapea a --pv-clorofila). Antes pegábamos --pv-clorofila-deep (#1F6B3F),
+   un verde bosque muy oscuro que leía como color de TEMA (Biología /
+   Ecología), no como estado "done". El token semántico es la elección
+   correcta: verde DS estándar, misma escala que usa el dark mode. */
 .pv-read.on {
   background: var(--pv-success);
   color: var(--pv-cream);
   border-color: var(--pv-success);
 }
 
+/* "Leído" visual treatment — subtle dim on the whole card so the feed shows
+   at a glance what you've already consumed without hiding anything. */
 .paper-card.is-read,
 .hero-card.is-read {
   opacity: 0.62;
@@ -336,24 +688,25 @@ button { font: inherit; }
 }
 .paper-card.is-read .pv-read,
 .hero-card.is-read .pv-read {
-  opacity: 1;
+  opacity: 1; /* but keep the button itself fully opaque so it's still clickable */
 }
 .read-tag {
-
+  /* Misma lógica que .pv-read.on — semántico, no color de tema. */
   color: var(--pv-success);
   font-weight: 600;
 }
 
+/* Biblioteca — archive section for papers the user has already read. Less
+   visual weight than the "para leer" section so the reading queue stays in
+   focus. Square divider + smaller type signals "esto es historial". */
 .lib-archive {
   margin-top: 56px;
   padding-top: 28px;
   border-top: 1px solid var(--border-2, rgba(14, 17, 22, 0.14));
 }
-.lib-archive .section-head h2 {
-  font-size: 18px;
-  color: var(--fg-3);
-  letter-spacing: 0.01em;
-}
+/* El encabezado del archivo hereda el estilo mono de `.section-head h2` para
+   que "Archivo · Ya leídos" se lea igual que "Para leer" — dos secciones
+   hermanas, no una principal y una chiquita. */
 .lib-archive .paper-card {
   opacity: 0.72;
 }
@@ -361,6 +714,132 @@ button { font: inherit; }
   opacity: 1;
 }
 
+/* Toggle del archivo — botón minimal al lado del count, tipografía mono
+   chiquita para mimetizarse con el encabezado. Sin borde para que no pese:
+   la acción es "mostrar/ocultar una lista de memoria", no un CTA. */
+.lib-archive-toggle {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+  background: transparent;
+  border: 0;
+  padding: 4px 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 120ms ease;
+}
+.lib-archive-toggle:hover { color: var(--fg-1); }
+.lib-archive-toggle .chev {
+  display: inline-block;
+  transition: transform 160ms ease;
+}
+.lib-archive-toggle.open .chev { transform: rotate(90deg); }
+
+/* Acciones de data del header de Biblioteca — contenedor para los botones
+   "Importar JSON" + "Exportar JSON". En desktop los alineamos a la derecha
+   del título con gap moderado; son dos acciones de la misma familia
+   (portabilidad de biblioteca), así que leen como un par. Flex-wrap
+   asegura que si el viewport se estrecha y todavía no llegamos al media
+   query de mobile (≤639px), los botones bajan limpiamente a dos líneas
+   antes que overflowear. Las reglas mobile específicas viven en el
+   bloque @media (max-width: 639px) más abajo. */
+.lib-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* Callout de persistencia — explica que la biblioteca vive en localStorage
+   y que el JSON es la única forma de preservarla. Barra ink a la izquierda
+   (estilo "nota editorial"), sin fondo pesado, para que lea como aviso y no
+   como banner promocional.
+
+   ahora es colapsable. En estado cerrado muestra sólo
+   el <button> con el título fuerte + chevron + label "Ver más". En abierto,
+   aparece debajo el párrafo con el detalle. El padding cambia apenas entre
+   estados para que el aviso no "salte" bruscamente. El chevron rota 90°
+   cuando abre, idéntico al patrón del Archivo (lib-archive-toggle) — Ley
+   de Jakob dentro de la misma página. */
+.lib-persistence {
+  margin-top: 14px;
+  padding: 10px 16px;
+  border-left: 3px solid var(--pv-ink);
+  background: var(--bg-sunken, rgba(14, 17, 22, 0.04));
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--fg-2);
+  max-width: 720px;
+}
+.lib-persistence.open { padding: 14px 16px; }
+.lib-persistence strong { color: var(--fg-1); font-weight: 600; }
+.pv-dark .lib-persistence {
+  border-left-color: var(--fg-1);
+  background: var(--bg-sunken);
+  color: var(--fg-2);
+}
+/* Toggle button — ocupa todo el ancho del callout para que sea blanco de
+   tap generoso en mobile (Ley de Fitts). Se mantiene como botón semántico
+   pero visualmente se lee como una línea de texto con chevron a la izq
+   y afordancia "Ver más/Ocultar" a la derecha. */
+.lib-persistence-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.lib-persistence-toggle:hover { color: var(--fg-1); }
+.lib-persistence-toggle strong {
+  flex: 1;
+  min-width: 0;
+}
+.lib-persistence-toggle .chev {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  color: var(--fg-3);
+  transition: transform 160ms ease;
+  flex: 0 0 auto;
+}
+.lib-persistence.open .lib-persistence-toggle .chev { transform: rotate(90deg); }
+.lib-persistence-toggle .toggle-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+  flex: 0 0 auto;
+}
+.lib-persistence-toggle:hover .toggle-label { color: var(--fg-1); }
+/* Detalle: aparece debajo con un margen chico, alineado al texto del
+   aviso. Sin sangría extra para que lea como continuación natural del
+   strong de arriba, no como lista anidada. */
+.lib-persistence-detail {
+  margin: 8px 0 0;
+  line-height: 1.55;
+  color: var(--fg-2);
+}
+
+/* Theme dock — floating vertical pill, middle-left edge of the viewport.
+   Two stacked icon buttons (sol = claro, luna = oscuro). The active theme's
+   button has an ink fill + cream glyph so current state is obvious; the
+   inactive one stays transparent. Sits at z-index 30 so it floats above
+   page content but below modal overlays. On narrow viewports it collapses
+   towards the edge so it doesn't eat body width. */
 .pv-theme-dock {
   position: fixed;
   left: 14px;
@@ -371,9 +850,10 @@ button { font: inherit; }
   flex-direction: column;
   gap: 4px;
   padding: 4px;
-  border: 1.5px solid var(--border-ink);
+  border: 2px solid var(--border-ink);
   background: var(--bg-surface);
-
+  /* Sin sombra — el dock tiene que leerse como parte del canvas, no como
+     objeto flotante pesado. El borde alcanza para separarlo del fondo. */
 }
 .pv-theme-dock-btn {
   width: 32px;
@@ -386,7 +866,18 @@ button { font: inherit; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: color 120ms ease, background 120ms ease;
+  /* Instant state change — sin transition ni animación. Pedido explícito
+     de usuario : el fade de 120ms se sentía gomoso contra el
+     cambio de tema global y contra la estética editorial/brutalista del
+     resto del kit. `transition: none !important` con cascada a hijos/SVG
+     para matar cualquier transición heredada del kit base o de caché. */
+  transition: none !important;
+}
+.pv-theme-dock-btn *,
+.pv-theme-dock-btn svg,
+.pv-theme-dock-btn svg * {
+  transition: none !important;
+  animation: none !important;
 }
 .pv-theme-dock-btn:hover { background: var(--bg-sunken); color: var(--fg-1); }
 .pv-theme-dock-btn.on {
@@ -407,31 +898,71 @@ button { font: inherit; }
   color: var(--pv-ink);
 }
 
-@media (max-width: 720px) {
-  .pv-theme-dock { left: 6px; }
+/* Tablet (≤1023, ≥640): mantiene el patrón vertical-izquierda del
+   desktop pero más compacto — los botones bajan de 32 a 30px y el
+   padding interno se ajusta. */
+@media (max-width: 1023px) {
+  .pv-theme-dock { padding: 3px; gap: 3px; }
+  .pv-theme-dock-btn { width: 30px; height: 30px; }
 }
 
+/* Mobile (<640px): el ThemeDock flotante deja de aparecer. usuario : "no sé dónde colocar el toolbar para que no estorbe,
+   siento que odio la lectura así... además no me gustan las esquinas
+   redondeadas". Probamos primero un footer fijo al pie con el toggle
+   de tema, pero también lo descartó ("el footer no me gustó, capaz
+   podemos poner ese toggle metido donde están este set de información
+   que es el Paperverse con el link de creado"). Decisión final: el
+   toggle de tema vive como tercer bloque del meta-row del sidebar del
+   Feed, junto a "¿Qué es Paperverse?" y "Creado por" — así no hay
+   ningún elemento flotante encima de la columna de lectura, y los
+   tres ítems comparten el mismo lenguaje editorial (label mono +
+   acción mono). El dock sigue vivo en desktop/tablet — ahí la columna
+   de contenido no va hasta los bordes y el dock no se encima. */
+@media (max-width: 639px) {
+  .pv-theme-dock {
+    display: none;
+  }
+}
+
+/* Library grid — fall back gracefully when there are only a couple of cards. */
 .lib-grid {
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
 }
 
+/* ============================================================
+   Perilla — reading-level selector for Explicámelo (compact)
+   usuario wanted this to step back from the top of the page:
+   no title row, no surface panel, smaller knobs. It now reads
+   as a supporting control (medium prominence), matching the
+   tone of the eyebrow-scale text around it rather than the
+   main CTAs.
+   ============================================================ */
 .pv-perilla-wrap {
   margin: 0;
 }
 .pv-perilla {
   position: relative;
   display: inline-grid;
-
-  grid-template-columns: 24px 1fr 24px;
-  column-gap: 34px;
+  /* Columnas extremas a 80px (ancho suficiente para la label más larga
+     de los extremos: "CIENTÍFICO" ≈ 67px con mono 9.5px + letter-spacing
+     0.14em). Antes eran 24px (ancho del knob) y las labels "5 AÑOS" y
+     "CIENTÍFICO" overflowaban a ambos lados; con el contenedor padre
+     teniendo overflow:hidden o padding escaso, la primera letra ("5")
+     se clippeaba (bug reportado ).
+     El knob (24px) se centra horizontalmente en su columna de 80px
+     gracias a `align-items: center` del stop flex. Para que la pista
+     (track) siga aterrizando exacto en el centro de los knobs extremos,
+     su left/right se mueve a 40px (la mitad de 80px). */
+  grid-template-columns: 80px 1fr 80px;
+  column-gap: 8px;
   align-items: start;
   padding: 2px 0 0;
 }
 .pv-perilla-track {
   position: absolute;
-  top: 12px;
-  left: 12px;
-  right: 12px;
+  top: 12px; /* centered with the compact 24px knob */
+  left: 40px;
+  right: 40px;
   height: 1.5px;
   background: var(--border-ink, var(--pv-ink));
   opacity: 0.22;
@@ -458,7 +989,7 @@ button { font: inherit; }
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  border: 1.5px solid var(--border-ink, var(--pv-ink));
+  border: 2px solid var(--border-ink, var(--pv-ink));
   background: var(--bg-surface);
   display: inline-flex;
   align-items: center;
@@ -484,6 +1015,14 @@ button { font: inherit; }
   white-space: nowrap;
 }
 
+/* Nota: los anchor-inside de primera/última label que había acá antes
+   ya no hacen falta. Con las columnas extremas a 80px (ancho en vez de
+   24px), las labels "5 AÑOS" y "CIENTÍFICO" caben centradas bajo su
+   knob sin overflowear — la columna es más ancha que el texto. Así la
+   perilla queda con alineación consistente (label centrada bajo knob
+   en los tres stops), sin asimetría visual entre extremos y medio. */
+
+/* Dark mode — flip the knob so it stays high-contrast on cosmic-night. */
 .pv-dark .pv-perilla-track { background: var(--fg-3); opacity: 0.35; }
 .pv-dark .pv-perilla-knob {
   background: var(--bg-surface);
@@ -501,12 +1040,36 @@ button { font: inherit; }
 .pv-dark .pv-perilla-stop { color: var(--fg-3); }
 .pv-dark .pv-perilla-stop:hover { color: var(--fg-1); }
 
+/* Nota: el meta "Generado por IA" + selector de idioma se quitaron de la
+   UI para simplificar. La lógica multi-idioma en explain.ts queda como
+   infra opcional, pero los estilos .pv-ai-meta / .pv-lang-* ya no se
+   usan en pantalla. */
+
+/* ============================================================
+   Paper actions — bottom row
+   Pulled out from the toggle row so the top of the detail page
+   isn't a wall of five interactive controls. Sits below the
+   content body with a hairline above it, grouped from most-to-
+   least destructive-ish: Save (primary intent) → Read-full →
+   Mark-read. Slightly shorter than the old 44px treatment so
+   the actions feel like a footer, not a second hero.
+   ============================================================ */
+/* Nota: el wrapper .detail-top-row se eliminó junto con el meta "Generado
+   por IA · IDIOMA ▾". Volver ahora vive solo en la cabecera del detail,
+   sin fila compartida. */
+
 .detail-wrap .paper-actions {
   margin-top: 24px;
   padding-top: 0;
-
+  /* Sin hairline arriba — se pidió que la fila de acciones no se
+     sienta encajonada entre dos reglas. El margen superior alcanza para
+     separarla del cuerpo. */
   border-top: 0;
-
+  /* Dos grupos en la MISMA fila: referencias/citado por a la izquierda,
+     acciones sobre este paper a la derecha (con el CTA primario como
+     ancla visual del bloque derecho). space-between los empuja a los
+     extremos; flex-wrap deja que bajen a dos filas en pantallas angostas
+     sin romper nada. */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -520,6 +1083,173 @@ button { font: inherit; }
   flex-wrap: wrap;
 }
 
+/* NOTA : se removió la regla `.paper-actions-empty` (texto
+   italic muted "Sin referencias indexadas" / "Todavía no lo citaron")
+   a pedido de producto. El tratamiento italic-muted no encajaba con el
+   lenguaje btn-ghost del resto de la fila, y el copy largo empujaba el
+   CTA primario "Leer paper completo" a una segunda línea en desktop
+   rompiendo la regla de los-5-botones-en-una-sola-fila. Ahora el estado
+   cero es un btn-ghost disabled con el label corto ("Ver referencias 0"),
+   y el porqué ("OpenAlex no indexó...") queda en el `title=` de hover. */
+
+/* DESKTOP (≥640px): los 5 botones deben vivir en UNA sola línea horizontal.
+   Cuando cada .paper-actions-row era un contenedor flex con su gap propio,
+   el ancho combinado (explore-row ~410px + actions-row ~310px + gap entre
+   grupos) superaba el max-width del .detail-wrap (760px) y la segunda fila
+   se bajaba sola, rompiendo el "space-between" y duplicando el alto visual.
+   Fix: aplanamos los rows con `display: contents` en desktop, así los 5
+   botones hijos pasan a ser items directos del flex .paper-actions y se
+   acomodan en una única línea con el gap del padre (8px). `margin-left:
+   auto` sobre el PRIMER botón del row de acciones empuja todo ese grupo
+   al extremo derecho, recreando el efecto space-between sin necesitar el
+   wrap. En mobile esta regla no se aplica (el @media de abajo la scopea),
+   y los rows siguen siendo flex containers que se apilan verticalmente. */
+@media (min-width: 640px) {
+  .detail-wrap .paper-actions .paper-actions-row {
+    display: contents;
+  }
+  .detail-wrap .paper-actions .paper-actions-row:not(.paper-actions-row--explore) > :first-child {
+    margin-left: auto;
+  }
+}
+/* "Leer paper completo" — el botón primario del row inferior crece y se
+   come el espacio que sobra después de los dos icon-buttons fijos
+   (pv-read 44px + pv-bookmark 44px + gap).
+
+   Scoping a MOBILE-ONLY (, corrección del 2ª intento):
+   Primero puse estas reglas sin media query y terminaron pisando desktop
+   también. "en desktop también se volvieron dos líneas, en
+   desktop debería ser una sola línea y en mobile deberían ser dos".
+   Lógica correcta:
+     · Desktop (≥640px): los dos rows (explore + acciones) conviven en
+       UNA línea horizontal gracias al space-between + flex-wrap:wrap
+       del .paper-actions padre. Cada row toma su ancho natural y el
+       primario no necesita "crecer" — ya está anclado al extremo
+       derecho como CTA. Por eso acá NO forzamos width 100%.
+     · Mobile (<640px): no hay ancho para ambos grupos en una línea,
+       se apilan en dos filas. El row inferior pasa a 100% para que el
+       btn-primary pueda crecer y rellenar el hueco después de los
+       44+44+gap de los íconos. */
+@media (max-width: 639px) {
+  /* AMBOS rows a 100% width — antes la fila --explore (Ver referencias +
+     Ver quién lo citó) quedaba en su ancho natural apretado contra el
+     centro, con márgenes huecos a los costados. se pidió que esos dos botones también llenaran todo el ancho del
+     contenedor en mobile, con gap de 16px entre ellos para que respiren.
+     Sin `:not(.paper-actions-row--explore)` ambos rows se tratan igual:
+     cada uno toma 100% del ancho, y sus hijos crecen con flex:1. */
+  .detail-wrap .paper-actions .paper-actions-row {
+    width: 100%;
+    flex: 1 1 100%;
+  }
+  /* Fila --explore: gap 16px entre los dos ghost buttons, y que cada
+     botón tome la mitad del ancho disponible. El kit ya le ponía
+     `flex: 1 1 0` pero con gap 8px; acá sobreescribimos sólo el gap
+     para mantener el patrón flex igual. */
+  .detail-wrap .paper-actions .paper-actions-row--explore {
+    gap: 16px;
+  }
+  /* Fila inferior (Leído + Guardado + Leer paper completo): el CTA
+     primario crece para llenar lo que quede después de los dos
+     icon-buttons de 44x44. */
+  .detail-wrap .paper-actions .paper-actions-row:not(.paper-actions-row--explore) .btn-primary {
+    flex: 1 1 0% !important;
+    width: 100% !important;
+    min-width: 0;
+    justify-content: center;
+  }
+
+  /* Biblioteca header en mobile — apilar título y botones de data en
+     líneas separadas. usuario : la fila horizontal hacía
+     que "1 para leer · 6 leídos" se quebrara feo al lado del botón, que
+     además partía la cuadrícula tipográfica editorial.
+     `.lib-header` es una clase auxiliar específica del header principal
+     de la Biblioteca — no afecta a otros section-heads (Para leer,
+     Archivo) que SÍ pueden quedarse en fila horizontal porque su
+     contenido es mucho más corto.
+
+     QA2 #68 : ahora hay dos botones (Importar + Exportar)
+     dentro de `.lib-actions`. En mobile los dejamos en fila porque cada
+     uno ocupa poco ancho y "Importar JSON / Exportar JSON" lado a lado
+     leen como una acción pareada — son la cara A y B de la misma función
+     de portabilidad. Si en algún device extra-angosto se los come, con
+     flex-wrap se caen a dos líneas sin que nada rompa. */
+  .section-head.lib-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 16px;
+  }
+  .lib-actions { width: 100%; }
+
+  /* Feed-top-bar sticky (contador + ViewToggle) — en mobile usamos
+     min-width:0 + ellipsis sobre el h2 para que si el texto crece
+     ("124 resultados para 'machine learning in biology'") no empuje
+     al ViewToggle fuera del viewport en devices angostos. flex-shrink:0
+     sobre el ViewToggle le da prioridad al toggle (es el control
+     accionable) y deja que el h2 recorte con … si hace falta. Nota:
+     a partir de 375px el título podría quedar muy cortado — el siguiente
+     bloque @media (max-width: 375px) agrega fallback adicional. */
+  .feed-top-bar { min-width: 0; gap: 8px; }
+  .feed-top-bar h2 {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .feed-top-bar .head-right { flex-shrink: 0; }
+}
+
+/* audit responsive sub-375px.
+   iPhone SE / mini y Android chicos viven en 360-375px de ancho. A 639px
+   ya compactamos bastante, pero hay hot-spots donde el contenido todavía
+   queda incómodo o por overflowear:
+
+     · PaperDetail <h1> a 30px: títulos largos ("The Effect of Something
+       Very Specific on Something Even More Specific") pasan a 3 líneas
+       comiendo medio viewport antes del abstract. Bajamos a 26px.
+     · Library headline display a 36px: con "1,234 para leer · 5,678
+       leídos" o headlines largos la linea se corta feo. Bajamos a 28px.
+     · Feed-top-bar h2: aunque con ellipsis ya no rompe layout, bajamos
+       el font-size para que quepa más información visible del query.
+     · PaperDetail authors line: apretamos la separación para que no se
+       sienta aireada cuando el pathname ya está al borde del viewport.
+
+   No tocamos spacing horizontal del .main / .main-full — el padding 14px
+   es ya el mínimo antes de que el texto se sienta enjaulado en el borde. */
+@media (max-width: 375px) {
+  .detail-wrap h1 { font-size: 26px; line-height: 1.2; }
+  .detail-wrap .authors { font-size: 13px; }
+  .detail-wrap .meta-rail { font-size: 10px; }
+
+  /* Library — headline dinámico más chico. El h1 eyebrow "Mi biblioteca"
+     ya es mono 10.5px, no necesita ajuste. */
+  .lib-header > div > div[style*="font-family"] {
+    /* Overwrite inline style fontSize: 36 via !important — el inline gana
+       specificity normal, así que esta es la forma mínima de vencerlo. */
+    font-size: 28px !important;
+  }
+
+  .feed-top-bar h2 { font-size: 10px; letter-spacing: 0.14em; }
+  .feed-top-bar { padding: 10px 0 8px 0; }
+
+  /* Paper card title un poco más chico — a 20px en 360px de ancho queda
+     justo en el límite entre "cómodo" y "apretado". 18.5px le da un
+     poco más de aire para que las 2-3 primeras palabras de títulos
+     largos respiren mejor. */
+  .paper-card .title { font-size: 18.5px; }
+  .paper-card .lede { font-size: 13px; }
+
+  /* Onboarding — h1 "36px" a 639 puede sobresalir en 360px si el título
+     tiene palabras largas tipo "Conocimiento" o "Neurociencia". */
+  .onb-card h1 { font-size: 30px; }
+  .onb-logo { width: 150px; }
+}
+/* Nota: el bloque `.actions` (Referencias/Citado por) se fusionó con
+   `.paper-actions` — ahora los 5 botones viven en una misma fila. No se
+   necesita más este override porque `.actions` ya no aparece en el detail. */
+/* Botones de acción del detalle — altura uniforme 44px para TODO lo
+   interactivo dentro de .detail-wrap (primarios, secundarios, y los
+   icon-buttons de guardar/marcar leído). Evita el efecto "escalera" que
+   se veía cuando los íconos eran 38px y los textuales 40px. */
 .detail-wrap .paper-actions .btn,
 .detail-wrap .actions .btn {
   height: 44px;
@@ -529,29 +1259,43 @@ button { font: inherit; }
 }
 .detail-wrap .paper-actions .btn.btn-primary,
 .detail-wrap .actions .btn.btn-primary {
-  border-width: 1.5px;
+  border-width: 2px;
 }
 .detail-wrap .paper-actions .btn.btn-secondary,
 .detail-wrap .actions .btn.btn-secondary {
-  border-width: 1.5px;
+  border-width: 2px;
 }
 .detail-wrap .paper-actions .pv-bookmark,
 .detail-wrap .paper-actions .pv-read {
   width: 44px;
   height: 44px;
-  border-width: 1.5px;
+  border-width: 2px;
 }
 .detail-wrap .paper-actions .paper-actions-divider {
   flex: 1;
 }
 .pv-dark .detail-wrap .paper-actions { border-top-color: var(--border-2); }
 
+/* ============================================================
+   Dark mode pass
+   The kit hardcodes `color: var(--pv-ink)` on a lot of surfaces
+   (titles, toggles, card borders). Those never switch on their
+   own. This block re-points them at the theme tokens so the UI
+   actually reads in cosmic-night mode:
+
+   · Titles + display type → cream (was near-black on near-black)
+   · Interactive surfaces (toggle, bookmark, read, icon-btn) →
+     cream ink border + cream fill when "on"
+   · Cards + search → cream border, sunken thumb bg
+   · Anywhere we tinted with inline var(--pv-ink) → fg-1 here
+   ============================================================ */
 .pv-dark body,
 .pv-dark .app {
   background: var(--bg-canvas);
   color: var(--fg-1);
 }
 
+/* Cards + surfaces */
 .pv-dark .paper-card,
 .pv-dark .hero-card {
   background: var(--bg-surface);
@@ -568,10 +1312,14 @@ button { font: inherit; }
 .pv-dark .icon-btn {
   border-color: var(--border-ink);
 }
-
+/* Nota: .topic-chip quedó fuera del grupo de arriba porque el borde
+   "ink" (cream en dark) pegado a TODOS los chips hacía que activo e
+   inactivo compitieran. Ahora cada estado controla su borde abajo. */
 .pv-dark .search input { color: var(--fg-1); }
 .pv-dark .search input::placeholder { color: var(--fg-4); }
 
+/* Titles — the whole reason dark mode looked broken. Serif display type
+   was hardcoded to ink so on cosmic-night it sat as black-on-black. */
 .pv-dark .detail-wrap h1,
 .pv-dark .paper-card .title,
 .pv-dark .hero-card .title,
@@ -589,6 +1337,7 @@ button { font: inherit; }
 .pv-dark .detail-wrap .back:hover { color: var(--fg-1); }
 .pv-dark .section-head h2 { color: var(--fg-3); }
 
+/* Abstract body + Explicámelo body text — prose shouldn't stay dark. */
 .pv-dark .abstract-body { color: var(--fg-1); }
 .pv-dark .abstract-body em,
 .pv-dark .hero-card .hook em {
@@ -602,13 +1351,23 @@ button { font: inherit; }
 }
 .pv-dark .actions { border-top-color: var(--border-2); }
 
+/* Citado numeric in action column.
+   Tanto PaperCard como HeroPaperCard tienen el <span> del número con
+   `color: var(--pv-ink)` inline — en dark `--pv-ink` es oscuro sobre
+   fondo oscuro y el número desaparece. Como el inline tiene specificity
+   alta, necesitamos `!important` para que el override en dark gane. */
 .pv-dark .paper-card .actions-col span,
 .pv-dark .hero-card .actions-col span {
-  color: var(--fg-1);
+  color: var(--fg-1) !important;
 }
 
+/* Nav tabs */
 .pv-dark .pv-header nav button.active { color: var(--fg-1); border-bottom-color: var(--fg-1); }
 
+/* Topic chips en dark — el activo pide contraste fuerte (crema plena),
+   el inactivo tiene que quedarse "calladito" o los dos estados compiten.
+   Por eso el borde del inactivo es el hairline muted (--border-2), no el
+   crema señal que usábamos antes. */
 .pv-dark .topic-chip:not(.active) {
   color: var(--fg-1);
   background: var(--bg-surface);
@@ -624,6 +1383,7 @@ button { font: inherit; }
   border-color: var(--pv-cream);
 }
 
+/* Window-preset segmented group */
 .pv-dark .pv-window-group,
 .pv-dark .pv-view-group { background: var(--bg-sunken); }
 .pv-dark .pv-window-group button,
@@ -636,6 +1396,8 @@ button { font: inherit; }
   color: var(--pv-ink);
 }
 
+/* Abstract ↔ Explicámelo toggle — pill-style group. Needs cream border +
+   cream-fill for the active button so it reads as selected in dark. */
 .pv-dark .toggle { background: var(--bg-sunken); }
 .pv-dark .toggle button { color: var(--fg-2); }
 .pv-dark .toggle button.on {
@@ -643,6 +1405,7 @@ button { font: inherit; }
   color: var(--pv-ink);
 }
 
+/* Bookmark + Read twin actions */
 .pv-dark .pv-bookmark,
 .pv-dark .pv-read {
   background: var(--bg-surface);
@@ -655,13 +1418,15 @@ button { font: inherit; }
   color: var(--pv-ink);
   border-color: var(--pv-cream);
 }
-
+/* Read stays green on dark — the "done" semantic is the same in both themes,
+   just slightly lightened so it lands on the night canvas. */
 .pv-dark .pv-read.on {
   background: var(--pv-clorofila);
   color: var(--pv-ink);
   border-color: var(--pv-clorofila);
 }
 
+/* Buttons */
 .pv-dark .btn-primary {
   border-color: var(--pv-cream);
   color: var(--pv-cream);
@@ -674,6 +1439,7 @@ button { font: inherit; }
 .pv-dark .btn-secondary:hover { background: var(--bg-sunken); }
 .pv-dark .btn-ghost:hover { background: var(--bg-sunken); color: var(--fg-1); }
 
+/* Icon-button (square ink outline variant) */
 .pv-dark .icon-btn {
   background: var(--bg-surface);
   color: var(--fg-1);
@@ -684,13 +1450,32 @@ button { font: inherit; }
   color: var(--pv-ink);
 }
 
+/* Library archive — dim in both modes, but the border token flips */
 .pv-dark .lib-archive { border-top-color: var(--border-2); }
 
+/* Header blur base stays, just re-tinted (already handled above) */
 .pv-dark .pv-header .wordmark { color: var(--fg-1); }
 .pv-dark .pv-header .wordmark .dot { color: var(--pv-cobalto); }
 
+/* Lupa del header en mobile — el kit la pinta con `color: var(--pv-ink)`
+   (near-black), que contra el header oscuro `rgba(11,16,32,.75)` se lee
+   invisible. En dark mode flipeamos al foreground claro igual que hicimos
+   con el wordmark. Misma lógica: `--pv-ink` no se remapea globalmente en
+   dark, cada elemento que lo usa necesita su override explícito. */
+.pv-dark .pv-header .search-icon { color: var(--fg-1); }
+
+/* Small-screen: collapse sidebar so the feed keeps reading on mobile. */
 @media (max-width: 860px) {
-  .main { grid-template-columns: 1fr; gap: 24px; padding: 20px; }
+  /* align-content: start evita que grid distribuya espacio sobrante entre
+     los rows cuando el contenido total del main es menor que su min-height
+     (calc(100vh - 60px)). Sin esto, durante el loading state del feed
+     (0 papers + spinner) el ~espacio sobrante se repartía por arriba/abajo
+     del col-feed y la feed-top-bar quedaba empujada muy lejos del sidebar.
+     Reportado por usuario : "queda un espacio muy grande
+     entre la parte del manifiesto y los toggles y los resultados". Ahora
+     los dos rows (sidebar + col-feed) se apilan al tope del main y el
+     espacio sobrante vive al final, debajo del spinner, donde no molesta. */
+  .main { grid-template-columns: 1fr; gap: 24px; padding: 20px; align-content: start; }
   .sidebar { position: static; }
   .detail-wrap { padding: 20px; }
   .detail-wrap h1 { font-size: 34px; }
@@ -698,7 +1483,7 @@ button { font: inherit; }
   .paper-card { grid-template-columns: 1fr; }
   .paper-card .thumb { display: none; }
   .paper-card .actions-col { display: none; }
-
+  /* Hero-main stacks: content first, actions tucked below as a compact row. */
   .hero-card .hero-main {
     grid-template-columns: 1fr !important;
   }

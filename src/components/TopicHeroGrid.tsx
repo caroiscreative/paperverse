@@ -1,3 +1,19 @@
+// "Destacados por tema" — grilla de hasta 6 tiles (3 col × 2 filas en desktop),
+// uno por tema, mostrando el paper más citado dentro de ese tema del feed
+// actual. Reemplaza al hero único para que las 14 animaciones del DS2 del
+// Paperverse Design System 2 se vean todas en la home.
+//
+// Decisiones:
+// - Sin fetches extra: agrupamos en cliente desde los `papers` ya cargados.
+// - Prioridad al paper más citado de cada tema (los papers vienen ordenados
+// por citedByCount desc gracias a fetchFeed).
+// - Si un paper no matchea ningún tema (topicForConcepts → null), se lo saltea
+// — preferimos banners reales a uno genérico en una sección que se trata
+// justamente de categorizar.
+// - Máximo 6 tiles. Si hay menos temas representados, llenamos con menos.
+// - Devuelve `featuredIds` vía callback opcional para que Feed.tsx pueda
+// sacarlos del "Recién publicado" y no duplicarse.
+
 import { useMemo } from 'react';
 import type { Paper } from '../lib/openalex';
 import { topicForConcepts, type Topic } from '../lib/topics';
@@ -5,6 +21,7 @@ import { TopicBanner } from './TopicBanner';
 import { useTranslated } from '../lib/translate';
 import { useLibrary } from '../lib/library';
 import { useReadPapers } from '../lib/read';
+import { showToast } from '../lib/toast';
 import { Icon } from './Icon';
 
 const MAX_TILES = 6;
@@ -22,6 +39,9 @@ interface Tile {
 }
 
 export function TopicHeroGrid({ papers, onPaperClick, weekLabel = 'Más citado' }: Props) {
+  // Agrupar por tema primario, conservando el orden (papers vienen ya
+  // ordenados desc por citas desde fetchFeed). El primer paper que caiga en
+  // un tema lo "reclama" y los siguientes del mismo tema se saltean.
   const tiles = useMemo<Tile[]>(() => {
     const seen = new Set<string>();
     const result: Tile[] = [];
@@ -83,13 +103,19 @@ function TopicHeroTile({
   const { has: readHas, toggle: readToggle } = useReadPapers();
   const read = readHas(paper.id);
 
+  // toasts de feedback al guardar/marcar leído. Leemos
+  // estado previo antes del toggle para que el copy siga la transición real.
   const onBookmark = (e: React.MouseEvent) => {
     e.stopPropagation();
+    const wasSaved = saved;
     toggle(paper);
+    showToast(wasSaved ? 'Quitado de tu biblioteca' : 'Guardado en tu biblioteca');
   };
   const onMarkRead = (e: React.MouseEvent) => {
     e.stopPropagation();
+    const wasRead = read;
     readToggle(paper);
+    showToast(wasRead ? 'Desmarcado como leído' : 'Marcado como leído');
   };
 
   return (

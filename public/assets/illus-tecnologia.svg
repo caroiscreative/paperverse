@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300" role="img" aria-label="Central chip with circuit traces and signal rings">
+  <rect width="300" height="300" fill="#F6E7C7"></rect>
+  <g fill="none" stroke="#A87818" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M 30 60  L 80 60  L 80 138 L 128 138" opacity="0.85"></path>
+    <path d="M 270 60 L 220 60 L 220 138 L 172 138" opacity="0.85"></path>
+    <path d="M 30 240 L 80 240 L 80 162 L 128 162" opacity="0.85"></path>
+    <path d="M 270 240 L 220 240 L 220 162 L 172 162" opacity="0.85"></path>
+  </g>
+  <circle cx="150" cy="150" r="98" fill="none" stroke="#A87818" stroke-width="1.1" opacity="0.35"></circle>
+  <circle cx="150" cy="150" r="68" fill="none" stroke="#D89A2C" stroke-width="1.4" opacity="0.55"></circle>
+  <circle cx="150" cy="150" r="42" fill="none" stroke="#D89A2C" stroke-width="2"   opacity="0.85"></circle>
+  <rect x="128" y="128" width="44" height="44" rx="4" fill="#D89A2C" stroke="#A87818" stroke-width="1.5"></rect>
+  <rect x="141" y="141" width="18" height="18" fill="#A87818"></rect>
+  <circle cx="128" cy="138" r="2.6" fill="#A87818"></circle>
+  <circle cx="172" cy="138" r="2.6" fill="#A87818"></circle>
+  <circle cx="128" cy="162" r="2.6" fill="#A87818"></circle>
+  <circle cx="172" cy="162" r="2.6" fill="#A87818"></circle>
+</svg>
