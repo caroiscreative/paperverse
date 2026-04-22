@@ -6,6 +6,42 @@
     <meta name="theme-color" content="#FAF5EC" />
     <meta name="description" content="La ciencia real, servida para curiosos reales. Papers científicos traducidos al español claro." />
 
+    <!--
+      Open Graph + Twitter Card. Estos son los meta tags que leen los
+      crawlers de WhatsApp, Twitter/X, Slack, iMessage, LinkedIn,
+      Discord, etc. para armar el preview cuando se pega un link de
+      Paperverse en un chat.
+
+      Importante: Paperverse es un SPA con React Router. Los crawlers
+      NO ejecutan JavaScript, así que todas las rutas (/, /paper/:id,
+      /biblioteca, etc.) sirven este mismo index.html y comparten los
+      mismos tags "genéricos" del sitio. Para tener un preview distinto
+      por paper (título, abstract, ilustración del tópico) hay que meter
+      un Edge Middleware en Vercel que intercepte /paper/:id y reescriba
+      estos tags server-side antes de mandar el HTML al crawler.
+
+      og:image es PNG 1200x630 (estándar de Facebook/LinkedIn/Twitter).
+      Vive en /og-image.png (root de /public) para que la URL absoluta
+      quede limpia: paperverse.vercel.app/og-image.png
+    -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Paperverse" />
+    <meta property="og:title" content="Paperverse — La ciencia real, para curiosos reales" />
+    <meta property="og:description" content="Papers científicos traducidos al español claro. Navegá el universo de la ciencia por tópico, nivel y país." />
+    <meta property="og:url" content="https://paperverse.vercel.app" />
+    <meta property="og:image" content="https://paperverse.vercel.app/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Paperverse. La ciencia real, para curiosos reales." />
+    <meta property="og:locale" content="es_ES" />
+
+    <!-- Twitter Card: summary_large_image muestra la imagen completa,
+         no el thumbnail chico. Es el formato que queremos. -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Paperverse — La ciencia real, para curiosos reales" />
+    <meta name="twitter:description" content="Papers científicos traducidos al español claro. Navegá el universo de la ciencia por tópico, nivel y país." />
+    <meta name="twitter:image" content="https://paperverse.vercel.app/og-image.png" />
+
     <!-- Favicon: reutilizamos el mark del design system original. -->
     <link rel="icon" type="image/svg+xml" href="/assets/logo-mark.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -21,7 +57,7 @@
     <title>Paperverse — La ciencia real, para curiosos reales</title>
 
     <!--
-      Bootstrap del tema . Corre ANTES de que React
+      Bootstrap del tema (QA2 P1.1, 2026-04-20). Corre ANTES de que React
       monte para evitar FOUC (flash of light content): si el usuario tenía
       modo oscuro guardado, al recargar la página durante un segundo se veía
       el canvas crema antes de que el useEffect de useTheme aplicara la

@@ -18,6 +18,6 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true
   },
-  "include": ["src", "api"],
+  "include": ["src", "api", "middleware.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
