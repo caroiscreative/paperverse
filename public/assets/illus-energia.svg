@@ -1,34 +1,37 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300" role="img" aria-label="Energy pulse radiating on a dotted grid">
-  <rect width="300" height="300" fill="#FBE0D3"></rect>
-  <g fill="#B8401A" opacity="0.28">
-    <circle cx="30"  cy="30"  r="1.4"></circle>
-    <circle cx="75"  cy="30"  r="1.4"></circle>
-    <circle cx="120" cy="30"  r="1.4"></circle>
-    <circle cx="180" cy="30"  r="1.4"></circle>
-    <circle cx="225" cy="30"  r="1.4"></circle>
-    <circle cx="270" cy="30"  r="1.4"></circle>
-    <circle cx="30"  cy="75"  r="1.4"></circle>
-    <circle cx="75"  cy="75"  r="1.4"></circle>
-    <circle cx="225" cy="75"  r="1.4"></circle>
-    <circle cx="270" cy="75"  r="1.4"></circle>
-    <circle cx="30"  cy="120" r="1.4"></circle>
-    <circle cx="270" cy="120" r="1.4"></circle>
-    <circle cx="30"  cy="180" r="1.4"></circle>
-    <circle cx="270" cy="180" r="1.4"></circle>
-    <circle cx="30"  cy="225" r="1.4"></circle>
-    <circle cx="75"  cy="225" r="1.4"></circle>
-    <circle cx="225" cy="225" r="1.4"></circle>
-    <circle cx="270" cy="225" r="1.4"></circle>
-    <circle cx="30"  cy="270" r="1.4"></circle>
-    <circle cx="75"  cy="270" r="1.4"></circle>
-    <circle cx="120" cy="270" r="1.4"></circle>
-    <circle cx="180" cy="270" r="1.4"></circle>
-    <circle cx="225" cy="270" r="1.4"></circle>
-    <circle cx="270" cy="270" r="1.4"></circle>
-  </g>
-  <circle cx="150" cy="150" r="110" fill="none" stroke="#B8401A" stroke-width="1.1" opacity="0.35"></circle>
-  <circle cx="150" cy="150" r="75"  fill="none" stroke="#B8401A" stroke-width="1.4" opacity="0.55"></circle>
-  <circle cx="150" cy="150" r="42"  fill="none" stroke="#E8572C" stroke-width="2"   opacity="0.85"></circle>
-  <circle cx="150" cy="150" r="9" fill="#E8572C"></circle>
-  <circle cx="150" cy="150" r="3.5" fill="#FBE0D3"></circle>
+ <rect width="300" height="300" fill="#FBE0D3"></rect>
+ <g fill="#B8401A" opacity="0.28">
+ <circle cx="30" cy="30" r="1.4"></circle>
+ <circle cx="75" cy="30" r="1.4"></circle>
+ <circle cx="120" cy="30" r="1.4"></circle>
+ <circle cx="180" cy="30" r="1.4"></circle>
+ <circle cx="225" cy="30" r="1.4"></circle>
+ <circle cx="270" cy="30" r="1.4"></circle>
+ <circle cx="30" cy="75" r="1.4"></circle>
+ <circle cx="75" cy="75" r="1.4"></circle>
+ <circle cx="225" cy="75" r="1.4"></circle>
+ <circle cx="270" cy="75" r="1.4"></circle>
+ <circle cx="30" cy="120" r="1.4"></circle>
+ <circle cx="270" cy="120" r="1.4"></circle>
+ <circle cx="30" cy="180" r="1.4"></circle>
+ <circle cx="270" cy="180" r="1.4"></circle>
+ <circle cx="30" cy="225" r="1.4"></circle>
+ <circle cx="75" cy="225" r="1.4"></circle>
+ <circle cx="225" cy="225" r="1.4"></circle>
+ <circle cx="270" cy="225" r="1.4"></circle>
+ <circle cx="30" cy="270" r="1.4"></circle>
+ <circle cx="75" cy="270" r="1.4"></circle>
+ <circle cx="120" cy="270" r="1.4"></circle>
+ <circle cx="180" cy="270" r="1.4"></circle>
+ <circle cx="225" cy="270" r="1.4"></circle>
+ <circle cx="270" cy="270" r="1.4"></circle>
+ </g>
+ <circle cx="150" cy="150" r="110" fill="none" stroke="#B8401A" stroke-width="1.1" opacity="0.35"></circle>
+ <circle cx="150" cy="150" r="75" fill="none" stroke="#B8401A" stroke-width="1.4" opacity="0.55"></circle>
+ <circle cx="150" cy="150" r="42" fill="none" stroke="#E8572C" stroke-width="2" opacity="0.85"></circle>
+ <!-- Outline ink en el núcleo del pulso : forma principal
+ marca center con stroke 1.5 para igualar tratamiento con los otros
+ temas. El dot interno (r=3.5) queda sin stroke — es demasiado chico. -->
+ <circle cx="150" cy="150" r="9" fill="#E8572C" stroke="#0E1116" stroke-width="1.5"></circle>
+ <circle cx="150" cy="150" r="3.5" fill="#FBE0D3"></circle>
 </svg>

@@ -174,6 +174,71 @@ function conceptFilter(topics: Topic[]): string {
   return `concepts.id:${ids.join('|')}`;
 }
 
+// Sort (, Fase 4 — sort-by en Feed/Refs/Cites)
+//
+// Todo el feed, las referencias y las citas comparten el mismo menú
+// "Ordenar por" y la misma URL param ?sort=<SortKey>. La clave viaja
+// entre vistas (Feed → Refs → Cites → Feed) gracias a feedReturn.ts
+// que guarda la URL completa para el botón Feed del header.
+//
+// El nombre de cada SortKey es semántico (qué significa para el usuario)
+// más que técnico (cómo se lo pasamos a OpenAlex). Así si mañana OpenAlex
+// cambia una API o queremos swapear un combo, el contrato con el resto
+// del frontend no se rompe.
+
+export type SortKey =
+  | 'latest_cited' // combo publication_date:desc,cited_by_count:desc — DEFAULT del Feed
+  | 'cites_desc' // más citados primero
+  | 'cites_asc' // menos citados primero (útil para encontrar papers frescos/desatendidos)
+  | 'date_desc' // más recientes primero
+  | 'date_asc' // más viejos primero (útil en refs para ver la genealogía)
+  | 'title_asc' // A → Z
+  | 'title_desc' // Z → A
+  | 'fwci_desc' // impacto normalizado por campo — lo más relevante "de verdad"
+  | 'relevance'; // sólo válido con search; fallback silencioso a latest_cited si no hay query
+
+/**
+ * Traduce una SortKey semántica al parámetro `sort=` que entiende OpenAlex.
+ * `hasSearch` controla el único caso especial: `relevance_score` sólo es
+ * válido cuando la request incluye `search=...`. Si alguien pide sort por
+ * relevancia fuera de un search, devolvemos el default (latest_cited) en
+ * vez de tirar un 400 de OpenAlex.
+ */
+export function buildSortParam(sort: SortKey, hasSearch: boolean): string {
+  switch (sort) {
+    case 'latest_cited':
+      return 'publication_date:desc,cited_by_count:desc';
+    case 'cites_desc':
+      return 'cited_by_count:desc';
+    case 'cites_asc':
+      return 'cited_by_count:asc';
+    case 'date_desc':
+      return 'publication_date:desc';
+    case 'date_asc':
+      return 'publication_date:asc';
+    case 'title_asc':
+      return 'display_name:asc';
+    case 'title_desc':
+      return 'display_name:desc';
+    case 'fwci_desc':
+      return 'fwci:desc';
+    case 'relevance':
+      return hasSearch ? 'relevance_score:desc' : 'publication_date:desc,cited_by_count:desc';
+  }
+}
+
+/** Whitelist guard para sanitizar el URL param antes de usarlo. */
+export function isSortKey(x: string | null | undefined): x is SortKey {
+  return (
+    x === 'latest_cited' || x === 'cites_desc' || x === 'cites_asc' ||
+    x === 'date_desc' || x === 'date_asc' ||
+    x === 'title_asc' || x === 'title_desc' ||
+    x === 'fwci_desc' || x === 'relevance'
+  );
+}
+
+export const DEFAULT_SORT: SortKey = 'latest_cited';
+
 // Public API
 
 export interface FeedOptions {
@@ -182,13 +247,16 @@ export interface FeedOptions {
   limit?: number;
   /** Days back for publication_date filter. */
   daysBack?: number;
+  /** Orden del feed. Default: `latest_cited` (fecha desc, citas desc). */
+  sort?: SortKey;
 }
 
-/** Feed: recent papers in the user's selected topics, sorted by citation count. */
+/** Feed: recent papers in the user's selected topics. */
 export async function fetchFeed({
   topics,
   limit = 24,
   daysBack = 60,
+  sort = DEFAULT_SORT,
 }: FeedOptions): Promise<Paper[]> {
   const filters: string[] = [`from_publication_date:${cutoffDate(daysBack)}`];
   const cf = conceptFilter(topics);
@@ -213,7 +281,9 @@ export async function fetchFeed({
 
   const qs = buildQuery({
     filter: filters.join(','),
-    sort: 'cited_by_count:desc',
+    // hasSearch=false: en el feed no hay query de búsqueda, así que si
+    // alguien pasa sort='relevance' el builder cae a latest_cited solo.
+    sort: buildSortParam(sort, false),
     per_page: perPage,
     select:
       'id,doi,title,display_name,publication_date,publication_year,type,language,open_access,cited_by_count,authorships,concepts,abstract_inverted_index,referenced_works,primary_location,best_oa_location',
@@ -237,14 +307,14 @@ export async function fetchFeed({
 /** Full-text search. Honors topic filter if a subset of topics is provided. */
 export async function searchPapers(
   query: string,
-  opts: { limit?: number; topics?: Topic[]; daysBack?: number } = {}
+  opts: { limit?: number; topics?: Topic[]; daysBack?: number; sort?: SortKey } = {}
 ): Promise<Paper[]> {
   if (!query.trim()) return [];
   const limit = opts.limit ?? 25;
-  // Relevance-first: only require an abstract (so Explicámelo has something to work with)
-  // and sort by OpenAlex's relevance_score. Over-filtering search kills recall — a user
-  // searching for "transformers" should find the seminal paper even if we'd rather only
-  // show journal articles in the feed.
+  // Relevance-first default: sólo exigimos abstract (Explicámelo lo necesita) y
+  // ordenamos por relevance_score salvo que el usuario pida lo contrario en el
+  // dropdown. Filtrar más agresivo mata recall — un buscador que no encuentra
+  // "transformers" clásico es peor que uno con ruido.
   const filters: string[] = ['has_abstract:true'];
   // Optional time window — si el usuario tiene la perilla de Período en
   // "6 meses", respetamos eso también en search (antes el buscador era global
@@ -260,11 +330,15 @@ export async function searchPapers(
     const cf = conceptFilter(opts.topics);
     if (cf) filters.push(cf);
   }
+  // En modo search el default conceptual es 'relevance' — el que busca quiere
+  // lo más pertinente al query, no lo más nuevo. Pero si el dropdown dice
+  // "Más citados", respetamos.
+  const sortKey = opts.sort ?? 'relevance';
   const qs = buildQuery({
     search: query,
     per_page: limit,
     filter: filters.join(','),
-    sort: 'relevance_score:desc',
+    sort: buildSortParam(sortKey, true),
     select:
       'id,doi,title,display_name,publication_date,publication_year,type,language,open_access,cited_by_count,authorships,concepts,abstract_inverted_index,referenced_works,primary_location,best_oa_location',
   });
@@ -284,7 +358,11 @@ export async function fetchPaper(id: string): Promise<Paper> {
 }
 
 /** Papers that this paper cites (its references). */
-export async function fetchReferences(paper: Paper, limit = 30): Promise<Paper[]> {
+export async function fetchReferences(
+  paper: Paper,
+  limit = 30,
+  sort: SortKey = DEFAULT_SORT,
+): Promise<Paper[]> {
   if (paper.referencedWorks.length === 0) return [];
   // OpenAlex works endpoint accepts ids.openalex as a filter for batch-by-ID lookup.
   // `openalex_id` is NOT a valid field — it silently returned wrong results.
@@ -293,7 +371,9 @@ export async function fetchReferences(paper: Paper, limit = 30): Promise<Paper[]
   const qs = buildQuery({
     filter: `ids.openalex:${ids}`,
     per_page: limit,
-    sort: 'cited_by_count:desc',
+    // hasSearch=false en refs/cites: no hay query de búsqueda. 'relevance'
+    // caería automáticamente a latest_cited.
+    sort: buildSortParam(sort, false),
     select:
       'id,doi,title,display_name,publication_date,publication_year,type,language,open_access,cited_by_count,authorships,concepts,abstract_inverted_index,referenced_works,primary_location,best_oa_location',
   });
@@ -302,10 +382,14 @@ export async function fetchReferences(paper: Paper, limit = 30): Promise<Paper[]
 }
 
 /** Papers that cite this paper (its citers). */
-export async function fetchCitedBy(paper: Paper, limit = 12): Promise<Paper[]> {
+export async function fetchCitedBy(
+  paper: Paper,
+  limit = 12,
+  sort: SortKey = DEFAULT_SORT,
+): Promise<Paper[]> {
   const qs = buildQuery({
     filter: `cites:${paper.id}`,
-    sort: 'cited_by_count:desc',
+    sort: buildSortParam(sort, false),
     per_page: limit,
     select:
       'id,doi,title,display_name,publication_date,publication_year,type,language,open_access,cited_by_count,authorships,concepts,abstract_inverted_index,referenced_works,primary_location,best_oa_location',

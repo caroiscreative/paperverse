@@ -25,7 +25,7 @@
 // Modo de falla: si Pollinations está caído o devuelve basura, el hook cae al
 // título/abstract original así el feed nunca muestra blancos.
 
-import { useEffect, useState, useSyncExternalStore } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import type { Paper } from './openalex';
 import {
   withPollinationsSlot,
@@ -330,6 +330,66 @@ export interface FetchTranslationOptions {
    * 'low' = feed (default).
    */
   priority?: 'high' | 'low';
+}
+
+/**
+ * Cuántos papers prefetechamos eagerly al cargar el feed. El resto queda
+ * viewport-gated (se traducen cuando IntersectionObserver los detecta cerca
+ * del viewport).
+ *
+ * Por qué 8 y no "todos": probamos con el feed completo (~20 papers) y
+ * Pollinations tiraba 429 en cascada — la ráfaga inicial ya lo saturaba, y
+ * después las cards de abajo se encontraban con un servicio "caído" por
+ * cooldown. 8 cubre las primeras 2 pantallas de scroll (hero + ~5-6 cards
+ * visibles) que es lo que el usuario ve en el primer segundo. Los batches
+ * de 5 de abajo (BATCH_MAX) hacen que estos 8 salgan en 2 llamadas HTTP,
+ * margen sano bajo el RPM límite de Pollinations. A partir de la 9na card
+ * el viewport-gating asegura que sólo lo que se acerca al viewport
+ * enqueue-a — el scroll natural reparte la carga en el tiempo.
+ */
+const PREFETCH_MAX = 8;
+
+/**
+ * Eager prefetch de traducciones para la cabecera de una lista de papers —
+ * fire-and-forget.
+ *
+ * Antes las cards del feed sólo disparaban la traducción cuando
+ * IntersectionObserver decía que entraban al viewport. Eso mantenía la cola
+ * corta pero introducía un delay muy visible: apenas scrolleabas, la próxima
+ * card aparecía un segundo en idioma original hasta que el batcher la
+ * traducía. En papers en francés/portugués/malayo eso se notaba fuerte
+ * (títulos ilegibles que después swappeaban al español).
+ *
+ * Ahora: apenas el Feed recibe el array de papers de OpenAlex, llamamos a
+ * `prefetchTranslations(papers)` y el batcher empieza a resolver los primeros
+ * PREFETCH_MAX. Las cards que el usuario ve primero ya tienen la traducción
+ * cacheada cuando aparecen; las de abajo siguen viewport-gated y se traducen
+ * cuando se acercan.
+ *
+ * Por qué sigue respetando el viewport en el hook: el hook `useTranslated` con
+ * `enabled={isVisible}` todavía es el responsable de leer la cache y pintar
+ * la card — si ya está cacheada cuando se monta, se renderiza sincrónica sin
+ * spinner. Esta función sólo adelanta el fetch de la cabecera; no desactiva
+ * el gating.
+ *
+ * Dedup: `fetchTranslation` internamente comparte la promesa por paperId
+ * (Map `inflight`), así que llamar a esto dos veces no duplica requests.
+ * También saltea papers que ya están en la cache (chequeo sincrónico al
+ * inicio de fetchTranslation).
+ */
+export function prefetchTranslations(papers: readonly Paper[]): void {
+  // Sólo los primeros PREFETCH_MAX — el resto va por viewport gating. Así
+  // evitamos la ráfaga de 20+ requests que disparaba 429 en cascada al
+  // cargar el feed.
+  const head = papers.slice(0, PREFETCH_MAX);
+  for (const paper of head) {
+    // Fire-and-forget. Cada request maneja sus propios errores adentro;
+    // si algo falla, useTranslated cae al fallback pre-limpiado cuando la
+    // card se monte.
+    fetchTranslation(paper, { priority: 'low' }).catch(() => {
+      /* silenciado a propósito — no hay UI que notificar desde acá */
+    });
+  }
 }
 
 export async function fetchTranslation(
@@ -697,6 +757,25 @@ async function flushBatch(): Promise<void> {
     return;
   }
 
+  // Protección contra amplificación: si el batch devolvió Map vacío (JSON
+  // inválido o respuesta basura) pero no tiró error, NO caemos al path single
+  // por waiter. Causa más común de esto: Pollinations devolvió HTTP 200 con
+  // un body que no es un JSON array (por ejemplo, un mensaje de rate-limit
+  // disfrazado, o el modelo terminó con un prose antes de arrancar el array
+  // y nuestro parser no encontró `[`). En ese escenario, disparar 5 requests
+  // single-per-paper multiplica la carga justo cuando el servicio está más
+  // débil. Mejor rechazar a los waiters y dejar que `useTranslated` los
+  // reintente después (con su retry-on-error scheduling, de abajo).
+  if (results.size === 0 && batch.length > 0) {
+    console.warn(
+      '[translate] batch returned empty results; rejecting waiters without single fallback to avoid amplification'
+    );
+    for (const w of batch) {
+      w.reject(new Error('El servicio de IA está saturado'));
+    }
+    return;
+  }
+
   // Dispatch — para cada waiter, buscamos su id en el map. Si el modelo
   // omitió un id (pasó) o devolvió título pero se olvidó el lede cuando había
   // abstract para resumir, ese waiter cae al path single. Así evitamos dejar
@@ -725,7 +804,11 @@ async function flushBatch(): Promise<void> {
   }
   writeCache(next);
 
-  // Huérfanos: reintentar por single.
+  // Huérfanos: reintentar por single. Ojo — acá sólo llegan waiters que
+  // sí tuvieron un match parcial en el batch (falta título, falta lede, id
+  // ausente). Si el batch entero falló, arriba ya cortamos. Así que como
+  // mucho tenemos 1-2 orphans por batch, no 5, y una retransmisión single
+  // para completar el lede que el modelo se olvidó es aceptable.
   for (const w of orphans) {
     fetchTranslationSingle(w.paper, w.priority)
       .then(w.resolve)
@@ -878,6 +961,20 @@ function parseBatchResponse(raw: string): Map<string, TranslatedPaper> {
   const start = s.indexOf('[');
   const end = s.lastIndexOf(']');
   if (start === -1 || end === -1 || end <= start) {
+    // Sin brackets y con señales de banner de error del proveedor → tiramos
+    // un error de rate-limit en vez de devolver Map vacío. Así flushBatch lo
+    // clasifica como rate-limit directo y salta la guarda empty-results
+    // (ambas terminan rechazando waiters con "saturado", pero así el log es
+    // 1 warning en vez de 2 y la clasificación es más precisa). Heurística:
+    // respuesta corta (< 400 chars) con al menos una palabra típica de banner
+    // de error en inglés o español.
+    const lower = s.toLowerCase();
+    const looksLikeErrorBanner =
+      s.length < 400 &&
+      /\b(rate[\s-]?limit|quota|too many|unavailable|saturado|error|forbidden|unauthorized|try again)\b/.test(lower);
+    if (looksLikeErrorBanner) {
+      throw new Error(`El servicio de IA está saturado (${s.slice(0, 80)})`);
+    }
     console.warn('[translate] batch response had no JSON array', raw.slice(0, 300));
     return map;
   }
@@ -938,10 +1035,50 @@ export interface UseTranslatedOptions {
 }
 
 /**
+ * Cuántas veces reintentamos una traducción por card después de un error
+ * antes de rendirnos. Bajado a 1 porque más retries saturan más: el
+ * cooldown de Pollinations ya es de hasta 20s interno, y si reintentamos
+ * agresivamente alimentamos el problema. Con 1 solo retry a los 8s
+ * cubrimos el caso típico (ráfaga inicial 429 que se libera en <10s) sin
+ * insistir cuando el servicio está realmente caído.
+ */
+const USE_TRANSLATED_MAX_RETRIES = 1;
+
+/**
+ * Demora del único reintento (ms). 8s ≈ lo que tarda Pollinations en
+ * drenar una cola típica después de un 429.
+ */
+const USE_TRANSLATED_RETRY_DELAYS_MS = [8_000];
+
+/**
+ * Tope duro de cuánto mostramos el skeleton antes de swappear al título
+ * original pre-limpiado. Si la traducción llega antes, perfecto — el
+ * skeleton nunca se ve porque fue < frame de render. Si tarda más (batch
+ * lento, 429, etc.), después de este timeout el usuario ve el título
+ * original en inglés/francés/etc, legible, y la traducción sigue
+ * viniendo en background — swappea en cuanto llega.
+ *
+ * Trade-off: 3.5s es suficiente para cubrir un batch normal (~2–3s) sin
+ * que el skeleton se sienta indefinido cuando las cosas van mal. usuario:
+ * "si se satura y entro en cooldown pierdo toda la capacidad de lectura,
+ * aun en inglés" — este timeout garantiza que siempre hay texto leíble
+ * en ≤3.5s desde el mount, pase lo que pase con Pollinations.
+ */
+const SKELETON_MAX_MS = 3_500;
+
+/**
  * Lazy-loads + cachea el título + lede traducidos de un paper. Devuelve el
  * texto original (pre-limpiado) como fallback inmediato, después swappea a
  * la traducción cuando llega. Seguro de llamar en cada PaperCard — los
  * requests in-flight están dedupeados por paperId.
+ *
+ * Retry-on-error (fix ): cuando una traducción falla por 429 /
+ * rate-limit / JSON malformado, el hook programa un reintento con delay
+ * exponencial hasta `USE_TRANSLATED_MAX_RETRIES` veces — siempre y cuando la
+ * card siga `enabled` (viewport-visible). Sin esto, cuando una ráfaga de
+ * requests saturaba Pollinations las cards quedaban muertas en fallback y
+ * el usuario tenía que apretar el botón de refresh manualmente para
+ * recuperarlas. Ahora se recuperan solas cuando la cola drena.
  */
 export function useTranslated(
   paper: Paper | null | undefined,
@@ -985,11 +1122,36 @@ export function useTranslated(
   })();
 
   const [state, setState] = useState(initial);
+  // Tick que se bumpea cuando queremos reintentar. Agregado a los deps del
+  // effect principal así cambiarlo re-dispara el fetch. Resetear a 0 por sí
+  // solo no re-corre el effect (mismo valor), así que usamos un contador
+  // monótono y lo incrementamos.
+  const [retryTick, setRetryTick] = useState(0);
+  // Contador de intentos hechos para el paper actual. Vive en ref porque no
+  // queremos que cada aumento re-renderee, sólo que sobreviva al próximo
+  // tick. Se resetea en el efecto cuando cambia paper.id o version.
+  const attemptRef = useRef(0);
+  // Guardamos el último paper.id / version que "conocimos" para saber cuándo
+  // corresponde resetear el attempt counter. Sin esto, el efecto tendría que
+  // ser consciente de diferencias entre sus propios re-runs (retry vs reset).
+  const lastKeyRef = useRef<string | null>(null);
+  const lastVersionRef = useRef<number>(version);
 
   useEffect(() => {
     if (!paper) {
       setState({ title: '', lede: '', loading: false });
       return;
+    }
+
+    // Cuando cambia el paper (otro id) o el usuario refresheó la cache
+    // (version bumpeó), arrancamos de cero con los intentos. Si estamos
+    // acá por un retryTick, mantenemos el counter.
+    const keyChanged = lastKeyRef.current !== paper.id;
+    const versionChanged = lastVersionRef.current !== version;
+    if (keyChanged || versionChanged) {
+      attemptRef.current = 0;
+      lastKeyRef.current = paper.id;
+      lastVersionRef.current = version;
     }
 
     // Re-check cache en cada cambio de id — el componente puede haberse
@@ -1010,36 +1172,95 @@ export function useTranslated(
       return;
     }
 
-    setState({ title: fallbackTitle, lede: fallbackLede, loading: true });
+    // Skeleton sólo en el PRIMER intento de cada paper. Una vez que ya
+    // intentamos una vez (con éxito o con error), los retries corren en
+    // background silenciosos — la card mantiene visible el título original
+    // pre-limpiado (inglés / francés / lo que sea) mientras esperamos. Si
+    // llega la traducción, swappeamos a español; si no, el usuario al menos
+    // puede leer algo. Sin esto, cada retry re-prendía loading=true y la
+    // card volvía al skeleton, dejando al usuario ~30s mirando placeholders
+    // grises sin texto.
+    const isFirstAttempt = attemptRef.current === 0;
+    if (isFirstAttempt) {
+      setState({ title: fallbackTitle, lede: fallbackLede, loading: true });
+    }
+    // En retry: NO tocamos el state — el catch del intento anterior ya dejó
+    // el fallback visible (loading=false). La request corre invisible.
 
     let cancelled = false;
+    let retryTimer: ReturnType<typeof setTimeout> | null = null;
+    let skeletonTimer: ReturnType<typeof setTimeout> | null = null;
+
+    // Tope duro al skeleton inicial: si la traducción no llegó en
+    // SKELETON_MAX_MS, swappeamos al fallback igual. La fetch sigue corriendo
+    // en background (no la cancelamos) — cuando termine, va a actualizar el
+    // state con la traducción en español. Esto evita el peor caso donde
+    // Pollinations está saturado y el skeleton se queda indefinido.
+    if (isFirstAttempt) {
+      skeletonTimer = setTimeout(() => {
+        if (cancelled) return;
+        setState(s => (s.loading ? { ...s, loading: false } : s));
+      }, SKELETON_MAX_MS);
+    }
+
     fetchTranslation(paper, { priority })
       .then(t => {
         if (cancelled) return;
+        if (skeletonTimer !== null) clearTimeout(skeletonTimer);
         setState({
           title: t.titleEs || fallbackTitle,
           lede: t.ledeEs || fallbackLede,
           loading: false,
         });
+        // Éxito — resetear el contador por si más adelante algún refresh
+        // re-dispara la traducción para el mismo paper.
+        attemptRef.current = 0;
       })
       .catch(err => {
-        // Loggeamos errores no-abort para que en DevTools quede rastro de si
-        // el problema es timeout, 429, CORS, o content garbled.
-        if (!isAbortError(err)) {
-          console.warn('[translate] fetch failed', paper.id, err);
+        if (cancelled) return;
+
+        // Abort (user refresheó la cache, cambió el paper, etc.) — no
+        // reintentar. El componente ya va a re-renderearse con nuevos
+        // inputs y arrancar de cero.
+        if (isAbortError(err)) {
+          if (skeletonTimer !== null) clearTimeout(skeletonTimer);
+          return;
         }
-        // Fallback: stay on the pre-cleaned title + abstract original. Mejor
-        // ver algo en inglés que tener la card en blanco.
-        if (!cancelled) {
-          setState({ title: fallbackTitle, lede: fallbackLede, loading: false });
+
+        console.warn('[translate] fetch failed', paper.id, err);
+        if (skeletonTimer !== null) clearTimeout(skeletonTimer);
+        // Fallback visual mientras esperamos el retry. En retry esto es
+        // idempotente (loading ya estaba false) pero lo seteamos igual para
+        // asegurarnos que el título quede en el fallback fresco.
+        setState({ title: fallbackTitle, lede: fallbackLede, loading: false });
+
+        // Retry-on-error: 1 sólo retry a los 8s. Si vuelve a fallar, nos
+        // quedamos con el original — el usuario puede leerlo y/o apretar
+        // refresh manual si lo necesita en español.
+        const attempt = attemptRef.current;
+        if (attempt < USE_TRANSLATED_MAX_RETRIES) {
+          const delay =
+            USE_TRANSLATED_RETRY_DELAYS_MS[
+              Math.min(attempt, USE_TRANSLATED_RETRY_DELAYS_MS.length - 1)
+            ];
+          attemptRef.current = attempt + 1;
+          retryTimer = setTimeout(() => {
+            if (!cancelled) {
+              // Dentro del setState — usar updater form para evitar depender
+              // del closure viejo del tick.
+              setRetryTick(t => t + 1);
+            }
+          }, delay);
         }
       });
 
     return () => {
       cancelled = true;
+      if (retryTimer !== null) clearTimeout(retryTimer);
+      if (skeletonTimer !== null) clearTimeout(skeletonTimer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paper?.id, enabled, priority, version]);
+  }, [paper?.id, enabled, priority, version, retryTick]);
 
   return { ...state, original: fallbackTitle };
 }

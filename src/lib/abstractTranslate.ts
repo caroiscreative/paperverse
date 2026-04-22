@@ -260,9 +260,16 @@ export function useAbstractTranslation(
   // Si el paper ya está en español, no hay nada que traducir. Devolvemos
   // el abstract original como "traducción" para que la UI pueda usar el
   // mismo componente sin ramas especiales.
+  //
+  // Le pasamos el abstract como segundo argumento para que isSpanish pueda
+  // cruzar lo que dice OpenAlex con el texto real. OpenAlex a veces etiqueta
+  // papers en portugués como 'es' (lenguas romances cercanas confunden al
+  // detector); sin este cross-check, el hook devolvía el texto portugués
+  // como si fuera español y el lector se quedaba sin traducción.
+  //
   // IMPORTANTE: hooks SIEMPRE antes de cualquier early return — ver
   // memory/feedback_react_hooks_order.md.
-  const alreadySpanish = isSpanish(paper?.language);
+  const alreadySpanish = isSpanish(paper?.language, paper?.abstract);
 
   const [state, setState] = useState<{
     text: string;

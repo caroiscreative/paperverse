@@ -76,7 +76,16 @@ export function PaperDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { has: libraryHas, toggle: libraryToggle } = useLibrary();
-  const { has: readHas, toggle: readToggle } = useReadPapers();
+  // Auto-marcar al abrir : se pidió que al abrir un paper
+  // se marque como leído automáticamente porque "siempre me olvido de marcar
+  // el botón de leído". El botón del footer sigue existiendo por dos razones:
+  // (a) el usuario puede abrir un paper por curiosidad y no querer marcarlo
+  // como leído → el toggle le permite desmarcarlo en ese mismo view.
+  // (b) el estado visual (tick filled vs outline) es info útil en la página.
+  // Exponemos `mark` además de `toggle` para la auto-marcación del useEffect
+  // de abajo: `mark` es idempotente (no-op si ya está marcado, ver read.ts)
+  // así que es seguro llamarlo en cada mount sin preocuparnos de duplicar.
+  const { has: readHas, toggle: readToggle, mark: markRead } = useReadPapers();
 
   // Default to Explicámelo — the whole point of the app is the simplified
   // read. Users can still flip to the original abstract with the toggle.
@@ -117,11 +126,11 @@ export function PaperDetail() {
   // motivo la promesa falla, simplemente no aparece y el loader sigue
   // normal — el easter egg es bonus, no crítico.
   //
-  // Histórico: hasta esto tiraba un versículo random de la
-  // Reina-Valera 1960 via bolls.life. Se reemplazó () por la
-  // biblioteca secular curada. El fetcher viejo vive todavía en
-  // bibleVerse.ts pero no está importado por nadie — queda ahí por si
-  // algún día volvemos a reactivarlo como modo opcional.
+  // Histórico: antes esto tiraba un versículo random de la Reina-Valera
+  // 1960 via bolls.life. Se reemplazó por la biblioteca secular curada
+  // en quoteLibrary.ts. El fetcher bíblico viejo (bibleVerse.ts) se
+  // eliminó del repo; si algún día se reactiva como modo opcional hay
+  // que reintroducirlo desde git history.
   const [quote, setQuote] = useState<Quote | null>(null);
   // `quoteVisible` controla el fade-in de la cita. Se separa de `quote`
   // para que la cita NO aparezca pegada al cambio del último mensaje
@@ -229,6 +238,24 @@ export function PaperDetail() {
   useEffect(() => {
     window.scrollTo({ top: 0 });
   }, [id]);
+
+  // Auto-marcar como leído . usuario: "siempre me olvido de
+  // marcar el botón de leído". Disparamos `markRead(paper)` cada vez que
+  // tenemos un paper cargado. El effect depende de `paper` (no sólo de
+  // `paper?.id`) para garantizar que tengamos el objeto Paper completo,
+  // que es lo que necesitamos para que la entrada en `pv_read_v1` quede
+  // denormalizada (Biblioteca > "Cosas que ya leí" depende de eso para
+  // renderizar sin re-fetchear OpenAlex).
+  //
+  // markRead es idempotente: si el paper ya está marcado, no hace nada.
+  // Por eso es seguro correrlo en cada mount/cambio de paper sin lógica
+  // extra de "ya marcado o no". El usuario sigue pudiendo desmarcar con
+  // el botón del footer si abrió por curiosidad y no quiere contarlo.
+  useEffect(() => {
+    if (!paper) return;
+    markRead(paper);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paper]);
 
   // Rotación de mensajes del loader. Mientras `explainLoading && !explanation`
   // (o sea, esperamos el primer token del SSE), avanzamos un mensaje cada 3s.
@@ -1028,7 +1055,13 @@ function AbstractBilingual({
   error: string | null;
 }) {
   const original = originalLanguage?.toLowerCase() ?? null;
-  const alreadySpanish = isSpanish(original);
+  // Cross-check OpenAlex con el texto: si el ISO dice "es" pero el abstract
+  // claramente no está en español (caso típico: papers en portugués mal
+  // etiquetados como 'es'), forzamos el modo bilingüe para que se dispare
+  // la traducción y el lector tenga una versión en español. Sin este cruce,
+  // un paper portugués mislabeled colapsaba al bloque único en portugués
+  // y el lector quedaba varado.
+  const alreadySpanish = isSpanish(original, abstract);
   // Si el paper ya es español, no pedimos traducción — es el mismo texto.
   // Mostrarlo dos veces sería ruido puro, así que colapsamos al bloque
   // único sin etiquetas bilingües. Cuando el idioma viene como null/desconocido,

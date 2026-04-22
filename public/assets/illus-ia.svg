@@ -1,21 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300" role="img" aria-label="Neural network nodes">
-  <rect width="300" height="300" fill="#E0E6FF"></rect>
-  <g stroke="#0E1116" stroke-width="1.5" fill="none" opacity="0.32">
-    <path d="M70 90 L150 150 L230 90"></path>
-    <path d="M70 150 L150 150 L230 150"></path>
-    <path d="M70 210 L150 150 L230 210"></path>
-    <path d="M70 90 L150 210 L230 90"></path>
-    <path d="M70 210 L150 210 L230 210"></path>
-  </g>
-  <g>
-    <circle cx="70" cy="90" r="12" fill="#2E4BE0"></circle>
-    <circle cx="70" cy="150" r="12" fill="#FDFAF2" stroke="#0E1116" stroke-width="2"></circle>
-    <circle cx="70" cy="210" r="12" fill="#F2542D"></circle>
-    <circle cx="150" cy="150" r="20" fill="#0E1116"></circle>
-    <circle cx="150" cy="150" r="8" fill="#F5B638"></circle>
-    <circle cx="150" cy="210" r="12" fill="#8B4FE0"></circle>
-    <circle cx="230" cy="90" r="12" fill="#FDFAF2" stroke="#0E1116" stroke-width="2"></circle>
-    <circle cx="230" cy="150" r="12" fill="#2E8B57"></circle>
-    <circle cx="230" cy="210" r="12" fill="#FDFAF2" stroke="#0E1116" stroke-width="2"></circle>
-  </g>
+ <rect width="300" height="300" fill="#E0E6FF"></rect>
+ <g stroke="#0E1116" stroke-width="1.5" fill="none" opacity="0.32">
+ <path d="M70 90 L150 150 L230 90"></path>
+ <path d="M70 150 L150 150 L230 150"></path>
+ <path d="M70 210 L150 150 L230 210"></path>
+ <path d="M70 90 L150 210 L230 90"></path>
+ <path d="M70 210 L150 210 L230 210"></path>
+ </g>
+ <!-- Outline ink en nodos : todos los nodos coloreados llevan
+ stroke 2 para emparejar con los crema que ya lo tenían. El nodo
+ central ink (r=20) queda sin stroke porque el fill ya es ink. -->
+ <g>
+ <circle cx="70" cy="90" r="12" fill="#2E4BE0" stroke="#0E1116" stroke-width="2"></circle>
+ <circle cx="70" cy="150" r="12" fill="#FDFAF2" stroke="#0E1116" stroke-width="2"></circle>
+ <circle cx="70" cy="210" r="12" fill="#F2542D" stroke="#0E1116" stroke-width="2"></circle>
+ <circle cx="150" cy="150" r="20" fill="#0E1116"></circle>
+ <circle cx="150" cy="150" r="8" fill="#F5B638"></circle>
+ <circle cx="150" cy="210" r="12" fill="#8B4FE0" stroke="#0E1116" stroke-width="2"></circle>
+ <circle cx="230" cy="90" r="12" fill="#FDFAF2" stroke="#0E1116" stroke-width="2"></circle>
+ <circle cx="230" cy="150" r="12" fill="#2E8B57" stroke="#0E1116" stroke-width="2"></circle>
+ <circle cx="230" cy="210" r="12" fill="#FDFAF2" stroke="#0E1116" stroke-width="2"></circle>
+ </g>
 </svg>

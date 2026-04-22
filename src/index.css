@@ -696,48 +696,57 @@ button { font: inherit; }
   font-weight: 600;
 }
 
-/* Biblioteca — archive section for papers the user has already read. Less
-   visual weight than the "para leer" section so the reading queue stays in
-   focus. Square divider + smaller type signals "esto es historial". */
-.lib-archive {
-  margin-top: 56px;
-  padding-top: 28px;
-  border-top: 1px solid var(--border-2, rgba(14, 17, 22, 0.14));
+/* Biblioteca — tabs Guardados / Leídos. Patrón visual alineado con el
+   resto del sistema: 2px stroke unificado, mono-uppercase para etiquetas
+   (mismo idioma que section-head h2 y que el ViewToggle del feed), sin
+   transition al cambiar de estado (toggles snap — ver memoria
+   feedback_toggle_animations). La tab activa lleva borde inferior
+   acentuado; la inactiva queda gris con su contador al costado.
+   Accesibilidad: los botones ya tienen role="tab" + aria-selected desde
+   el JSX; acá sólo visualizamos. */
+.lib-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--border-2, rgba(14, 17, 22, 0.14));
+  margin-bottom: 4px;
 }
-/* El encabezado del archivo hereda el estilo mono de `.section-head h2` para
-   que "Archivo · Ya leídos" se lea igual que "Para leer" — dos secciones
-   hermanas, no una principal y una chiquita. */
-.lib-archive .paper-card {
-  opacity: 0.72;
-}
-.lib-archive .paper-card:hover {
-  opacity: 1;
-}
-
-/* Toggle del archivo — botón minimal al lado del count, tipografía mono
-   chiquita para mimetizarse con el encabezado. Sin borde para que no pese:
-   la acción es "mostrar/ocultar una lista de memoria", no un CTA. */
-.lib-archive-toggle {
+.lib-tab {
   font-family: var(--font-mono);
-  font-size: 10.5px;
+  font-size: 11px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--fg-3);
   background: transparent;
   border: 0;
-  padding: 4px 0;
+  border-bottom: 2px solid transparent;
+  padding: 14px 20px 12px;
+  margin-bottom: -2px; /* sobrepone la línea sobre el border del contenedor */
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  transition: color 120ms ease;
+  gap: 8px;
 }
-.lib-archive-toggle:hover { color: var(--fg-1); }
-.lib-archive-toggle .chev {
-  display: inline-block;
-  transition: transform 160ms ease;
+.lib-tab:hover {
+  color: var(--fg-1);
 }
-.lib-archive-toggle.open .chev { transform: rotate(90deg); }
+.lib-tab.active {
+  color: var(--fg-1);
+  border-bottom-color: var(--pv-ink);
+}
+.lib-tab .count {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--fg-3);
+  background: var(--bg-2, rgba(14, 17, 22, 0.06));
+  border-radius: 999px;
+  padding: 2px 8px;
+  min-width: 22px;
+  text-align: center;
+}
+.lib-tab.active .count {
+  color: var(--pv-ink);
+  background: var(--bg-2, rgba(14, 17, 22, 0.1));
+}
 
 /* Acciones de data del header de Biblioteca — contenedor para los botones
    "Importar JSON" + "Exportar JSON". En desktop los alineamos a la derecha
@@ -1312,9 +1321,11 @@ button { font: inherit; }
 .pv-dark .icon-btn {
   border-color: var(--border-ink);
 }
-/* Nota: .topic-chip quedó fuera del grupo de arriba porque el borde
-   "ink" (cream en dark) pegado a TODOS los chips hacía que activo e
-   inactivo compitieran. Ahora cada estado controla su borde abajo. */
+/* Nota: .topic-chip quedó fuera del grupo de arriba desde Fase 3.2
+   porque los chips ya no tienen bordes — el color soft del tópico
+   (via --chip-bg inyectado en inline style) es quien lleva la
+   identidad. En dark mode el único ajuste que queda es el flip del
+   activo, más abajo. */
 .pv-dark .search input { color: var(--fg-1); }
 .pv-dark .search input::placeholder { color: var(--fg-4); }
 
@@ -1364,23 +1375,22 @@ button { font: inherit; }
 /* Nav tabs */
 .pv-dark .pv-header nav button.active { color: var(--fg-1); border-bottom-color: var(--fg-1); }
 
-/* Topic chips en dark — el activo pide contraste fuerte (crema plena),
-   el inactivo tiene que quedarse "calladito" o los dos estados compiten.
-   Por eso el borde del inactivo es el hairline muted (--border-2), no el
-   crema señal que usábamos antes. */
-.pv-dark .topic-chip:not(.active) {
-  color: var(--fg-1);
-  background: var(--bg-surface);
-  border-color: var(--border-2);
-}
-.pv-dark .topic-chip:hover:not(.active) {
-  background: var(--bg-sunken);
-  border-color: var(--border-ink);
-}
+/* Topic chips en dark — Fase 3.2 .
+   El inactivo no necesita override: el --chip-bg (topic.soft) inyectado
+   por TopicChip.tsx se renderiza como un parche de color claro sobre el
+   cosmic-night, que es el efecto buscado. El texto sigue en --pv-ink
+   (oscuro) y como topic.soft es un tinte claro, el contraste ink-sobre-
+   soft funciona igual que en light.
+   El hover también se cubre solo: el filter: brightness(0.94) del CSS
+   base oscurece el soft sin necesitar regla separada en dark.
+   Lo único que SÍ sobreescribimos es el activo: en light el activo va
+   a fondo ink + cream, pero en dark mode --pv-ink es prácticamente el
+   mismo tono que el fondo cosmic-night, así que el chip se desaparecería.
+   Flipamos al par inverso: fondo cream + texto ink — es el mismo gesto
+   de "invertir a contraste máximo" que hace el activo en light. */
 .pv-dark .topic-chip.active {
   background: var(--pv-cream);
   color: var(--pv-ink);
-  border-color: var(--pv-cream);
 }
 
 /* Window-preset segmented group */
@@ -1450,8 +1460,12 @@ button { font: inherit; }
   color: var(--pv-ink);
 }
 
-/* Library archive — dim in both modes, but the border token flips */
-.pv-dark .lib-archive { border-top-color: var(--border-2); }
+/* Library tabs — dark mode: el borde inferior inactivo usa el token
+   oscuro; la tab activa usa el accent ink del modo dark. */
+.pv-dark .lib-tabs { border-bottom-color: var(--border-2); }
+.pv-dark .lib-tab.active { border-bottom-color: var(--fg-1); }
+.pv-dark .lib-tab .count { background: var(--bg-2, rgba(232, 232, 232, 0.08)); }
+.pv-dark .lib-tab.active .count { background: var(--bg-2, rgba(232, 232, 232, 0.14)); }
 
 /* Header blur base stays, just re-tinted (already handled above) */
 .pv-dark .pv-header .wordmark { color: var(--fg-1); }

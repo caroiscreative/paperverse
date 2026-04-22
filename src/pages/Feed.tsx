@@ -15,14 +15,20 @@ import {
   fetchCitedBy,
   fetchRandomPaper,
   searchPapers,
+  isSortKey,
+  DEFAULT_SORT,
   type Paper,
+  type SortKey,
 } from '../lib/openalex';
 import { TopicChip } from '../components/TopicChip';
 import { PaperCard } from '../components/PaperCard';
 import { PaperCardTile } from '../components/PaperCardTile';
 import { Icon } from '../components/Icon';
+import { SortDropdown } from '../components/SortDropdown';
 import { useTheme } from '../lib/theme';
 import { useDocumentTitle } from '../lib/useDocumentTitle';
+import { prefetchTranslations } from '../lib/translate';
+import { useReadPapers } from '../lib/read';
 
 const TOPIC_STORAGE_KEY = 'pv_topics_v1';
 // Bump v2 → v3 porque cambió el default (30 días → 5 años). Si dejamos
@@ -31,6 +37,13 @@ const TOPIC_STORAGE_KEY = 'pv_topics_v1';
 // invalidar una vez y que el nuevo valor por defecto tome efecto.
 const WINDOW_STORAGE_KEY = 'pv_window_days_v3';
 const VIEW_STORAGE_KEY = 'pv_feed_view_v1';
+// Preferencia del usuario: ¿mostrar los papers ya leídos en el feed/search?
+// Por default los escondemos — se pidió que al leer un
+// paper desaparezca del feed. Pero algunos usuarios van a querer ver los
+// que ya leyeron de nuevo (curiosidad, repaso, o para volver a un hilo),
+// así que agregamos un toggle en la meta-row debajo del divider.
+// Valor '1' = mostrar, cualquier otra cosa (o ausencia) = ocultar.
+const SHOW_READ_STORAGE_KEY = 'pv_show_read_v1';
 
 type ViewMode = 'list' | 'cards';
 
@@ -40,6 +53,14 @@ function readStoredView(): ViewMode {
     return raw === 'cards' ? 'cards' : 'list';
   } catch {
     return 'list';
+  }
+}
+
+function readStoredShowRead(): boolean {
+  try {
+    return localStorage.getItem(SHOW_READ_STORAGE_KEY) === '1';
+  } catch {
+    return false;
   }
 }
 
@@ -96,7 +117,7 @@ function readStoredTopics(): TopicId[] {
 }
 
 export function Feed() {
-  const [params] = useSearchParams();
+  const [params, setParams] = useSearchParams();
   const nav = useNavigate();
   // useLocation nos da pathname+search en un solo
   // objeto reactivo. Lo usamos para memorizar la URL exacta del feed en
@@ -116,9 +137,36 @@ export function Feed() {
     ? 'citedBy'
     : 'feed';
 
+  // Sort (Fase 4, ). El orden vive en el URL param ?sort=… para
+  // que viaje entre feed/refs/cites y sea compartible. Si no hay param,
+  // cada modo tiene su default "natural": search → relevancia (lo que
+  // busca el usuario), feed/refs/cites → latest_cited (lo nuevo + citado).
+  // isSortKey() sanitiza entradas inválidas (alguien pega un URL viejo o
+  // tipea mal) para no romper el fetch con un sort desconocido.
+  const rawSort = params.get('sort');
+  const sort: SortKey = isSortKey(rawSort)
+    ? rawSort
+    : mode === 'search'
+    ? 'relevance'
+    : DEFAULT_SORT;
+  const handleSortChange = (next: SortKey) => {
+    // Preservamos todos los otros params (q, cites, citedBy, etc.) para
+    // no perder contexto al cambiar el orden. `replace: false` para que
+    // el back del browser funcione como toggle entre órdenes.
+    const nextParams = new URLSearchParams(params);
+    nextParams.set('sort', next);
+    setParams(nextParams);
+  };
+
   const [selected, setSelected] = useState<TopicId[]>(readStoredTopics);
   const [daysBack, setDaysBack] = useState<number>(readStoredWindow);
   const [view, setView] = useState<ViewMode>(readStoredView);
+  // Toggle de mostrar/ocultar papers ya leídos en el feed y
+  // search. usuario: el contador de "N leídos ocultos" queda más honesto
+  // si al lado le ofrecemos un botón para verlos (por curiosidad, repaso,
+  // o porque el usuario quiere volver a un paper). Default false = siguen
+  // ocultos como hasta ahora; el usuario opta-in explícitamente.
+  const [showRead, setShowRead] = useState<boolean>(readStoredShowRead);
   // Theme toggle vive acá — se renderiza como tercer bloque del meta-row
   // del sidebar (junto a "¿Qué es Paperverse?" y "Creado por"). Antes
   // estaba en un footer fijo mobile, pero usuario prefirió integrarlo
@@ -141,6 +189,41 @@ export function Feed() {
   const [loadingMore, setLoadingMore] = useState(false);
 
   const currentWindow = useMemo(() => windowFor(daysBack), [daysBack]);
+
+  // Ocultar leídos en feed home + búsqueda . usuario: "cuando
+  // leo o abro un articulo me gustaria que ademas lo esconda del feed
+  // porque ya lo lei" + "del feed y de los filtros, bien sea de categoria
+  // o de periodo". Scope:
+  // · mode='feed' (home, con o sin filtros de topic/window) → ocultar
+  // · mode='search' (?q=) → ocultar
+  // · mode='cites' / 'citedBy' → mantener visibles (navegar el grafo de
+  // citaciones incluye papers que ya leíste; filtrarlos romperia el
+  // contexto del paper que estás explorando).
+  //
+  // Filter es client-side: OpenAlex sigue trayendo los N top por relevancia
+  // y acá filtramos. Si todos los resultados están leídos, EmptyState
+  // explica "ya los leíste todos" y sugiere desmarcar desde Biblioteca.
+  //
+  // Derivamos un Set de ids leídos para búsquedas O(1) dentro del filter.
+  // `readEntries` es reactivo via useSyncExternalStore: marcar un paper
+  // desde PaperDetail (auto-mark en mount) o desde una card re-renderiza
+  // el Feed automáticamente y el paper desaparece de la lista sin refresh.
+  const { entries: readEntries } = useReadPapers();
+  const readIds = useMemo(() => new Set(readEntries.map(e => e.paper.id)), [readEntries]);
+  // El modo soporta ocultarlos (feed + search). El toggle del usuario
+  // (`showRead`) decide si efectivamente los escondemos. En refs/cites
+  // `canHideRead` queda false y nunca filtramos, independiente del toggle.
+  const canHideRead = mode === 'feed' || mode === 'search';
+  const shouldHideRead = canHideRead && !showRead;
+  const visiblePapers = useMemo(
+    () => (shouldHideRead ? papers.filter(p => !readIds.has(p.id)) : papers),
+    [papers, shouldHideRead, readIds]
+  );
+  // Papers leídos dentro de la tanda actual del feed — sirve tanto para
+  // el contador "N leídos ocultos" (cuando showRead=false) como para
+  // "mostrando N leídos" (cuando showRead=true).
+  const readInFeedCount = canHideRead ? papers.filter(p => readIds.has(p.id)).length : 0;
+  const hiddenReadCount = shouldHideRead ? papers.length - visiblePapers.length : 0;
 
   // títulos de pestaña por ruta. El Feed soporta 4
   // modos y cada uno tiene un "lead" distinto:
@@ -172,6 +255,10 @@ export function Feed() {
   useEffect(() => {
     localStorage.setItem(VIEW_STORAGE_KEY, view);
   }, [view]);
+  useEffect(() => {
+    // '1' = mostrar leídos; '0' = ocultarlos (default editorial).
+    localStorage.setItem(SHOW_READ_STORAGE_KEY, showRead ? '1' : '0');
+  }, [showRead]);
   // Memoriza la URL actual del feed. Cuando el usuario navega a paper
   // detail o biblioteca y vuelve a clickear "Feed", lo llevamos de vuelta
   // a este estado exacto en vez de perder ?q=/?cites=/?citedBy=.
@@ -239,7 +326,7 @@ export function Feed() {
           // Pasamos daysBack para que la perilla de Período también filtre la
           // búsqueda (). Antes el search era global y la perilla, aunque
           // visible, no hacía nada en modo query — ahora son coherentes.
-          const results = await searchPapers(q, { topics: topicsForSearch, limit: 50, daysBack });
+          const results = await searchPapers(q, { topics: topicsForSearch, limit: 50, daysBack, sort });
           if (!cancelled) {
             setPapers(results);
             setLastRequested(50);
@@ -254,8 +341,8 @@ export function Feed() {
           if (cancelled) return;
           setReferencePaper(ref);
           const related = mode === 'cites'
-            ? await fetchReferences(ref, relatedLimit)
-            : await fetchCitedBy(ref, relatedLimit);
+            ? await fetchReferences(ref, relatedLimit, sort)
+            : await fetchCitedBy(ref, relatedLimit, sort);
           if (!cancelled) {
             setPapers(related);
             setLastRequested(relatedLimit);
@@ -265,6 +352,7 @@ export function Feed() {
             topics: activeTopics,
             limit: feedLimit,
             daysBack,
+            sort,
           });
           if (!cancelled) {
             setPapers(feed);
@@ -289,7 +377,19 @@ export function Feed() {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, q, cites, citedBy, activeTopics, daysBack, feedLimit, selected.length, relatedLimit]);
+  }, [mode, q, cites, citedBy, activeTopics, daysBack, feedLimit, selected.length, relatedLimit, sort]);
+
+  // Ataque 1 : apenas llegan los papers, disparamos la traducción
+  // eager de TODA la página — no esperamos a que cada card entre al viewport.
+  // El batcher agrupa de a 5 y la cola de pollirate serializa todo, así que el
+  // costo real es el mismo; lo que cambia es QUE mientras el usuario lee la
+  // primera card, las de abajo ya se están traduciendo en background. Cuando
+  // scrollee, encuentra la cache caliente y las cards aparecen en español
+  // directo en vez de flashear el original.
+  useEffect(() => {
+    if (papers.length === 0) return;
+    prefetchTranslations(papers);
+  }, [papers]);
 
   const toggleTopic = (id: TopicId) =>
     setSelected(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]));
@@ -326,18 +426,26 @@ export function Feed() {
     <div className="main">
       <aside className="sidebar">
         <div>
-          {/* Section-head con counter + "Limpiar (N)" como chip a la derecha.
+          {/* Section-head con counter + "Limpiar (N)" a la derecha.
               El chip-row abajo es un carrusel horizontal en mobile (y scrolleable
               en desktop si la lista se pasa), así que fuera del viewport no ves
               cuántos temas tenés seleccionados. El counter "(N)" resuelve eso
               de un vistazo. El "Limpiar" aparece SÓLO cuando hay al menos un
               filtro activo — si no, no habría nada que limpiar y la palabra
-              estaría pidiéndole al usuario una acción inútil. : antes el limpiar era texto mono uppercase
-              con underline sutil, que el QA leyó como label inerte en vez de
-              botón. Ahora es un chip-pill con ícono ✕ + "Limpiar (N)" en Sentence
-              case, mismo lenguaje visual que los TopicChip de abajo — quien ve
-              los chips entiende que este también es clickeable. El contador
-              local al botón refuerza el vínculo con los N temas activos. */}
+              estaría pidiéndole al usuario una acción inútil.
+
+              Historial del control:
+                · QA2 : era texto inerte con underline → lo
+                  convertimos en chip-pill con border ink + ícono × para
+                  que se leyera claramente como botón.
+                · Fase 4.1 : se pidió volver a una forma
+                  más simple — el chip con border empujaba verticalmente
+                  el section-head al activarse/desactivarse. Ahora el botón
+                  es tipográficamente idéntico al h2 (mono 10.5px uppercase,
+                  mismo letter-spacing y weight), con underline sutil como
+                  marca de acción. Al compartir métrica con el h2, la altura
+                  del section-head queda constante: aparece/desaparece sin
+                  jump visual. */}
           <div className="section-head" style={{ margin: '0 0 12px 0' }}>
             <h2>
               Tus temas
@@ -362,7 +470,6 @@ export function Feed() {
                 className="pv-clear-chip"
                 aria-label={`Limpiar ${selected.length} filtros de temas`}
               >
-                <Icon name="x" size={12} />
                 Limpiar ({selected.length})
               </button>
             )}
@@ -596,51 +703,100 @@ export function Feed() {
                 {referencePaper.title}
               </h1>
             </div>
+            {/* SortDropdown también en refs/cites (Fase 4). usuario lo pidió
+                explícitamente: "en el feed, en las citas y referencias".
+                Lo ponemos debajo del título del paper de referencia para que
+                no compita con el back-link arriba. hasSearch=false porque en
+                estas vistas no hay query de búsqueda — el item Relevancia
+                queda oculto automáticamente. */}
+            <div style={{ marginTop: 18, display: 'flex', justifyContent: 'flex-end' }}>
+              <SortDropdown value={sort} onChange={handleSortChange} hasSearch={false} />
+            </div>
           </div>
         )}
 
         {(mode === 'feed' || mode === 'search') && (
-          // Antes el título era "Recién publicado" + el conteo al costado.
-          // se pidió usar el conteo DIRECTO como título — es más honesto:
-          // el header de sección se vuelve el resultado concreto en vez de una
-          // etiqueta genérica. Menos jerarquía, más información.
+          // Fase 4.1 : se pidió mover el contador de papers
+          // ("199 papers · 5 años") del top-bar hacia DEBAJO del divider, para
+          // que la barra sticky quede exclusivamente de controles (Ordenar
+          // por + Lista/Tarjetas). Razones:
+          // · La barra sticky se siente más ordenada sin el h2 rompiendo
+          // el balance visual con los dos botones cuadrados alineados.
+          // · El contador se lee mejor "en contexto" junto al hint de
+          // "N leídos ocultos" — ambos son metadata descriptiva del
+          // resultset, no controles.
+          // · Libera espacio horizontal en mobile: dos botones cuadrados
+          // + contador largo ("199 resultados para 'quantum'") no
+          // cabían sin truncar.
           //
-          // La clase extra `feed-top-bar` lo hace sticky debajo del header:
-          // el contador y el toggle Lista/Tarjetas quedan siempre visibles
-          // mientras el usuario scrollea. Las cards pasan por debajo gracias
-          // al background sólido del bar + z-index.
+          // La clase `feed-top-bar` sigue haciéndola sticky debajo del header;
+          // sólo que ahora `justify-content: flex-end` alinea los controles
+          // a la derecha (CSS ajustado en kit.css).
           //
-          // unificamos search + feed en la misma barra
-          // sticky con ViewToggle. Antes search tenía su propio section-head
-          // no-sticky y sin toggle, lo que rompía la consistencia: el usuario
-          // que buscaba perdía el acceso a lista/tarjetas sin explicación.
-          // En search el título muestra el query literal entre comillas; en
-          // feed muestra la ventana temporal activa.
+          // search y feed comparten esta barra, así el
+          // usuario que busca sigue teniendo acceso a sort + view toggle.
           <div className="section-head feed-top-bar">
-            <h2>
-              {mode === 'search'
-                ? `${papers.length} resultados para "${q}"`
-                : `${papers.length} papers · ${currentWindow.label.toLowerCase()}`}
-            </h2>
             <div className="head-right">
+              {/* SortDropdown — hasSearch=true sólo en modo search, para que
+                  el item "Relevancia" aparezca únicamente cuando tiene
+                  sentido (OpenAlex sólo devuelve relevance_score si hay
+                  ?search=…). El valor/handler son los mismos que usan las
+                  vistas de refs/cites, así el orden viaja entre las cuatro. */}
+              <SortDropdown
+                value={sort}
+                onChange={handleSortChange}
+                hasSearch={mode === 'search'}
+              />
               <ViewToggle view={view} onChange={setView} />
             </div>
           </div>
         )}
 
-        {/* : indicador de alcance del buscador. El QA
-            observó que al buscar con un subset de "Tus temas" activo, los
-            chips del sidebar quedan resaltados pero la conexión con los
-            resultados no está clara — el usuario no sabe si la búsqueda
-            está filtrada o es global. Internamente YA lo está (searchPapers
-            recibe `topicsForSearch` cuando hay un subset propio), pero no
-            lo comunicamos.
-            Esta barra aparece sólo en mode='search' cuando hay un subset
-            PROPIO seleccionado (no 0, no todos). Muestra los nombres de los
-            temas activos en formato legible y ofrece un shortcut para
-            "buscar en todos los temas" (= des-seleccionar todo = scope global).
-            En feed mode no hace falta: el contador de papers ya implica el
-            filtro y los chips son el control primario. */}
+        {/* Meta-row debajo del divider (Fase 4.1, ). Consolida en
+            una sola línea: (a) contador de resultados, (b) hint de leídos
+            ocultos / mostrados, (c) toggle para verlos / volverlos a
+            ocultar. Tipografía mono uppercase para que lea como metadata
+            editorial, no como título. Flex-wrap para que en mobile baje
+            a dos líneas si no cabe. */}
+        {(mode === 'feed' || mode === 'search') && (
+          <div className="feed-meta-row" role="status" aria-live="polite">
+            <span className="feed-meta-count">
+              {mode === 'search'
+                ? `${visiblePapers.length} resultados para "${q}"`
+                : `${visiblePapers.length} papers · ${currentWindow.label.toLowerCase()}`}
+            </span>
+            {/* Hint + toggle de leídos. Sólo tiene sentido cuando hay
+                leídos presentes en la tanda actual (readInFeedCount > 0).
+                Si el usuario nunca leyó nada de esta ventana, escondemos
+                el bloque entero — no queremos ofrecer una acción que
+                no cambia nada visible. */}
+            {readInFeedCount > 0 && (
+              <>
+                <span className="feed-meta-sep" aria-hidden="true">·</span>
+                <span className="feed-meta-hint">
+                  {shouldHideRead
+                    ? (hiddenReadCount === 1
+                        ? '1 paper ya leído oculto'
+                        : `${hiddenReadCount} papers ya leídos ocultos`)
+                    : (readInFeedCount === 1
+                        ? '1 paper ya leído visible'
+                        : `${readInFeedCount} papers ya leídos visibles`)}
+                </span>
+                <button
+                  type="button"
+                  className="feed-meta-toggle"
+                  onClick={() => setShowRead(v => !v)}
+                  aria-pressed={showRead}
+                  // Tooltip explica qué pasa al click, útil en desktop.
+                  title={showRead ? 'Volver a ocultar los papers ya leídos' : 'Mostrar los papers ya leídos'}
+                >
+                  {showRead ? 'Ocultar' : 'Ver'}
+                </button>
+              </>
+            )}
+          </div>
+        )}
+
         {mode === 'search' && selected.length > 0 && selected.length < TOPICS.length && (
           <div
             style={{
@@ -691,17 +847,21 @@ export function Feed() {
         {!loading && !error && (
           view === 'cards' ? (
             <div className="feed-tiles">
-              {papers.map(p => (
+              {visiblePapers.map(p => (
                 <PaperCardTile key={p.id} paper={p} onClick={() => nav(`/paper/${p.id}`)} />
               ))}
-              {papers.length === 0 && <EmptyState mode={mode} />}
+              {visiblePapers.length === 0 && (
+                <EmptyState mode={mode} allFilteredAsRead={hiddenReadCount > 0 && papers.length > 0} />
+              )}
             </div>
           ) : (
             <div className="feed-list">
-              {papers.map(p => (
+              {visiblePapers.map(p => (
                 <PaperCard key={p.id} paper={p} onClick={() => nav(`/paper/${p.id}`)} />
               ))}
-              {papers.length === 0 && <EmptyState mode={mode} />}
+              {visiblePapers.length === 0 && (
+                <EmptyState mode={mode} allFilteredAsRead={hiddenReadCount > 0 && papers.length > 0} />
+              )}
             </div>
           )
         )}
@@ -975,7 +1135,33 @@ function ErrorState({ message }: { message: string }) {
   );
 }
 
-function EmptyState({ mode }: { mode: string }) {
+function EmptyState({
+  mode,
+  allFilteredAsRead = false,
+}: {
+  mode: string;
+  allFilteredAsRead?: boolean;
+}) {
+  // Caso especial: la API devolvió resultados pero TODOS están marcados como
+  // leídos y los ocultamos. Sin este copy, el usuario vería "No encontramos
+  // papers" y pensaría que la query / filtro no matcheó, cuando en realidad
+  // matcheó papers que ya leyó. El mensaje explica el porqué y le devuelve
+  // control — puede buscar otra cosa, cambiar la ventana de tiempo, o
+  // desmarcar uno desde la Biblioteca > Leídos si quiere revisarlo.
+  if ((mode === 'search' || mode === 'feed') && allFilteredAsRead) {
+    return (
+      <div className="lib-empty">
+        <div className="display" style={{ fontSize: 32 }}>
+          Ya los leíste todos.
+        </div>
+        <div className="lead">
+          {mode === 'search'
+            ? 'Todos los resultados para esta búsqueda están en tu archivo de leídos. Probá otra búsqueda o desmarcá alguno desde la Biblioteca para que vuelva a aparecer.'
+            : 'Todos los papers de esta selección ya están leídos. Probá ampliar la ventana de tiempo, elegir otro tema, o desmarcá alguno desde la Biblioteca para que vuelva a aparecer.'}
+        </div>
+      </div>
+    );
+  }
   const copy =
     mode === 'search'
       ? 'No encontramos papers con esos términos. Probá otra búsqueda.'

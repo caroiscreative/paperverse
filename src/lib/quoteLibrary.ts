@@ -1,9 +1,9 @@
 // Biblioteca de citas curadas para mostrar como easter egg mientras esperamos
 // el primer token del stream de Explicámelo.
 //
-// Reemplaza al fetch a bolls.life que traía versículos
-// aleatorios de la Reina-Valera 1960. La versión vieja (ver bibleVerse.ts)
-// funcionaba bien mecánicamente pero ponía a Paperverse en un registro
+// Reemplaza al fetch a bolls.life que traía versículos aleatorios de la
+// Reina-Valera 1960. La versión vieja (vivía en bibleVerse.ts, ya removido
+// del repo) funcionaba bien mecánicamente pero ponía a Paperverse en un registro
 // religioso que no termina de cuajar con el propósito de la app (divulgación
 // científica abierta). se pidió reemplazarla por citas seculares de
 // autores que ella aprecia.

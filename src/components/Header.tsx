@@ -145,6 +145,10 @@ export function Header() {
             tabIndex={0}
             aria-label="Ir al inicio — Paperverse"
           >
+            {/* Revert : se pidió volver al logo completo
+                `logo-mark.svg` en el header. La variante small existe en
+                /design-system para contextos ≤32px, pero la identidad
+                "canónica" (planeta + órbita punteada + core gold) vive acá. */}
             <img src="/assets/logo-mark.svg" alt="Paperverse" />
             <span className="wordmark" aria-hidden="true">
               Paperverse<span className="dot">.</span>

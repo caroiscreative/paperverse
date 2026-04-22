@@ -45,6 +45,9 @@ body {
 .pv-header .brand { display: flex; align-items: center; gap: 10px; cursor: pointer; justify-self: start; }
 .pv-header .brand img { width: 30px; height: 30px; display: block; }
 .pv-header .wordmark { font-family: var(--font-display); font-size: 26px; letter-spacing: -0.02em; color: var(--pv-ink); line-height: 1; font-weight: 400; }
+/* El "." final del wordmark lleva color cobalto. Revert :
+   habíamos probado magma para unificar con el wordmark SVG, pero se pidió volver al cobalto original. Consistente con el dot en dark mode
+   (que siempre fue cobalto). */
 .pv-header .wordmark .dot { color: var(--pv-cobalto); }
 .pv-header .search { width: 100%; max-width: 560px; margin: 0 !important; justify-self: center; }
 .pv-header nav { display: flex; gap: 4px; align-items: center; justify-self: end; }
@@ -66,25 +69,78 @@ body {
 .sidebar { position: sticky; top: 96px; align-self: start; display: flex; flex-direction: column; gap: 24px; }
 
 /* ————————————————————————————————————————— Topic chips ————————— */
+/* Restyle estético Fase 3.2 . El chip mantiene su personalidad
+   "stamp editorial" (borde 2px ink, casi sin radio, tile cuadrado con
+   color de tema) pero recibe pulido:
+     · `border-radius: 2px` para harmonizar con .btn (que también usa 2px) —
+       ya no es un cuadrado afilado puro, pero tampoco una píldora; sigue
+       leyéndose como sello.
+     · Sin `transition` en background/border — antes había un fade de 120ms
+       en bg que también afectaba al toggle activo/inactivo, contradiciendo
+       la regla del proyecto "los toggles deben snapear instantáneamente".
+       El hover, sin transition, sigue siendo legible porque el cambio de
+       color es chico y la respuesta inmediata se siente más nítida con la
+       estética stamp.
+     · Hover shift de borde ink → cobalto. Antes el hover sólo oscurecía el
+       fondo (sutil, fácil de no notar). Ahora cambia el color del borde a
+       cobalto-señal, comunicando "estás por seleccionar esto" sin pesar
+       más visualmente. El bg también se oscurece para reforzar.
+     · Padding 6/12/6/8 — quité 2px del lado derecho para que el chip no
+       quede tan ancho en la fila densa del sidebar; el tile sigue pegado
+       al borde izquierdo y el label respira con el extra del gap. */
+/* Fase 3.2 redo (, usuario). Dirección final de los chips:
+   · border-radius 0 (se quedan cuadrados, alineados con el lenguaje
+     editorial del resto del sistema).
+   · SIN bordes en ningún estado. Las chips se comunican por fondo, no
+     por outline.
+   · El fondo inactivo es el color soft del tópico (--chip-bg, inyectado
+     inline desde TopicChip.tsx con topic.soft). Eso da la identidad de
+     la categoría a primera vista, sin depender del tile interno.
+   · El estado activo flipa a fondo ink + texto cream + font-weight 700
+     + check icon (el check ya lo renderiza el componente). Los tres
+     indicadores redundantes de WCAG 1.4.1 se mantienen (aria-pressed,
+     peso, ícono), ahora sin borde.
+   · Hover en inactivo: filter brightness(0.94) — oscurece el soft sin
+     tener que definir un color por tópico. No hay transición porque
+     en Paperverse los toggles deben snap (memoria del usuario).
+   · El tile interno (.tico) se mantiene: en inactivo se funde con el
+     chip (mismo color soft) y sólo el ícono topic.deep queda visible,
+     lo cual es el efecto deseado — el chip ES el stamp de color.
+     En activo reaparece como cuadradito soft sobre el fondo ink, lo
+     cual preserva la identidad de tópico incluso cuando la chip está
+     seleccionada. */
 .topic-chip {
-  display: inline-flex; align-items: center; gap: 8px;
+  display: inline-flex; align-items: center; gap: 10px;
   font-family: var(--font-sans); font-size: 13px; font-weight: 600;
-  border-radius: 0; padding: 6px 14px 6px 8px;
-  border: 2px solid transparent;
-  background: var(--bg-surface); color: var(--pv-ink);
+  border-radius: 0; padding: 6px 12px 6px 8px;
+  border: 0;
+  background: var(--chip-bg, var(--bg-surface)); color: var(--pv-ink);
   cursor: pointer;
-  transition: background var(--dur-fast) var(--ease-out);
 }
-.topic-chip.active { background: var(--pv-ink); color: var(--pv-cream); border-color: var(--pv-ink); }
-.topic-chip:not(.active) { border-color: var(--pv-ink); }
-.topic-chip:hover:not(.active) { background: var(--bg-sunken); }
+.topic-chip.active { background: var(--pv-ink); color: var(--pv-cream); font-weight: 700; }
+.topic-chip:hover:not(.active) { filter: brightness(0.94); }
+/* El label envuelto en span permite que el check icon (cuando activo) quede
+   alineado correctamente con el texto sin que el text-node directo se rompa
+   visualmente. min-width 0 evita que un nombre de tema largo empuje al check
+   fuera del chip en mobile. */
+.topic-chip-label { min-width: 0; }
+/* Tile (.tico) — el cuadradito de color al lado del label. En inactivo
+   comparte fondo con el chip (topic.soft), así que visualmente sólo se
+   ve el ícono topic.deep flotando. En activo el chip es ink y el tile
+   reaparece como stamp topic.soft, preservando la identidad del tópico
+   con la chip seleccionada. */
 .topic-chip .tico {
-  width: 22px; height: 22px; border-radius: 0;
+  width: 24px; height: 24px; border-radius: 0;
   display: inline-flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
-.topic-chip .tico svg { width: 13px; height: 13px; display: block; }
-.topic-chip.plus { background: transparent; border: 2px dashed var(--fg-3); color: var(--fg-3); padding: 6px 14px; gap: 6px; }
+.topic-chip .tico svg { width: 14px; height: 14px; display: block; }
+/* Plus chip — el "+ Agregar tema" del onboarding/sidebar. Queda como
+   variante outline dashed (no tiene color de tópico porque representa
+   "agregar otro"), y sin bordes cuadrados — mantenemos el dashed como
+   single affordance de "este chip es especial / es un CTA". */
+.topic-chip.plus { background: transparent; border: 2px dashed var(--fg-3); color: var(--fg-3); padding: 6px 12px; gap: 6px; border-radius: 0; }
+.topic-chip.plus:hover { border-color: var(--pv-cobalto); color: var(--pv-cobalto); border-style: dashed; filter: none; }
 
 /* "Limpiar (N)" — chip de reset para los filtros de "Tus temas" del sidebar. : antes era una palabra ("limpiar") con underline
    sutil en mono uppercase, indistinguible visualmente de un label. El QA
@@ -97,32 +153,46 @@ body {
    con los chips reales de abajo. Hover invierte a tinta llena como feedback
    claro; el ✕ empuja la interpretación hacia "cerrar/quitar" en vez de
    "agregar". */
+/* Rediseño (usuario): el chip con border 2px + ícono × grande
+   era muy "destacado" y empujaba verticalmente el section-head cuando
+   aparecía → desaparecía. Ahora es un link-style tipográficamente
+   IDÉNTICO al h2 de "Tus temas" (misma fuente, mismo size, mismo
+   letter-spacing, mismo weight), con underline sutil para seguir leyendo
+   como acción. Al tener la misma métrica que el h2, el section-head
+   mantiene altura constante con o sin el botón visible — no hay jump
+   al activar un tema. */
 .pv-clear-chip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-family: var(--font-sans);
-  font-size: 12px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
   font-weight: 600;
-  color: var(--pv-ink);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--fg-3);
   background: transparent;
-  border: 2px solid var(--pv-ink);
-  border-radius: 0;
-  padding: 4px 10px 4px 8px;
+  border: 0;
+  padding: 0;
   cursor: pointer;
-  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--border-2, var(--fg-4));
+  transition: color var(--dur-fast) var(--ease-out),
+              text-decoration-color var(--dur-fast) var(--ease-out);
 }
 .pv-clear-chip:hover {
-  background: var(--pv-ink);
-  color: var(--pv-cream);
+  color: var(--pv-ink);
+  text-decoration-color: var(--pv-ink);
 }
-.pv-dark .pv-clear-chip {
-  color: var(--fg-1);
-  border-color: var(--fg-1);
+.pv-clear-chip:focus-visible {
+  outline: 2px solid var(--pv-ink);
+  outline-offset: 3px;
 }
+.pv-dark .pv-clear-chip { color: var(--fg-3); }
 .pv-dark .pv-clear-chip:hover {
-  background: var(--fg-1);
-  color: var(--pv-night);
+  color: var(--fg-1);
+  text-decoration-color: var(--fg-1);
 }
 
 /* ————————————————————————————————————————— Buttons ————————— */
@@ -233,19 +303,35 @@ body {
   top: 60px; /* header desktop ~70px → solapamos 10px para cerrar el gap */
   z-index: 40;
   isolation: isolate;
+  /* Fase 4.1 : el contador de papers dejó el top-bar. Ahora
+     sólo viven acá los controles (SortDropdown + ViewToggle), alineados
+     a la derecha. Con flex-end no necesitamos el "space-between" del
+     section-head heredado — lo pisamos acá. */
+  justify-content: flex-end;
   /* Usamos --bg-canvas (#FAF5EC) en lugar de --bg-surface (#FDFAF2) para
      que la barra se FUNDA con el fondo de la página. Antes con --bg-surface
      se veía una "franja" crema más clara que el resto porque los dos tonos
      son casi iguales pero no idénticos — el ojo pilla la diferencia de
      ~3% de luminosidad y se lee como un artefacto. Con --bg-canvas la
-     barra desaparece visualmente y sólo el contenido (h2 + toggle) + el
-     border-bottom marcan su presencia. Sigue siendo opaco, así que las
-     cards siguen escondiéndose por detrás al scrollear. */
+     barra desaparece visualmente y sólo el contenido + los bordes
+     marcan su presencia. Sigue siendo opaco, así que las cards siguen
+     escondiéndose por detrás al scrollear. */
   background: var(--bg-canvas);
   align-items: center;
   margin: 0 0 0 0;
-  padding: 18px 0 14px 0;
-  border-bottom: 1px solid var(--border-1);
+  /* Ritmo vertical (Fase 4.1, ):
+     · Divider ARRIBA de los controles (se pidió que el separador
+       del sidebar y el del feed queden coherentes visualmente — el
+       divider "abre" el bloque de controles en vez de cerrar el bar).
+     · padding-top 0 — los controles se apoyan directo sobre el divider
+       sin aire extra. usuario lo pidió explícito: el "gap" entre
+       divider y controles es demasiado, mejor que lean como un bloque
+       compacto y dejar el aire sólo donde hace falta (abajo).
+     · 16px abajo — separación entre controles y meta-row.
+     Jerarquía vertical resultante: sidebar → (gap natural) →
+     divider → controles → 16px → meta → 20px → cards. */
+  padding: 0 0 16px 0;
+  border-top: 1px solid var(--border-1);
   /* Negative margin-x + padding compensatorio para que el fondo opaco se
      extienda hasta los bordes del col-feed y cubra los 2px extra de
      seguridad contra cualquier redondeo de subpíxeles. El overflow-x
@@ -276,6 +362,187 @@ body {
 /* Primer elemento del col-feed (la barra) no debe tener el margin-top: 0
    del .section-head:first-child porque acá ya usamos padding. La regla
    original sigue aplicando pero como margin ya es 0, es no-op. */
+
+/* ————————————————————————————————————————— Sort dropdown ——————
+   Control de "Ordenar por" del Feed/Refs/Cites (Fase 4, ).
+   Es un popover custom — no un <select> nativo — para poder usar las
+   mismas tipografías e tintas del resto del sistema y meter labels
+   con hints. Lenguaje visual: sin bordes visibles en el botón (se
+   apoya en el fondo compartido de la top-bar), con una flechita
+   discreta; el menú que abre tiene borde 2px ink, radius 0, fondo
+   surface — mismo vocabulario que los toasts y los paneles.
+
+   Accesibilidad: el trigger expone aria-haspopup="listbox" y
+   aria-expanded; los items son role="option" con aria-selected. El
+   componente React también se encarga de cerrar con Escape y click
+   afuera, para que el control se comporte como un select nativo sin
+   serlo. */
+.pv-sort { position: relative; display: inline-flex; }
+
+/* Fase 4 redo : el trigger ahora es un botón secundario
+   cuadrado, con el mismo lenguaje visual que pv-view-group y
+   pv-window-group — border 2px ink + fondo bg-2 + mono 11px uppercase.
+   Esto lo alinea con el resto de los controles de la toolbar en vez de
+   flotar como un "link" liviano. Mismo tamaño en mobile y desktop.
+   El label es fijo ("Ordenar por") — el valor activo se ve sólo al
+   abrir el menú (checkmark sobre la opción seleccionada). */
+.pv-sort-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 2px solid var(--pv-ink, #0E1116);
+  background: var(--bg-2, #F4EEDD);
+  padding: 6px 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--fg-2, #2B2E33);
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+  /* Line-height fijo para que el chevron y el texto queden alineados
+     verticalmente independiente de la fuente — si no, el svg y el texto
+     se desfasan 1-2px porque el mono tiene baseline distinto. */
+  line-height: 1;
+}
+.pv-sort-trigger:hover { background: var(--bg-1, #FAF5E6); }
+.pv-sort-trigger[aria-expanded="true"] {
+  background: var(--pv-ink, #0E1116);
+  color: var(--pv-cream, #FAF5E6);
+}
+.pv-sort-label {
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.pv-sort-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 60;
+  min-width: 240px;
+  background: var(--bg-surface);
+  border: 2px solid var(--pv-ink);
+  border-radius: 0;
+  padding: 6px 0;
+  box-shadow: 0 8px 24px rgba(14, 17, 22, 0.12);
+  /* No animación — memoria del proyecto: toggles snap, no fade. */
+}
+.pv-sort-item {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  background: transparent; border: 0; padding: 8px 14px;
+  font-family: var(--font-sans); font-size: 13px; color: var(--pv-ink);
+  text-align: left;
+  cursor: pointer;
+}
+.pv-sort-item:hover { background: var(--bg-sunken); }
+.pv-sort-item.selected { background: var(--bg-sunken); font-weight: 600; }
+.pv-sort-item-main {
+  display: flex; flex-direction: column; gap: 2px;
+  min-width: 0;
+}
+.pv-sort-item-label { line-height: 1.2; }
+.pv-sort-item-hint {
+  font-family: var(--font-mono); font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: var(--fg-4);
+  font-weight: 400;
+  /* El hint queda ligeramente "desenganchado" visualmente del label para
+     que se lea como metadata, no como parte del título de la opción. */
+}
+
+/* Dark mode: el menú sobre cosmic-night necesita un fondo ligeramente
+   más claro que el canvas para diferenciarse — usamos surface que ya
+   está tokenizado para eso. El borde ink se vuelve border-ink (cream)
+   automáticamente en dark porque usamos --pv-ink directo acá. */
+.pv-dark .pv-sort-menu {
+  background: var(--bg-surface);
+  border-color: var(--border-ink);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+/* Trigger en dark — mismo tratamiento que pv-view-group / pv-window-group:
+   fondo sunken en reposo, surface en hover, y cream-fill cuando está
+   abierto (para que contraste con el menú que cae debajo). */
+.pv-dark .pv-sort-trigger {
+  background: var(--bg-sunken);
+  color: var(--fg-2);
+  border-color: var(--border-ink);
+}
+.pv-dark .pv-sort-trigger:hover { background: var(--bg-surface); }
+.pv-dark .pv-sort-trigger[aria-expanded="true"] {
+  background: var(--pv-cream);
+  color: var(--pv-ink);
+}
+
+/* ————————————————————————————————————————— Feed meta row —————
+   Fase 4.1 . Vive debajo del divider del feed-top-bar y
+   concentra la metadata del resultset: conteo de papers, hint de leídos
+   ocultos/visibles, y un toggle discreto (Ver/Ocultar) para que el
+   usuario pueda traer de vuelta los papers que ya leyó.
+
+   Tipografía mono 11px uppercase → lee como metadata editorial, igual
+   que los overlines de las cards. Flex-wrap + column-gap para que en
+   mobile los elementos rebalanceen a dos líneas sin amontonarse. */
+.feed-meta-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  column-gap: 8px;
+  row-gap: 4px;
+  /* Ritmo vertical (Fase 4.1, ): el padding-top 0 deja que el
+     padding-bottom del feed-top-bar sea el único gap entre controles y
+     meta (16px, coherente con el gap divider↔controles). El padding-bottom
+     20px da un poco más de aire antes de la primera card — usuario lo
+     pidió explícitamente: el texto de resultado no debe lamerse con las
+     cards, necesita que se lea como metadata separada del contenido. */
+  padding: 0 0 20px 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--fg-3);
+}
+.feed-meta-count {
+  /* El conteo es la señal principal de la row, así que se lee un poco
+     más firme (fg-2 en lugar de fg-3) sin llegar al ink puro. */
+  color: var(--fg-2);
+  white-space: nowrap;
+}
+.feed-meta-sep {
+  /* Punto separador entre conteo y hint. Más chico de visual weight
+     para que lea como pausa tipográfica, no como bullet. */
+  color: var(--fg-4);
+}
+.feed-meta-hint {
+  color: var(--fg-3);
+}
+.feed-meta-toggle {
+  /* Link-style button — no queremos un botón cuadrado acá porque
+     compite con SortDropdown/ViewToggle arriba. Mono uppercase con
+     underline sutil para leerse como acción inline. */
+  background: transparent;
+  border: 0;
+  padding: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--pv-ink);
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition: color 120ms ease;
+}
+.feed-meta-toggle:hover { color: var(--pv-cobalto, var(--pv-ink)); }
+.feed-meta-toggle:focus-visible {
+  outline: 2px solid var(--pv-ink);
+  outline-offset: 3px;
+}
+.pv-dark .feed-meta-toggle { color: var(--fg-1); }
+.pv-dark .feed-meta-toggle:hover { color: var(--pv-cobalto, var(--fg-1)); }
 
 /* ————————————————————————————————————————— Paper card ————————— */
 .feed-list { display: flex; flex-direction: column; gap: 14px; }
@@ -556,7 +823,11 @@ body {
 }
 .onb-card .lead { font-size: 17px; color: var(--fg-2); margin: 0 auto 28px; max-width: 52ch; line-height: 1.55; }
 .onb-card .topics { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 24px; }
-.onb-card .topics .topic-chip { font-size: 14px; padding: 8px 18px 8px 10px; }
+/* En Welcome el chip es más grande (el eje central de la decisión) así que
+   sube fontSize y el bloque de aire derecho se mantiene generoso. Con el
+   restyle Fase 3.2 ajustamos el right padding para que el ratio con el
+   base chip siga siendo coherente (base 12 → Welcome 14, ~17% más). */
+.onb-card .topics .topic-chip { font-size: 14px; padding: 8px 14px 8px 10px; }
 
 /* Contador — línea propia, arriba del botón. Mismo tratamiento mono/gris
    que la barra de "estado" del Feed, así se lee como metadato, no como CTA. */
@@ -620,10 +891,12 @@ body {
   /* Feed top bar sticky — en tablet el header es intermedio (~58-62px).
      Bajamos a 52px para solapar ~6-10px con el borde del header y cerrar
      cualquier gap por donde las cards pudieran asomarse al scrollear.
-     El header tiene z-index 50, así que el solape no se ve visualmente. */
+     El header tiene z-index 50, así que el solape no se ve visualmente.
+     Padding-top 0 (igual que desktop): controles pegados al divider.
+     Padding-bottom 14 da el aire hacia la meta-row. */
   .feed-top-bar {
     top: 52px;
-    padding: 14px 0 12px 0;
+    padding: 0 0 14px 0;
   }
 
   /* Paper card — thumb más chico, padding reducido */
@@ -736,10 +1009,16 @@ body {
   /* Feed top bar sticky — en mobile el header es ~50-55px. Usamos top:48px
      para solapar ~5px con el borde del header y eliminar cualquier gap
      donde las cards pudieran verse al scrollear. Padding vertical compacto
-     para no robar demasiado espacio de lectura en pantallas chicas. */
+     para no robar demasiado espacio de lectura en pantallas chicas.
+     Padding-top 0 (coherente con desktop/tablet) + 12 abajo. */
   .feed-top-bar {
     top: 48px;
-    padding: 12px 0 10px 0;
+    padding: 0 0 12px 0;
+  }
+  /* Meta-row en mobile: menos aire antes de las cards, pero manteniendo
+     una diferencia clara con los 12px de arriba. */
+  .feed-meta-row {
+    padding-bottom: 16px;
   }
 
   /* Topics — carrusel horizontal en mobile. se pidió volver al
@@ -905,6 +1184,6 @@ body {
   .onb-logo { width: 170px; }
   .onb-card h1 { font-size: 36px; }
   .onb-card .lead { font-size: 15px; }
-  .onb-card .topics .topic-chip { font-size: 13px; padding: 7px 14px 7px 8px; }
+  .onb-card .topics .topic-chip { font-size: 13px; padding: 7px 12px 7px 8px; }
   .onb-count { font-size: 11px; }
 }

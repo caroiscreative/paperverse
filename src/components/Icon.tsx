@@ -32,7 +32,8 @@ type IconName =
   | 'plus'
   | 'refresh'
   | 'file-text'
-  | 'send';
+  | 'send'
+  | 'chevron-down';
 
 interface Props extends Omit<SVGProps<SVGSVGElement>, 'name'> {
   name: IconName;
@@ -331,6 +332,14 @@ export function Icon({
         <svg {...common}>
           <path d="m22 2-7 20-4-9-9-4Z" />
           <path d="M22 2 11 13" />
+        </svg>
+      );
+    case 'chevron-down':
+      // Usado en el SortDropdown. Más cerrado que arrow-down: comunica
+      // "expande este menú" en vez de "avanza hacia abajo".
+      return (
+        <svg {...common}>
+          <path d="m6 9 6 6 6-6" />
         </svg>
       );
     default:

@@ -1,24 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300" role="img" aria-label="Mathematical sine curve on grid">
-  <rect width="300" height="300" fill="#D9E3FB"></rect>
-  <g stroke="#254AB0" stroke-width="0.8" opacity="0.22">
-    <line x1="30" y1="0" x2="30" y2="300"></line>
-    <line x1="60" y1="0" x2="60" y2="300"></line>
-    <line x1="90" y1="0" x2="90" y2="300"></line>
-    <line x1="120" y1="0" x2="120" y2="300"></line>
-    <line x1="180" y1="0" x2="180" y2="300"></line>
-    <line x1="210" y1="0" x2="210" y2="300"></line>
-    <line x1="240" y1="0" x2="240" y2="300"></line>
-    <line x1="270" y1="0" x2="270" y2="300"></line>
-    <line x1="0" y1="30" x2="300" y2="30"></line>
-    <line x1="0" y1="60" x2="300" y2="60"></line>
-    <line x1="0" y1="90" x2="300" y2="90"></line>
-    <line x1="0" y1="120" x2="300" y2="120"></line>
-    <line x1="0" y1="180" x2="300" y2="180"></line>
-    <line x1="0" y1="210" x2="300" y2="210"></line>
-    <line x1="0" y1="240" x2="300" y2="240"></line>
-    <line x1="0" y1="270" x2="300" y2="270"></line>
-  </g>
-  <line x1="0" y1="150" x2="300" y2="150" stroke="#254AB0" stroke-width="1.5"></line>
-  <line x1="150" y1="0" x2="150" y2="300" stroke="#254AB0" stroke-width="1.5"></line>
-  <path d="M 20 150 Q 52.5 90 85 150 Q 117.5 210 150 150 Q 182.5 90 215 150 Q 247.5 210 280 150" fill="none" stroke="#3D6AE0" stroke-width="3.5" stroke-linecap="round"></path>
+ <rect width="300" height="300" fill="#D9E3FB"></rect>
+ <g stroke="#254AB0" stroke-width="0.8" opacity="0.22">
+ <line x1="30" y1="0" x2="30" y2="300"></line>
+ <line x1="60" y1="0" x2="60" y2="300"></line>
+ <line x1="90" y1="0" x2="90" y2="300"></line>
+ <line x1="120" y1="0" x2="120" y2="300"></line>
+ <line x1="180" y1="0" x2="180" y2="300"></line>
+ <line x1="210" y1="0" x2="210" y2="300"></line>
+ <line x1="240" y1="0" x2="240" y2="300"></line>
+ <line x1="270" y1="0" x2="270" y2="300"></line>
+ <line x1="0" y1="30" x2="300" y2="30"></line>
+ <line x1="0" y1="60" x2="300" y2="60"></line>
+ <line x1="0" y1="90" x2="300" y2="90"></line>
+ <line x1="0" y1="120" x2="300" y2="120"></line>
+ <line x1="0" y1="180" x2="300" y2="180"></line>
+ <line x1="0" y1="210" x2="300" y2="210"></line>
+ <line x1="0" y1="240" x2="300" y2="240"></line>
+ <line x1="0" y1="270" x2="300" y2="270"></line>
+ </g>
+ <line x1="0" y1="150" x2="300" y2="150" stroke="#254AB0" stroke-width="1.5"></line>
+ <line x1="150" y1="0" x2="150" y2="300" stroke="#254AB0" stroke-width="1.5"></line>
+ <path d="M 20 150 Q 52.5 90 85 150 Q 117.5 210 150 150 Q 182.5 90 215 150 Q 247.5 210 280 150" fill="none" stroke="#3D6AE0" stroke-width="3.5" stroke-linecap="round"></path>
 </svg>

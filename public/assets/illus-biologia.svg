@@ -1,32 +1,35 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300" role="img" aria-label="DNA helix">
-  <rect width="300" height="300" fill="#D6EEDE"></rect>
-  <g stroke="#2E8B57" stroke-width="2.5" fill="none">
-    <path d="M115 55 Q 185 95 115 135 Q 45 175 115 215 Q 185 245 115 255"></path>
-    <path d="M185 55 Q 115 95 185 135 Q 255 175 185 215 Q 150 235 185 255"></path>
-  </g>
-  <g stroke="#0E1116" stroke-width="2">
-    <line x1="125" y1="72" x2="175" y2="72"></line>
-    <line x1="110" y1="98" x2="190" y2="98"></line>
-    <line x1="100" y1="125" x2="200" y2="125"></line>
-    <line x1="110" y1="155" x2="190" y2="155"></line>
-    <line x1="125" y1="182" x2="175" y2="182"></line>
-    <line x1="140" y1="210" x2="160" y2="210"></line>
-    <line x1="125" y1="236" x2="175" y2="236"></line>
-  </g>
-  <g fill="#F2542D">
-    <circle cx="125" cy="72" r="4.5"></circle>
-    <circle cx="190" cy="98" r="4.5"></circle>
-    <circle cx="100" cy="125" r="4.5"></circle>
-    <circle cx="190" cy="155" r="4.5"></circle>
-    <circle cx="125" cy="182" r="4.5"></circle>
-    <circle cx="160" cy="210" r="4.5"></circle>
-  </g>
-  <g fill="#F5B638">
-    <circle cx="175" cy="72" r="4.5"></circle>
-    <circle cx="110" cy="98" r="4.5"></circle>
-    <circle cx="200" cy="125" r="4.5"></circle>
-    <circle cx="110" cy="155" r="4.5"></circle>
-    <circle cx="175" cy="182" r="4.5"></circle>
-    <circle cx="140" cy="210" r="4.5"></circle>
-  </g>
+ <rect width="300" height="300" fill="#D6EEDE"></rect>
+ <g stroke="#2E8B57" stroke-width="2.5" fill="none">
+ <path d="M115 55 Q 185 95 115 135 Q 45 175 115 215 Q 185 245 115 255"></path>
+ <path d="M185 55 Q 115 95 185 135 Q 255 175 185 215 Q 150 235 185 255"></path>
+ </g>
+ <g stroke="#0E1116" stroke-width="2">
+ <line x1="125" y1="72" x2="175" y2="72"></line>
+ <line x1="110" y1="98" x2="190" y2="98"></line>
+ <line x1="100" y1="125" x2="200" y2="125"></line>
+ <line x1="110" y1="155" x2="190" y2="155"></line>
+ <line x1="125" y1="182" x2="175" y2="182"></line>
+ <line x1="140" y1="210" x2="160" y2="210"></line>
+ <line x1="125" y1="236" x2="175" y2="236"></line>
+ </g>
+ <!-- Outline ink en nucleotidos : consistencia con Ciencia —
+ todas las formas principales llevan stroke 1.5 ink para no leerse
+ "más blandas" que el papelito de Ciencia. -->
+ <g fill="#F2542D" stroke="#0E1116" stroke-width="1.5">
+ <circle cx="125" cy="72" r="4.5"></circle>
+ <circle cx="190" cy="98" r="4.5"></circle>
+ <circle cx="100" cy="125" r="4.5"></circle>
+ <circle cx="190" cy="155" r="4.5"></circle>
+ <circle cx="125" cy="182" r="4.5"></circle>
+ <circle cx="160" cy="210" r="4.5"></circle>
+ </g>
+ <g fill="#F5B638" stroke="#0E1116" stroke-width="1.5">
+ <circle cx="175" cy="72" r="4.5"></circle>
+ <circle cx="110" cy="98" r="4.5"></circle>
+ <circle cx="200" cy="125" r="4.5"></circle>
+ <circle cx="110" cy="155" r="4.5"></circle>
+ <circle cx="175" cy="182" r="4.5"></circle>
+ <circle cx="140" cy="210" r="4.5"></circle>
+ </g>
 </svg>

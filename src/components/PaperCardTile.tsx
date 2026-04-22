@@ -22,6 +22,7 @@ import { useReadPapers } from '../lib/read';
 import { showToast } from '../lib/toast';
 import { useOnScreen } from '../lib/useOnScreen';
 import { Icon } from './Icon';
+import { TitleSkeleton } from './TranslationSkeleton';
 
 interface Props {
   paper: Paper;
@@ -52,7 +53,14 @@ export function PaperCardTile({ paper, onClick, weekLabel }: Props) {
   // primera pintura.
   const [visibilityRef, isVisible] = useOnScreen<HTMLElement>('300px');
 
-  const { title: titleEs } = useTranslated(paper, { enabled: isVisible });
+  // Ataque 3 : mientras la traducción está en vuelo mostramos
+  // skeleton en lugar del título original en idioma foráneo. En la vista
+  // grilla esto es especialmente importante porque el título es el único
+  // texto visible de cada tile (no hay lede), así que un título en francés
+  // mientras carga domina toda la card.
+  const { title: titleEs, loading: translating } = useTranslated(paper, {
+    enabled: isVisible,
+  });
 
   const { has, toggle } = useLibrary();
   const saved = has(paper.id);
@@ -97,7 +105,11 @@ export function PaperCardTile({ paper, onClick, weekLabel }: Props) {
             {topicName} · {paper.year ?? '—'}
             {read && <> · <span className="read-tag">leído</span></>}
           </span>
-          <h3 className="title">{titleEs}</h3>
+          {translating ? (
+            <TitleSkeleton />
+          ) : (
+            <h3 className="title">{titleEs}</h3>
+          )}
           <div className="tile-meta">
             {paper.primaryAuthor} · Citado {paper.citedByCount.toLocaleString()}
           </div>

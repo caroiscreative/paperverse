@@ -7,6 +7,7 @@ import { useReadPapers } from '../lib/read';
 import { showToast } from '../lib/toast';
 import { useTranslated } from '../lib/translate';
 import { useOnScreen } from '../lib/useOnScreen';
+import { TitleSkeleton, LedeSkeleton } from './TranslationSkeleton';
 
 interface Props {
   paper: Paper;
@@ -35,10 +36,18 @@ export function PaperCard({ paper, onClick, variant = 'full' }: Props) {
   // flash cuando se vuelve a renderizar.
   const [visibilityRef, isVisible] = useOnScreen<HTMLElement>('300px');
 
-  // Editorial Spanish title + lede. Falls back to the pre-cleaned original
-  // while the translation is in flight, so the feed never shows blanks or
-  // flickers. See src/lib/translate.ts for the caching + Pollinations call.
-  const { title: titleEs, lede: ledeEs } = useTranslated(paper, { enabled: isVisible });
+  // Editorial Spanish title + lede. Ataque 3 : antes caíamos al
+  // título original pre-limpiado durante el loading, pero en papers en idiomas
+  // que el lector no entiende (francés, portugués, malayo) ese texto leía como
+  // basura hasta que Pollinations respondía. Ahora mientras `loading` está
+  // prendido mostramos skeleton — cero texto foráneo visible. La prefetch
+  // eager del Feed (Ataque 1) hace que la mayoría de las cards ya tengan la
+  // traducción en cache cuando entran al viewport, así que el skeleton sólo
+  // aparece en las de abajo cuando el usuario scrollea más rápido que el
+  // batcher.
+  const { title: titleEs, lede: ledeEs, loading: translating } = useTranslated(paper, {
+    enabled: isVisible,
+  });
   const lede = ledeEs || null;
 
   const { has, toggle } = useLibrary();
@@ -117,6 +126,11 @@ export function PaperCard({ paper, onClick, variant = 'full' }: Props) {
     );
   }
 
+  // Nota: en el compact variant de arriba NO ponemos skeleton. Ese variant lo
+  // usa la lista de recomendaciones del PaperDetail, donde la traducción casi
+  // siempre ya está en caché (porque el paper principal ya las disparó o el
+  // usuario lo vio en el feed). Un skeleton ahí sería ruido.
+
   return (
     <article
       ref={visibilityRef}
@@ -165,8 +179,17 @@ export function PaperCard({ paper, onClick, variant = 'full' }: Props) {
           )}
           {read && <> · <span className="read-tag">leído</span></>}
         </span>
-        <h3 className="title">{titleEs}</h3>
-        {lede && <p className="lede">{lede}</p>}
+        {translating ? (
+          <>
+            <TitleSkeleton />
+            {paper.abstract && <LedeSkeleton />}
+          </>
+        ) : (
+          <>
+            <h3 className="title">{titleEs}</h3>
+            {lede && <p className="lede">{lede}</p>}
+          </>
+        )}
         <Byline paper={paper} />
       </div>
       <div className="actions-col">

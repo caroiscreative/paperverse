@@ -1,17 +1,20 @@
 // Biblioteca — locally-saved + locally-read papers.
 //
-// Two sections, in this order:
-// 1. "Para leer" — bookmarked papers the user hasn't marked as read.
-// This is the active queue, shown first at full weight.
-// 2. "Archivo · ya leídos" — anything the user marked as read (whether or
-// not it was also bookmarked). Colapsado por defecto: usuario prefiere
-// que el foco esté en lo que TIENE que leer, no en el historial. El
-// archivo es un índice opt-in, no una lista permanente.
+// Two tabs (, usuario): Guardados / Leídos. Guardados es la
+// sección activa por default (lo que ella eligió conservar). Leídos es el
+// historial completo de lectura — todo lo que se marcó como leído (sea
+// porque abrió el detail, sea porque tocó el toggle), sirve como índice de
+// memoria. Antes teníamos "Para leer" + "Archivo" como dos secciones
+// apiladas; las tabs reemplazan ese layout por una vista más limpia que
+// además se alinea con el cambio en Feed (los leídos se ocultan, así que
+// la "Biblioteca > Leídos" pasa a ser donde usuario los recupera para
+// desmarcarlos si necesita verlos de nuevo).
 //
-// No server / no auth — both lists come from localStorage. Por eso hay un
-// callout arriba que lo hace explícito y ofrece el export JSON como backup.
+// No server / no auth — ambas listas vienen de localStorage. Por eso hay
+// un callout arriba que lo hace explícito y ofrece el export JSON como
+// backup.
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLibrary, importLibraryEntries } from '../lib/library';
 import { useReadPapers, importReadEntries } from '../lib/read';
@@ -25,11 +28,14 @@ export function Library() {
   // tab title "Biblioteca — Paperverse".
   useDocumentTitle('Biblioteca');
   const { entries: savedEntries } = useLibrary();
-  const { entries: readEntries, has: readHas } = useReadPapers();
+  const { entries: readEntries } = useReadPapers();
 
-  // El archivo arranca cerrado — abrirlo es una decisión consciente del
-  // usuario, no algo que tenga que esquivar al entrar a la biblioteca.
-  const [archiveOpen, setArchiveOpen] = useState(false);
+  // Tab activo. 'saved' por default: cuando entrás a la biblioteca, lo que
+  // querés ver primero es lo que decidiste guardar. La tab Leídos es el
+  // historial — útil pero secundaria. Sin persistencia entre sesiones
+  // intencional: cada visita arranca en Guardados para no esconder lo
+  // accionable detrás de una preferencia vieja.
+  const [activeTab, setActiveTab] = useState<'saved' | 'read'>('saved');
 
   // el callout de persistencia (localStorage) antes
   // estaba siempre abierto ocupando espacio vertical en la cabecera de la
@@ -60,15 +66,12 @@ export function Library() {
     }
   }, [persistenceOpen]);
 
-  // "Para leer" = saved AND not yet marked as read.
-  const toRead = useMemo(
-    () => savedEntries.filter(e => !readHas(e.paper.id)),
-    [savedEntries, readHas]
-  );
-
-  // "Archivo" = everything the user has read, newest first. The read store is
-  // already sorted newest-first (useReadPapers prepends on mark).
-  const archive = readEntries;
+  // Listas por tab. Ambos stores ya vienen ordenados newest-first.
+  // Nota: un paper puede aparecer en ambas tabs si el usuario lo guardó y
+  // además lo leyó. Es correcto y deseable — cada tab muestra la lista
+  // completa de su concepto, sin solapamientos ocultos que confundan.
+  const saved = savedEntries;
+  const read = readEntries;
 
   const isEmpty = savedEntries.length === 0 && readEntries.length === 0;
 
@@ -175,14 +178,17 @@ export function Library() {
   };
 
   const total = savedEntries.length + readEntries.length;
+  // Headline: muestra ambos contadores cuando hay de los dos, y se adapta
+  // cuando solo hay uno. Mantiene el espíritu de la "tagline editorial"
+  // que tenía la página antes.
   const headline =
     total === 0
       ? 'Nada guardado todavía.'
-      : toRead.length > 0 && archive.length > 0
-      ? `${toRead.length} para leer · ${archive.length} leídos`
-      : toRead.length > 0
-      ? `${toRead.length} para leer.`
-      : `${archive.length} leídos.`;
+      : saved.length > 0 && read.length > 0
+      ? `${saved.length} guardados · ${read.length} leídos`
+      : saved.length > 0
+      ? `${saved.length} ${saved.length === 1 ? 'guardado' : 'guardados'}.`
+      : `${read.length} ${read.length === 1 ? 'leído' : 'leídos'}.`;
 
   return (
     <div className="main-full">
@@ -306,64 +312,102 @@ export function Library() {
         </div>
       ) : (
         <>
-          {/* Para leer — bookmarked + unread, the active queue. */}
-          <section>
-            <div className="section-head" style={{ marginTop: 24 }}>
-              <h2>Para leer</h2>
-              <span className="count">
-                {toRead.length === 0
-                  ? 'vacío por ahora'
-                  : toRead.length === 1
-                  ? '1 paper'
-                  : `${toRead.length} papers`}
-              </span>
-            </div>
-            {toRead.length === 0 ? (
-              <div style={{ padding: '16px 0', color: 'var(--fg-3)', fontSize: 14 }}>
-                No tenés nada pendiente. Guardá un paper desde el feed con el ícono de marcador.
-              </div>
-            ) : (
-              <div className="feed-list" style={{ marginTop: 12 }}>
-                {toRead.map(entry => (
-                  <PaperCard
-                    key={entry.paper.id}
-                    paper={entry.paper}
-                    onClick={() => nav(`/paper/${entry.paper.id}`)}
-                  />
-                ))}
-              </div>
-            )}
-          </section>
+          {/* Tabs — Guardados / Leídos. Dos buckets independientes: un
+              paper puede estar en ambas tabs si lo guardaste y lo leíste.
+              Usamos role="tablist"/role="tab"/role="tabpanel" para que
+              screen readers y teclado los entiendan como navegación
+              tabular (flechas izq/der mueven el foco entre tabs sin tener
+              que tabular por el resto del DOM). El estilo visual es el
+              mismo idioma que el ViewToggle del feed — mismo 2px stroke,
+              mono-uppercase label, sin transition (toggles snap). */}
+          <div
+            className="lib-tabs"
+            role="tablist"
+            aria-label="Secciones de la biblioteca"
+            style={{ marginTop: 24 }}
+            onKeyDown={e => {
+              // Soporte teclado: ← y → navegan entre tabs. Estándar WAI-ARIA
+              // para tablists horizontales. Sin esto, el usuario teclado
+              // tendría que tabular dos veces para pasar del tab Guardados
+              // al Leídos, lo cual rompe la expectativa de "tablist".
+              if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+              e.preventDefault();
+              setActiveTab(t => (t === 'saved' ? 'read' : 'saved'));
+            }}
+          >
+            <button
+              type="button"
+              role="tab"
+              id="lib-tab-saved"
+              aria-selected={activeTab === 'saved'}
+              aria-controls="lib-panel-saved"
+              tabIndex={activeTab === 'saved' ? 0 : -1}
+              className={`lib-tab${activeTab === 'saved' ? ' active' : ''}`}
+              onClick={() => setActiveTab('saved')}
+            >
+              Guardados
+              <span className="count">{saved.length}</span>
+            </button>
+            <button
+              type="button"
+              role="tab"
+              id="lib-tab-read"
+              aria-selected={activeTab === 'read'}
+              aria-controls="lib-panel-read"
+              tabIndex={activeTab === 'read' ? 0 : -1}
+              className={`lib-tab${activeTab === 'read' ? ' active' : ''}`}
+              onClick={() => setActiveTab('read')}
+            >
+              Leídos
+              <span className="count">{read.length}</span>
+            </button>
+          </div>
 
-          {/* Archivo — historial de lectura. Colapsado por defecto: la
-              lista de leídos es un índice de memoria, no parte activa de la
-              cola. El toggle vive al lado del count para que quede claro
-              que es la misma acción ("esta lista / ábrela"). */}
-          {archive.length > 0 && (
-            <section className="lib-archive">
-              <div className="section-head" style={{ marginTop: 0 }}>
-                <h2>Archivo · ya leídos</h2>
-                <div className="head-right">
-                  <span className="count">
-                    {archive.length === 1 ? '1 paper' : `${archive.length} papers`}
-                  </span>
-                  <button
-                    type="button"
-                    className={`lib-archive-toggle${archiveOpen ? ' open' : ''}`}
-                    onClick={() => setArchiveOpen(v => !v)}
-                    aria-expanded={archiveOpen}
-                    aria-controls="lib-archive-list"
-                  >
-                    <span className="chev">
-                      <Icon name="arrow-right" size={11} />
-                    </span>
-                    {archiveOpen ? 'Ocultar' : 'Mostrar'}
-                  </button>
+          {/* Panel Guardados */}
+          {activeTab === 'saved' && (
+            <section
+              role="tabpanel"
+              id="lib-panel-saved"
+              aria-labelledby="lib-tab-saved"
+            >
+              {saved.length === 0 ? (
+                <div style={{ padding: '20px 0', color: 'var(--fg-3)', fontSize: 14 }}>
+                  Todavía no guardaste ningún paper. Desde el feed, tocá el ícono
+                  de marcador en cualquier card para mandarlo a esta lista.
                 </div>
-              </div>
-              {archiveOpen && (
-                <div id="lib-archive-list" className="feed-list" style={{ marginTop: 12 }}>
-                  {archive.map(entry => (
+              ) : (
+                <div className="feed-list" style={{ marginTop: 16 }}>
+                  {saved.map(entry => (
+                    <PaperCard
+                      key={entry.paper.id}
+                      paper={entry.paper}
+                      onClick={() => nav(`/paper/${entry.paper.id}`)}
+                    />
+                  ))}
+                </div>
+              )}
+            </section>
+          )}
+
+          {/* Panel Leídos — historial. Desde acá usuario puede desmarcar un
+              paper (botón de leído en cada PaperCard) para que vuelva a
+              aparecer en el feed. Ese es el "escape hatch" del feature de
+              ocultar leídos: si ocultaste algo por error o querés revisitar,
+              acá lo recuperás. */}
+          {activeTab === 'read' && (
+            <section
+              role="tabpanel"
+              id="lib-panel-read"
+              aria-labelledby="lib-tab-read"
+            >
+              {read.length === 0 ? (
+                <div style={{ padding: '20px 0', color: 'var(--fg-3)', fontSize: 14 }}>
+                  Todavía no marcaste ningún paper como leído. Abrir un paper lo
+                  marca automáticamente, o podés usar el check desde la card.
+                </div>
+              ) : (
+                <div className="feed-list" style={{ marginTop: 16 }}>
+                  {read.map(entry => (
                     <PaperCard
                       key={entry.paper.id}
                       paper={entry.paper}

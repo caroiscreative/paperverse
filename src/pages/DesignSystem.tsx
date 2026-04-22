@@ -103,65 +103,10 @@ export function DesignSystem() {
       </p>
 
       {/* ============================================================
-          01 / Logos — las tres variantes de la marca
-          ============================================================
-          Paperverse tiene tres archivos de logo que viven en
-          /public/assets/: el isotipo en modo claro (logo-mark.svg), el
-          isotipo en modo oscuro (logo-mark-inverse.svg, con crema sobre
-          noche y un cobalto más luminoso para contrastar), y el logotipo
-          con wordmark (logo-wordmark.svg, usado en Welcome a 480px).
-          Mostramos cada uno sobre su fondo real de uso — no sobre una
-          superficie neutra que mienta sobre cómo se ve en producción. */}
-      <section style={sectionStyle}>
-        <div style={sectionNumStyle}>01 / Logos</div>
-        <h2 style={sectionH2Style}>Un símbolo, tres variantes.</h2>
-        <p style={sectionLeadStyle}>
-          El isotipo es un planeta con dos órbitas: la cobalto sólida y la
-          punteada magma. El núcleo tiene un corazón dorado (sol). El
-          logotipo le suma el nombre en Instrument Serif con un punto
-          magma como firma final.
-        </p>
-
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-            gap: 12,
-          }}
-        >
-          <LogoCell
-            src="/assets/logo-mark.svg"
-            name="Mark"
-            file="logo-mark.svg"
-            use="Header · favicon · social"
-            bg="#FAF5EC"
-            inverse={false}
-          />
-          <LogoCell
-            src="/assets/logo-mark-inverse.svg"
-            name="Mark inverso"
-            file="logo-mark-inverse.svg"
-            use="Modo oscuro · splash nocturno"
-            bg="#0B1020"
-            inverse
-          />
-          <LogoCell
-            src="/assets/logo-wordmark.svg"
-            name="Wordmark"
-            file="logo-wordmark.svg"
-            use="Welcome · landings · marketing"
-            bg="#FAF5EC"
-            inverse={false}
-            wide
-          />
-        </div>
-      </section>
-
-      {/* ============================================================
-          02 / Tipografía
+          01 / Tipografía
           ============================================================ */}
       <section style={sectionStyle}>
-        <div style={sectionNumStyle}>02 / Tipografía</div>
+        <div style={sectionNumStyle}>01 / Tipografía</div>
         <h2 style={sectionH2Style}>Tres tipos, tres funciones.</h2>
         <p style={sectionLeadStyle}>
           <strong>Instrument Serif</strong> para titular como editorial.{' '}
@@ -194,7 +139,7 @@ export function DesignSystem() {
       </section>
 
       {/* ============================================================
-          03 / Paleta base — claro + oscuro, todos los grises
+          02 / Paleta base — claro + oscuro, todos los grises
           ============================================================
           Antes esta sección mostraba 8 swatches mezclando light y dark en
           una sola grilla. se pidió separarlos y
@@ -205,7 +150,7 @@ export function DesignSystem() {
           hardcodeado porque queremos verlos siempre, sin depender del
           tema activo del usuario. */}
       <section style={sectionStyle}>
-        <div style={sectionNumStyle}>03 / Paleta</div>
+        <div style={sectionNumStyle}>02 / Paleta</div>
         <h2 style={sectionH2Style}>Crema y tinta de día, noche y cobalto de noche.</h2>
         <p style={sectionLeadStyle}>
           El fondo es crema cálida, no blanco. El texto es tinta con
@@ -245,7 +190,7 @@ export function DesignSystem() {
       </section>
 
       {/* ============================================================
-          04 / Colores de tema — acentos editoriales del sistema
+          03 / Colores de tema — acentos editoriales del sistema
           ============================================================
           Estos seis colores son la base cromática de los 14 temas
           editoriales de Paperverse. Cada uno tiene tres variantes
@@ -256,7 +201,7 @@ export function DesignSystem() {
           animaciones del hero y categorías del feed — NUNCA como
           fondos de página ni texto primario. */}
       <section style={sectionStyle}>
-        <div style={sectionNumStyle}>04 / Colores de tema</div>
+        <div style={sectionNumStyle}>03 / Colores de tema</div>
         <h2 style={sectionH2Style}>Seis acentos que dan identidad.</h2>
         <p style={sectionLeadStyle}>
           Magma para lo caliente y físico. Sol para lo espacial.
@@ -293,7 +238,7 @@ export function DesignSystem() {
       </section>
 
       {/* ============================================================
-          05 / Tokens semánticos — significado antes que tema
+          04 / Tokens semánticos — significado antes que tema
           ============================================================
           Estos tokens remapean a colores de tema pero su USO es
           semántico, no editorial: success=clorofila porque "verde
@@ -302,7 +247,7 @@ export function DesignSystem() {
           el tema Biología. Si mañana cambiamos clorofila por otro
           verde, success lo sigue automáticamente. */}
       <section style={sectionStyle}>
-        <div style={sectionNumStyle}>05 / Tokens semánticos</div>
+        <div style={sectionNumStyle}>04 / Tokens semánticos</div>
         <h2 style={sectionH2Style}>Cuatro estados, un lenguaje.</h2>
         <p style={sectionLeadStyle}>
           Los tokens semánticos son alias con significado. Separan la
@@ -321,10 +266,10 @@ export function DesignSystem() {
       </section>
 
       {/* ============================================================
-          06 / Temas — las dos superficies visuales
+          05 / Temas — las dos superficies visuales
           ============================================================ */}
       <section style={sectionStyle}>
-        <div style={sectionNumStyle}>06 / Temas</div>
+        <div style={sectionNumStyle}>05 / Temas</div>
         <h2 style={sectionH2Style}>Catorce temas, un color cada uno.</h2>
         <p style={sectionLeadStyle}>
           Cada tema vive en tres superficies: el <strong>chip</strong> del
@@ -927,97 +872,3 @@ function SemanticSwatch({
   );
 }
 
-/**
- * Celda de logo — muestra un SVG sobre el fondo real de uso (crema o noche)
- * y debajo los mismos meta-datos que Swatch: nombre, archivo, uso. El flag
- * `wide` hace que la celda del wordmark ocupe el ancho completo de la fila
- * porque tiene aspect ratio 4:1 y se veía enano en una celda cuadrada.
- */
-function LogoCell({
-  src,
-  name,
-  file,
-  use,
-  bg,
-  inverse,
-  wide,
-}: {
-  src: string;
-  name: string;
-  file: string;
-  use: string;
-  bg: string;
-  inverse: boolean;
-  wide?: boolean;
-}) {
-  return (
-    <div
-      style={{
-        border: '1px solid var(--border-1)',
-        borderRadius: 4,
-        overflow: 'hidden',
-        background: inverse ? bg : 'var(--bg-surface, #FDFAF2)',
-        color: inverse ? '#F4F1E8' : 'inherit',
-        gridColumn: wide ? '1 / -1' : undefined,
-      }}
-    >
-      <div
-        style={{
-          height: 140,
-          background: bg,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: 16,
-          borderBottom: '1px solid rgba(14,17,22,0.06)',
-        }}
-      >
-        <img
-          src={src}
-          alt={`${name} de Paperverse`}
-          style={{
-            maxWidth: '100%',
-            maxHeight: '100%',
-            display: 'block',
-          }}
-        />
-      </div>
-      <div
-        style={{
-          padding: '10px 12px',
-          fontFamily: 'var(--font-mono)',
-          fontSize: 11,
-          lineHeight: 1.5,
-        }}
-      >
-        <span
-          style={{
-            fontWeight: 600,
-            letterSpacing: '0.04em',
-            textTransform: 'uppercase',
-            color: inverse ? '#F4F1E8' : 'var(--fg-1)',
-          }}
-        >
-          {name}
-        </span>{' '}
-        ·{' '}
-        <span style={{ color: inverse ? 'rgba(244,241,232,0.7)' : 'var(--fg-3)' }}>
-          {file}
-        </span>
-        <span
-          style={{
-            display: 'block',
-            marginTop: 4,
-            color: inverse ? 'rgba(244,241,232,0.6)' : 'var(--fg-4)',
-            fontFamily: 'var(--font-sans)',
-            fontSize: 11,
-            letterSpacing: 0,
-            textTransform: 'none',
-          }}
-        >
-          {use}
-        </span>
-      </div>
-    </div>
-  );
-}

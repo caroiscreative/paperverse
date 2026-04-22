@@ -181,7 +181,15 @@ export function Manifiesto() {
             key={p.label}
             style={{
               padding: '24px 20px',
-              background: 'var(--bg-1, #FAF5E6)',
+              // Fix dark mode : antes usábamos var(--bg-1, #FAF5E6)
+              // pero --bg-1 nunca fue un token real del sistema, así que
+              // siempre caía al fallback crema — en dark mode los 3 tiles
+              // quedaban como parches crema sobre el canvas navy. Ahora
+              // usamos --bg-surface, que sí está definido en ambos temas
+              // (pv-cream-soft en light, pv-night-soft en dark) y da el
+              // mismo comportamiento relativo: un tono más claro que el
+              // canvas, delimitado por el hairline del grid.
+              background: 'var(--bg-surface)',
             }}
           >
             <span

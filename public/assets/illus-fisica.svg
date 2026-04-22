@@ -1,12 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300" role="img" aria-label="Atomic orbitals">
-  <rect width="300" height="300" fill="#FDE4DA"></rect>
-  <g fill="none" stroke-width="2.2">
-    <ellipse cx="150" cy="150" rx="110" ry="42" stroke="#F2542D"></ellipse>
-    <ellipse cx="150" cy="150" rx="110" ry="42" stroke="#2E4BE0" transform="rotate(60 150 150)"></ellipse>
-    <ellipse cx="150" cy="150" rx="110" ry="42" stroke="#F5B638" transform="rotate(120 150 150)"></ellipse>
-  </g>
-  <circle cx="150" cy="150" r="14" fill="#FBF7EC" stroke="#C73F1D" stroke-width="2"></circle>
-  <circle cx="260" cy="150" r="5.5" fill="#F2542D"></circle>
-  <circle cx="95" cy="55" r="5.5" fill="#2E4BE0"></circle>
-  <circle cx="95" cy="245" r="5.5" fill="#F5B638"></circle>
+ <rect width="300" height="300" fill="#FDE4DA"></rect>
+ <g fill="none" stroke-width="2.2">
+ <ellipse cx="150" cy="150" rx="110" ry="42" stroke="#F2542D"></ellipse>
+ <ellipse cx="150" cy="150" rx="110" ry="42" stroke="#2E4BE0" transform="rotate(60 150 150)"></ellipse>
+ <ellipse cx="150" cy="150" rx="110" ry="42" stroke="#F5B638" transform="rotate(120 150 150)"></ellipse>
+ </g>
+ <circle cx="150" cy="150" r="14" fill="#FBF7EC" stroke="#C73F1D" stroke-width="2"></circle>
+ <!-- Outline ink en electrones : los 3 electrones llevan
+ stroke 1.5 para consistencia con el papelito de Ciencia. El núcleo
+ (r=14) ya traía stroke propio. -->
+ <circle cx="260" cy="150" r="5.5" fill="#F2542D" stroke="#0E1116" stroke-width="1.5"></circle>
+ <circle cx="95" cy="55" r="5.5" fill="#2E4BE0" stroke="#0E1116" stroke-width="1.5"></circle>
+ <circle cx="95" cy="245" r="5.5" fill="#F5B638" stroke="#0E1116" stroke-width="1.5"></circle>
 </svg>

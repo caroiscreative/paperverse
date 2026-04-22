@@ -7,6 +7,7 @@ import { useLibrary } from '../lib/library';
 import { useReadPapers } from '../lib/read';
 import { showToast } from '../lib/toast';
 import { useTranslated } from '../lib/translate';
+import { HeroTitleSkeleton, HeroLedeSkeleton } from './TranslationSkeleton';
 
 interface Props {
   paper: Paper;
@@ -26,9 +27,13 @@ export function HeroPaperCard({ paper, onClick, weekLabel }: Props) {
   const topicColor = topic.color;
   const topicName = topic.name;
 
-  // Spanish editorial title + lede (cached, falls back to pre-cleaned
-  // original while loading). See src/lib/translate.ts.
-  const { title: titleEs, lede: ledeEs } = useTranslated(paper);
+  // Spanish editorial title + lede. Ataque 3 : mientras se traduce
+  // mostramos skeleton en vez del título original en idioma foráneo. El hero
+  // card siempre está arriba del feed, así que no tiene viewport-gating — la
+  // traducción se pide al montar, y el skeleton aparece el primer segundo si
+  // todavía no está en cache. Con Ataque 1 (prefetch al cargar el feed) este
+  // caso es raro, pero lo cubrimos por consistencia con el resto del feed.
+  const { title: titleEs, lede: ledeEs, loading: translating } = useTranslated(paper);
   const lede = ledeEs ||
     'Este paper es el más citado entre los que coinciden con tus temas en los últimos 60 días.';
 
@@ -104,8 +109,17 @@ export function HeroPaperCard({ paper, onClick, weekLabel }: Props) {
               </>
             )}
           </span>
-          <h1 className="title">{titleEs}</h1>
-          <p className="hook">{lede}</p>
+          {translating ? (
+            <>
+              <HeroTitleSkeleton />
+              {paper.abstract && <HeroLedeSkeleton />}
+            </>
+          ) : (
+            <>
+              <h1 className="title">{titleEs}</h1>
+              <p className="hook">{lede}</p>
+            </>
+          )}
           <Byline paper={paper} size="lg" />
         </div>
 
