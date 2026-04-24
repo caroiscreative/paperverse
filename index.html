@@ -77,14 +77,14 @@
  optimizarlo como archivo separado.
  -->
  <script>
- (function {
+ (function () {
  try {
  var t = localStorage.getItem('pv_theme_v1');
  if (t === 'dark') document.documentElement.classList.add('pv-dark');
  } catch (_) {
  /* storage bloqueado — no tema oscuro forzado, default light */
  }
- });
+ })();
  </script>
  </head>
  <body class="pv">
