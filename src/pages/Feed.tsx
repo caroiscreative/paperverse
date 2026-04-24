@@ -1,12 +1,12 @@
 // Main page — one component that handles four modes driven by URL:
-// (none) → feed filtered by selected topics
-// ?q=… → search results
-// ?cites=W123 → papers cited by W123 (references)
-// ?citedBy=W123 → papers citing W123
+//   (none)              → feed filtered by selected topics
+//   ?q=…                → search results
+//   ?cites=W123         → papers cited by W123 (references)
+//   ?citedBy=W123       → papers citing W123
 
 import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { useSearchParams, useNavigate, useLocation, Link } from 'react-router-dom';
-import { TOPICS, type TopicId } from '../lib/topics';
+import { TOPICS, TOPICS_ALPHABETICAL, type TopicId } from '../lib/topics';
 import { rememberFeedUrl } from '../lib/feedReturn';
 import {
   fetchFeed,
@@ -71,17 +71,17 @@ function readStoredShowRead(): boolean {
  * the haul while still fitting OpenAlex's 200-per-page ceiling.
  */
 const WINDOWS: { label: string; short: string; days: number; limit: number; endText: string }[] = [
-  { label: 'Hoy', short: 'Hoy', days: 1, limit: 20, endText: 'No hay más papers publicados hoy' },
-  { label: '7 días', short: '7d', days: 7, limit: 40, endText: 'No hay más papers publicados esta semana' },
-  { label: '1 mes', short: '1m', days: 30, limit: 60, endText: 'No hay más papers publicados este mes' },
-  { label: '6 meses', short: '6m', days: 180, limit: 100, endText: 'No hay más papers publicados en los últimos 6 meses' },
-  { label: '1 año', short: '1a', days: 365, limit: 150, endText: 'No hay más papers publicados este año' },
+  { label: 'Hoy',      short: 'Hoy',  days: 1,    limit: 20,  endText: 'No hay más papers publicados hoy' },
+  { label: '7 días',   short: '7d',   days: 7,    limit: 40,  endText: 'No hay más papers publicados esta semana' },
+  { label: '1 mes',    short: '1m',   days: 30,   limit: 60,  endText: 'No hay más papers publicados este mes' },
+  { label: '6 meses',  short: '6m',   days: 180,  limit: 100, endText: 'No hay más papers publicados en los últimos 6 meses' },
+  { label: '1 año',    short: '1a',   days: 365,  limit: 150, endText: 'No hay más papers publicados este año' },
   // 5 años — ventana amplia para buscar papers ya establecidos (no recién
   // publicados). Topeamos el limit en 200 porque la API de OpenAlex corta
   // ahí per_page; con 5 años de cobertura, 200 papers por tanda alcanza
   // para que el feed se sienta generoso sin que el primer scroll tarde
   // eternidades en renderizar.
-  { label: '5 años', short: '5a', days: 1825, limit: 200, endText: 'No hay más papers publicados en los últimos 5 años' },
+  { label: '5 años',   short: '5a',   days: 1825, limit: 200, endText: 'No hay más papers publicados en los últimos 5 años' },
 ];
 // Default = 5 años. Antes era 30 días, pero se pidió que el feed
 // arranque con la ventana más ancha — tiene sentido: los papers más citados
@@ -137,7 +137,7 @@ export function Feed() {
     ? 'citedBy'
     : 'feed';
 
-  // Sort (Fase 4, ). El orden vive en el URL param ?sort=… para
+  // Sort (Fase 4, 2026-04-21). El orden vive en el URL param ?sort=… para
   // que viaje entre feed/refs/cites y sea compartible. Si no hay param,
   // cada modo tiene su default "natural": search → relevancia (lo que
   // busca el usuario), feed/refs/cites → latest_cited (lo nuevo + citado).
@@ -162,14 +162,14 @@ export function Feed() {
   const [daysBack, setDaysBack] = useState<number>(readStoredWindow);
   const [view, setView] = useState<ViewMode>(readStoredView);
   // Toggle de mostrar/ocultar papers ya leídos en el feed y
-  // search. usuario: el contador de "N leídos ocultos" queda más honesto
+  // search. Carolina: el contador de "N leídos ocultos" queda más honesto
   // si al lado le ofrecemos un botón para verlos (por curiosidad, repaso,
   // o porque el usuario quiere volver a un paper). Default false = siguen
   // ocultos como hasta ahora; el usuario opta-in explícitamente.
   const [showRead, setShowRead] = useState<boolean>(readStoredShowRead);
   // Theme toggle vive acá — se renderiza como tercer bloque del meta-row
   // del sidebar (junto a "¿Qué es Paperverse?" y "Creado por"). Antes
-  // estaba en un footer fijo mobile, pero usuario prefirió integrarlo
+  // estaba en un footer fijo mobile, pero prefirió integrarlo
   // al flujo del sidebar para no meter una barra extra encima del feed.
   const { theme, setTheme } = useTheme();
   const isDark = theme === 'dark';
@@ -190,15 +190,15 @@ export function Feed() {
 
   const currentWindow = useMemo(() => windowFor(daysBack), [daysBack]);
 
-  // Ocultar leídos en feed home + búsqueda . usuario: "cuando
+  // Ocultar leídos en feed home + búsqueda. "cuando
   // leo o abro un articulo me gustaria que ademas lo esconda del feed
   // porque ya lo lei" + "del feed y de los filtros, bien sea de categoria
   // o de periodo". Scope:
-  // · mode='feed' (home, con o sin filtros de topic/window) → ocultar
-  // · mode='search' (?q=) → ocultar
-  // · mode='cites' / 'citedBy' → mantener visibles (navegar el grafo de
-  // citaciones incluye papers que ya leíste; filtrarlos romperia el
-  // contexto del paper que estás explorando).
+  //   · mode='feed' (home, con o sin filtros de topic/window) → ocultar
+  //   · mode='search' (?q=) → ocultar
+  //   · mode='cites' / 'citedBy' → mantener visibles (navegar el grafo de
+  //     citaciones incluye papers que ya leíste; filtrarlos romperia el
+  //     contexto del paper que estás explorando).
   //
   // Filter es client-side: OpenAlex sigue trayendo los N top por relevancia
   // y acá filtramos. Si todos los resultados están leídos, EmptyState
@@ -227,12 +227,12 @@ export function Feed() {
 
   // títulos de pestaña por ruta. El Feed soporta 4
   // modos y cada uno tiene un "lead" distinto:
-  // · feed → null (mantenemos el landing title "Paperverse — …")
-  // · search → el query textual, al estilo Google
-  // · cites / citedBy → etiqueta + título del paper de referencia, para que
-  // la pestaña diga algo como "Citaron a Hybrid quantum… — Paperverse"
-  // en vez de repetir el landing title y dejar al usuario sin pista de
-  // dónde está parado cuando tiene varias pestañas.
+  //   · feed  → null (mantenemos el landing title "Paperverse — …")
+  //   · search → el query textual, al estilo Google
+  //   · cites / citedBy → etiqueta + título del paper de referencia, para que
+  //     la pestaña diga algo como "Citaron a Hybrid quantum… — Paperverse"
+  //     en vez de repetir el landing title y dejar al usuario sin pista de
+  //     dónde está parado cuando tiene varias pestañas.
   // Cuando `referencePaper` todavía no se resolvió (primer render antes del
   // fetch), pasamos null → default. En cuanto llega el paper, el effect del
   // hook se reengancha y el título se actualiza.
@@ -324,7 +324,7 @@ export function Feed() {
             ? activeTopics
             : undefined;
           // Pasamos daysBack para que la perilla de Período también filtre la
-          // búsqueda (). Antes el search era global y la perilla, aunque
+          // búsqueda. Antes el search era global y la perilla, aunque
           // visible, no hacía nada en modo query — ahora son coherentes.
           const results = await searchPapers(q, { topics: topicsForSearch, limit: 50, daysBack, sort });
           if (!cancelled) {
@@ -379,7 +379,7 @@ export function Feed() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, q, cites, citedBy, activeTopics, daysBack, feedLimit, selected.length, relatedLimit, sort]);
 
-  // Ataque 1 : apenas llegan los papers, disparamos la traducción
+  // Ataque 1: apenas llegan los papers, disparamos la traducción
   // eager de TODA la página — no esperamos a que cada card entre al viewport.
   // El batcher agrupa de a 5 y la cola de pollirate serializa todo, así que el
   // costo real es el mismo; lo que cambia es QUE mientras el usuario lee la
@@ -435,10 +435,10 @@ export function Feed() {
               estaría pidiéndole al usuario una acción inútil.
 
               Historial del control:
-                · QA2 : era texto inerte con underline → lo
+                · QA2: era texto inerte con underline → lo
                   convertimos en chip-pill con border ink + ícono × para
                   que se leyera claramente como botón.
-                · Fase 4.1 : se pidió volver a una forma
+                · Fase 4.1: se pidió volver a una forma
                   más simple — el chip con border empujaba verticalmente
                   el section-head al activarse/desactivarse. Ahora el botón
                   es tipográficamente idéntico al h2 (mono 10.5px uppercase,
@@ -475,7 +475,7 @@ export function Feed() {
             )}
           </div>
           <div className="filter-row">
-            {TOPICS.map(t => (
+            {TOPICS_ALPHABETICAL.map(t => (
               <TopicChip
                 key={t.id}
                 topic={t}
@@ -496,7 +496,7 @@ export function Feed() {
             ──────────────────────────────────────────────────────────── */}
         {(mode === 'feed' || mode === 'search') && (
           // Antes había un `borderTop` acá separando "Tus temas" de
-          // "Período", pero usuario lo pidió borrar: en mobile
+          // "Período", pero lo pidió borrar: en mobile
           // los chips ya dan un cierre visual claro al bloque de temas y la
           // línea extra sentía ruido. Mantenemos `paddingTop: 20` para
           // respiración, sin hairline.
@@ -549,8 +549,8 @@ export function Feed() {
             Meta-row del sidebar — tres bloques hermanos en formato
             "label — valor" inline (label arriba a la izquierda, valor
             justo a su derecha). Antes los blocks eran stacked (label
-            arriba en su propia línea, valor debajo) pero usuario
-            (, tercera iteración): "siento que se pierde
+            arriba en su propia línea, valor debajo) pero Carolina
+            (2026-04-20, tercera iteración): "siento que se pierde
             mucho espacio podríamos hacer algo como Título: contenido".
             Cada bloque ahora es un flex row con `align-items: baseline`
             y `flex-wrap: wrap` — en sidebars angostos el valor cae
@@ -561,7 +561,7 @@ export function Feed() {
 
               1) ¿Qué es Paperverse? → link al Manifiesto. El "?" del
                  label hace de separador natural con el valor — por eso
-                 acá no agrego dos puntos (quedaría "¿…?:" doble
+                 acá no agrego dos puntos (quedaría "¿…?:"  doble
                  puntuación fea). Acorté "Leer el Manifiesto →" a
                  "Manifiesto →" porque el label ya plantea la pregunta:
                  el verbo "leer" se vuelve redundante.
@@ -703,7 +703,7 @@ export function Feed() {
                 {referencePaper.title}
               </h1>
             </div>
-            {/* SortDropdown también en refs/cites (Fase 4). usuario lo pidió
+            {/* SortDropdown también en refs/cites (Fase 4). lo pidió
                 explícitamente: "en el feed, en las citas y referencias".
                 Lo ponemos debajo del título del paper de referencia para que
                 no compita con el back-link arriba. hasSearch=false porque en
@@ -716,18 +716,18 @@ export function Feed() {
         )}
 
         {(mode === 'feed' || mode === 'search') && (
-          // Fase 4.1 : se pidió mover el contador de papers
+          // Fase 4.1: se pidió mover el contador de papers
           // ("199 papers · 5 años") del top-bar hacia DEBAJO del divider, para
           // que la barra sticky quede exclusivamente de controles (Ordenar
           // por + Lista/Tarjetas). Razones:
-          // · La barra sticky se siente más ordenada sin el h2 rompiendo
-          // el balance visual con los dos botones cuadrados alineados.
-          // · El contador se lee mejor "en contexto" junto al hint de
-          // "N leídos ocultos" — ambos son metadata descriptiva del
-          // resultset, no controles.
-          // · Libera espacio horizontal en mobile: dos botones cuadrados
-          // + contador largo ("199 resultados para 'quantum'") no
-          // cabían sin truncar.
+          //   · La barra sticky se siente más ordenada sin el h2 rompiendo
+          //     el balance visual con los dos botones cuadrados alineados.
+          //   · El contador se lee mejor "en contexto" junto al hint de
+          //     "N leídos ocultos" — ambos son metadata descriptiva del
+          //     resultset, no controles.
+          //   · Libera espacio horizontal en mobile: dos botones cuadrados
+          //     + contador largo ("199 resultados para 'quantum'") no
+          //     cabían sin truncar.
           //
           // La clase `feed-top-bar` sigue haciéndola sticky debajo del header;
           // sólo que ahora `justify-content: flex-end` alinea los controles
@@ -752,7 +752,7 @@ export function Feed() {
           </div>
         )}
 
-        {/* Meta-row debajo del divider (Fase 4.1, ). Consolida en
+        {/* Meta-row debajo del divider (Fase 4.1, 2026-04-21). Consolida en
             una sola línea: (a) contador de resultados, (b) hint de leídos
             ocultos / mostrados, (c) toggle para verlos / volverlos a
             ocultar. Tipografía mono uppercase para que lea como metadata
@@ -985,10 +985,10 @@ function CargarMas({
  * que tiene que leerse rápido sin pelearse con el título.
  */
 function ViewToggle({ view, onChange }: { view: ViewMode; onChange: (v: ViewMode) => void }) {
-  // Decisión de diseño : sólo el botón activo muestra texto.
+  // Decisión de diseño: sólo el botón activo muestra texto.
   // El inactivo colapsa a ícono-only para ahorrar espacio horizontal y que
   // "N papers · Xd" quepa en una línea dentro del section-head sticky en
-  // tablet/mobile. usuario lo pidió explícitamente porque el conteo se
+  // tablet/mobile. lo pidió explícitamente porque el conteo se
   // estaba partiendo a dos líneas cuando ambos botones mostraban texto.
   //
   // El label va dentro de un <span className="label"> para que el CSS lo
@@ -1025,15 +1025,15 @@ function ViewToggle({ view, onChange }: { view: ViewMode; onChange: (v: ViewMode
 }
 
 /**
- * Skeletons del feed — reemplazan al spinner central (, ).
+ * Skeletons del feed — reemplazan al spinner central (QA2 extra, 2026-04-20).
  *
  * Antes mostrábamos un único ícono `loader` centrado con la etiqueta
  * "Buscando en OpenAlex…". Problemas que reportó el QA:
- * · El salto de spinner a grilla era brusco — cambio total de layout
- * cuando llegaban los resultados.
- * · En redes lentas el usuario no tiene feedback de qué aspecto va a
- * tener la página, sólo un "algo está pasando".
- * · El spinner central se sentía genérico, no propio del proyecto.
+ *   · El salto de spinner a grilla era brusco — cambio total de layout
+ *     cuando llegaban los resultados.
+ *   · En redes lentas el usuario no tiene feedback de qué aspecto va a
+ *     tener la página, sólo un "algo está pasando".
+ *   · El spinner central se sentía genérico, no propio del proyecto.
  *
  * Ahora renderizamos N cards placeholder con la misma shape que PaperCard /
  * PaperCardTile. El layout real ya está armado cuando llegan los datos, así
@@ -1065,8 +1065,8 @@ function LoadingState({ view }: { view: ViewMode }) {
 }
 
 /** Placeholder para la vista "lista" — matchea la geometría de PaperCard:
- * thumb 112×112 a la izquierda, body (eyebrow + title + lede), actions a
- * la derecha. Todos los "slots" de texto son <div> con un fill sutil. */
+ *  thumb 112×112 a la izquierda, body (eyebrow + title + lede), actions a
+ *  la derecha. Todos los "slots" de texto son <div> con un fill sutil. */
 function SkeletonRow() {
   const line: CSSProperties = {
     background: 'var(--bg-sunken)',
@@ -1090,7 +1090,7 @@ function SkeletonRow() {
 }
 
 /** Placeholder para la vista "tarjetas" — PaperCardTile es más compacto:
- * thumb cuadrada arriba + 2 líneas de texto abajo. */
+ *  thumb cuadrada arriba + 2 líneas de texto abajo. */
 function SkeletonTile() {
   const line: CSSProperties = {
     background: 'var(--bg-sunken)',

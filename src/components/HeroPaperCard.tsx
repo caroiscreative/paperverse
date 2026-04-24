@@ -27,7 +27,7 @@ export function HeroPaperCard({ paper, onClick, weekLabel }: Props) {
   const topicColor = topic.color;
   const topicName = topic.name;
 
-  // Spanish editorial title + lede. Ataque 3 : mientras se traduce
+  // Spanish editorial title + lede. Ataque 3: mientras se traduce
   // mostramos skeleton en vez del título original en idioma foráneo. El hero
   // card siempre está arriba del feed, así que no tiene viewport-gating — la
   // traducción se pide al montar, y el skeleton aparece el primer segundo si
@@ -66,7 +66,7 @@ export function HeroPaperCard({ paper, onClick, weekLabel }: Props) {
         Usamos `topicVisual` (resolveTopicVisual) en vez de `topic` para que
         SIEMPRE haya una animación DS2 — antes, cuando el clasificador fallaba,
         caíamos a HeroBanner (la escena cósmica DS1 vieja) y eso es lo que
-        usuario vio rota en "espacio".
+        vio rota en "espacio".
       */}
       <div className="banner">
         <TopicBanner topicId={topicVisual.id} />

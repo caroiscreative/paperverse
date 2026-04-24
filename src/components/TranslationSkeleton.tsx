@@ -1,21 +1,21 @@
 // Bloque placeholder que ocupa el espacio del título/lede mientras Pollinations
 // todavía no devolvió la traducción.
 //
-// Por qué existe (Ataque 3, ): antes, mientras la traducción estaba
+// Por qué existe (Ataque 3, 2026-04-21): antes, mientras la traducción estaba
 // en vuelo, la card mostraba el título ORIGINAL en idioma foráneo (francés,
 // portugués, malayo, chino…) y después swappeaba al español cuando llegaba la
-// respuesta. Ese flash era feo — especialmente en idiomas que usuario no lee.
+// respuesta. Ese flash era feo — especialmente en idiomas que no lee.
 // La promesa editorial de Paperverse es "todo en español al scrollear", así
 // que preferimos mostrar nada (un bloque gris neutro) antes que texto ilegible
 // por 1–2 segundos.
 //
 // Decisión de estilo:
-// · Mismo look que los skeletons grandes del LoadingState del Feed: fill
-// `var(--bg-sunken)`, borderRadius 2, sin animación shimmer. En Paperverse
-// los estados transicionan instant-snap (ver memory/feedback_toggle_animations.md)
-// y un shimmer barriendo sería ruido extra de movimiento.
-// · Altura matchea la line-height real del título/lede al que reemplaza,
-// así el swap de skeleton → texto real no "salta" el layout.
+//   · Mismo look que los skeletons grandes del LoadingState del Feed: fill
+//     `var(--bg-sunken)`, borderRadius 2, sin animación shimmer. En Paperverse
+//     los estados transicionan instant-snap (ver memory/feedback_toggle_animations.md)
+//     y un shimmer barriendo sería ruido extra de movimiento.
+//   · Altura matchea la line-height real del título/lede al que reemplaza,
+//     así el swap de skeleton → texto real no "salta" el layout.
 
 import type { CSSProperties } from 'react';
 

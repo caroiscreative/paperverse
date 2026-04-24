@@ -9,7 +9,7 @@
 // An optional `savedAt` timestamp is kept so we can sort "recientes primero"
 // y eventualmente mostrar un "guardado hace 3 días" si hace falta.
 //
-// Arquitectura : se reescribió el hook, que antes era
+// Arquitectura (QA2 P2.1, 2026-04-20): se reescribió el hook, que antes era
 // un `useState` privado por componente. El problema: cada llamada a
 // `useLibrary()` tenía su propia copia del estado; cuando el usuario guardaba
 // un paper desde la vista de referencias (mode=cites), el Header — que
@@ -143,7 +143,7 @@ function hasPaper(id: string): boolean {
   return currentEntries.some(e => e.paper.id === id);
 }
 
-// ─── Bulk import (QA2 #68, ) ────────────────────────────────────
+// ─── Bulk import (QA2 #68, 2026-04-20) ────────────────────────────────────
 // Usado por el botón "Importar JSON" de la Biblioteca. A diferencia de
 // `savePaper`, que siempre estampa `Date.now()`, acá respetamos el `savedAt`
 // original que vino en el archivo — es lo que hace útil al import como

@@ -1,20 +1,21 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300" role="img" aria-label="Isometric wireframe cube with atoms at vertices">
- <rect width="300" height="300" fill="#DADCE0"></rect>
- <g>
- <path d="M 150 80 L 220 115 L 150 150 L 80 115 Z" fill="#0E1116" opacity="0.1"></path>
- <path d="M 150 80 L 220 115 L 220 185 L 150 220 L 80 185 L 80 115 Z" fill="none" stroke="#0E1116" stroke-width="2" stroke-linejoin="round"></path>
- <line x1="150" y1="150" x2="150" y2="80" stroke="#0E1116" stroke-width="1.5" opacity="0.55" stroke-linecap="round"></line>
- <line x1="150" y1="150" x2="150" y2="220" stroke="#0E1116" stroke-width="1.5" opacity="0.55" stroke-linecap="round"></line>
- <line x1="150" y1="150" x2="80" y2="185" stroke="#0E1116" stroke-width="1.5" opacity="0.55" stroke-linecap="round"></line>
- <line x1="150" y1="150" x2="220" y2="185" stroke="#0E1116" stroke-width="1.5" opacity="0.55" stroke-linecap="round"></line>
- <!-- Atomos en vertices: fill ya es casi ink (#2A2F38), les sumamos
- stroke ink igual para unificar lectura con el resto del set . El central (r=4.5 ink puro) no lo necesita. -->
- <circle cx="150" cy="80" r="3.5" fill="#2A2F38" stroke="#0E1116" stroke-width="1"></circle>
- <circle cx="220" cy="115" r="3.5" fill="#2A2F38" stroke="#0E1116" stroke-width="1"></circle>
- <circle cx="220" cy="185" r="3.5" fill="#2A2F38" stroke="#0E1116" stroke-width="1"></circle>
- <circle cx="150" cy="220" r="3.5" fill="#2A2F38" stroke="#0E1116" stroke-width="1"></circle>
- <circle cx="80" cy="185" r="3.5" fill="#2A2F38" stroke="#0E1116" stroke-width="1"></circle>
- <circle cx="80" cy="115" r="3.5" fill="#2A2F38" stroke="#0E1116" stroke-width="1"></circle>
- <circle cx="150" cy="150" r="4.5" fill="#0E1116"></circle>
- </g>
+  <rect width="300" height="300" fill="#DADCE0"></rect>
+  <g>
+    <path d="M 150 80 L 220 115 L 150 150 L 80 115 Z" fill="#0E1116" opacity="0.1"></path>
+    <path d="M 150 80 L 220 115 L 220 185 L 150 220 L 80 185 L 80 115 Z" fill="none" stroke="#0E1116" stroke-width="2" stroke-linejoin="round"></path>
+    <line x1="150" y1="150" x2="150" y2="80"  stroke="#0E1116" stroke-width="1.5" opacity="0.55" stroke-linecap="round"></line>
+    <line x1="150" y1="150" x2="150" y2="220" stroke="#0E1116" stroke-width="1.5" opacity="0.55" stroke-linecap="round"></line>
+    <line x1="150" y1="150" x2="80"  y2="185" stroke="#0E1116" stroke-width="1.5" opacity="0.55" stroke-linecap="round"></line>
+    <line x1="150" y1="150" x2="220" y2="185" stroke="#0E1116" stroke-width="1.5" opacity="0.55" stroke-linecap="round"></line>
+    <!-- Atomos en vertices: fill ya es casi ink (#2A2F38), les sumamos
+         stroke ink igual para unificar lectura con el resto del set
+. El central (r=4.5 ink puro) no lo necesita. -->
+    <circle cx="150" cy="80"  r="3.5" fill="#2A2F38" stroke="#0E1116" stroke-width="1"></circle>
+    <circle cx="220" cy="115" r="3.5" fill="#2A2F38" stroke="#0E1116" stroke-width="1"></circle>
+    <circle cx="220" cy="185" r="3.5" fill="#2A2F38" stroke="#0E1116" stroke-width="1"></circle>
+    <circle cx="150" cy="220" r="3.5" fill="#2A2F38" stroke="#0E1116" stroke-width="1"></circle>
+    <circle cx="80"  cy="185" r="3.5" fill="#2A2F38" stroke="#0E1116" stroke-width="1"></circle>
+    <circle cx="80"  cy="115" r="3.5" fill="#2A2F38" stroke="#0E1116" stroke-width="1"></circle>
+    <circle cx="150" cy="150" r="4.5" fill="#0E1116"></circle>
+  </g>
 </svg>

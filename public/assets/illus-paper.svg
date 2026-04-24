@@ -1,31 +1,31 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300" role="img" aria-label="Paper abstract">
- <!-- Fondo exterior: Ciencia.soft (#E3E6EB). Antes era #ECE3D0 (crema cálido
- genérico "paper"), lo que rompía la convención del resto del sistema
- donde cada ilustración usa el `soft` de su tema como bg exterior. El
- desalineo era visible en /design-system: el swatch mostraba slate gray,
- la animación del hero (renderCiencia en topic-anim.js) también slate,
- pero la ilustración 300px se veía warm cream. Ahora las tres
- superficies de Ciencia hablan el mismo color. -->
- <rect width="300" height="300" fill="#E3E6EB"></rect>
- <!-- Papelitos con stroke : en vez de
- quitarle el outline a Ciencia, queremos que TODAS las ilustraciones
- tengan el mismo outline ink en sus formas principales. Así que
- restauramos el stroke 2px del original. La unificación se hace en los
- otros 14 illus-*.svg agregándoles stroke donde antes sólo había fill. -->
- <g>
- <rect x="50" y="70" width="180" height="170" fill="#F4EEE1" stroke="#0E1116" stroke-width="2" transform="rotate(-4 140 155)"></rect>
- <rect x="70" y="60" width="180" height="170" fill="#FBF7EC" stroke="#0E1116" stroke-width="2" transform="rotate(3 160 145)"></rect>
- </g>
- <g transform="rotate(3 160 145)">
- <rect x="88" y="80" width="120" height="6" fill="#0E1116"></rect>
- <rect x="88" y="96" width="145" height="3" fill="#5A6170"></rect>
- <rect x="88" y="104" width="130" height="3" fill="#5A6170"></rect>
- <rect x="88" y="112" width="140" height="3" fill="#5A6170"></rect>
- <rect x="88" y="130" width="50" height="14" rx="3" fill="#2E4BE0"></rect>
- <rect x="142" y="130" width="34" height="14" rx="3" fill="#F2542D"></rect>
- <rect x="88" y="158" width="145" height="3" fill="#5A6170"></rect>
- <rect x="88" y="166" width="135" height="3" fill="#5A6170"></rect>
- <rect x="88" y="174" width="120" height="3" fill="#5A6170"></rect>
- <rect x="88" y="194" width="65" height="3" fill="#5A6170"></rect>
- </g>
+  <!-- Fondo exterior: Ciencia.soft (#E3E6EB). Antes era #ECE3D0 (crema cálido
+       genérico "paper"), lo que rompía la convención del resto del sistema
+       donde cada ilustración usa el `soft` de su tema como bg exterior. El
+       desalineo era visible en /design-system: el swatch mostraba slate gray,
+       la animación del hero (renderCiencia en topic-anim.js) también slate,
+       pero la ilustración 300px se veía warm cream. Ahora las tres
+       superficies de Ciencia hablan el mismo color. -->
+  <rect width="300" height="300" fill="#E3E6EB"></rect>
+  <!-- Papelitos con stroke (2026-04-21 redo): se decidió — en vez de
+       quitarle el outline a Ciencia, queremos que TODAS las ilustraciones
+       tengan el mismo outline ink en sus formas principales. Así que
+       restauramos el stroke 2px del original. La unificación se hace en los
+       otros 14 illus-*.svg agregándoles stroke donde antes sólo había fill. -->
+  <g>
+    <rect x="50" y="70" width="180" height="170" fill="#F4EEE1" stroke="#0E1116" stroke-width="2" transform="rotate(-4 140 155)"></rect>
+    <rect x="70" y="60" width="180" height="170" fill="#FBF7EC" stroke="#0E1116" stroke-width="2" transform="rotate(3 160 145)"></rect>
+  </g>
+  <g transform="rotate(3 160 145)">
+    <rect x="88" y="80" width="120" height="6" fill="#0E1116"></rect>
+    <rect x="88" y="96" width="145" height="3" fill="#5A6170"></rect>
+    <rect x="88" y="104" width="130" height="3" fill="#5A6170"></rect>
+    <rect x="88" y="112" width="140" height="3" fill="#5A6170"></rect>
+    <rect x="88" y="130" width="50" height="14" rx="3" fill="#2E4BE0"></rect>
+    <rect x="142" y="130" width="34" height="14" rx="3" fill="#F2542D"></rect>
+    <rect x="88" y="158" width="145" height="3" fill="#5A6170"></rect>
+    <rect x="88" y="166" width="135" height="3" fill="#5A6170"></rect>
+    <rect x="88" y="174" width="120" height="3" fill="#5A6170"></rect>
+    <rect x="88" y="194" width="65" height="3" fill="#5A6170"></rect>
+  </g>
 </svg>

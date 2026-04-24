@@ -1,9 +1,9 @@
 // Paper Detail — single screen with:
-// · editorial title, byline, meta rail
-// · Abstract ↔ Explicámelo toggle (AI explanation via Pollinations.ai)
-// · Referencias ↔ Citado por pair of buttons → navigates to the feed
-// · "Similar papers" row (same top concepts)
-// · "Otros temas para explorar" row (cycled from the main feed's topic order)
+//   · editorial title, byline, meta rail
+//   · Abstract ↔ Explicámelo toggle (AI explanation via Pollinations.ai)
+//   · Referencias ↔ Citado por pair of buttons → navigates to the feed
+//   · "Similar papers" row (same top concepts)
+//   · "Otros temas para explorar" row (cycled from the main feed's topic order)
 
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -23,7 +23,7 @@ import { fetchRandomQuote, type Quote } from '../lib/quoteLibrary';
 import { useLibrary } from '../lib/library';
 import { useReadPapers } from '../lib/read';
 import { showToast } from '../lib/toast';
-import { useTranslated } from '../lib/translate';
+import { useTranslated, fetchTranslation, getCachedTranslation } from '../lib/translate';
 import { useDocumentTitle } from '../lib/useDocumentTitle';
 import { useAbstractTranslation } from '../lib/abstractTranslate';
 import { languageLabel, isSpanish } from '../lib/language';
@@ -50,16 +50,16 @@ type AbstractMode = 'original' | 'explain';
  * el último mensaje era "Traduciendo a cristiano…",
  * un idiom castellano para "poner en palabras simples". Funcionaba bien
  * pero pareaba con un easter egg de versículos bíblicos (ver
- * quoteLibrary.ts, que reemplazó a bibleVerse.ts) y usuario decidió
+ * quoteLibrary.ts, que reemplazó a bibleVerse.ts) y decidió
  * desplazar todo ese imaginario a un registro secular. El reemplazo es
  * "Poniéndolo en palabras…": literalmente lo mismo, sin la referencia
  * religiosa. Mantiene la métrica sonora y el tono cadencioso del arco.
  *
  * Orden pensado para acompañar lo que de verdad está pasando abajo:
- * 1) armamos la request y la mandamos al endpoint,
- * 2) el provider la tomó y le pregunta al modelo upstream,
- * 3) esperamos que el modelo arranque a generar,
- * 4) sigue generando, ya casi sale el primer chunk.
+ *   1) armamos la request y la mandamos al endpoint,
+ *   2) el provider la tomó y le pregunta al modelo upstream,
+ *   3) esperamos que el modelo arranque a generar,
+ *   4) sigue generando, ya casi sale el primer chunk.
  */
 const LOADER_MESSAGES: ReadonlyArray<string> = [
   'Conectando con el modelo…',
@@ -76,11 +76,11 @@ export function PaperDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { has: libraryHas, toggle: libraryToggle } = useLibrary();
-  // Auto-marcar al abrir : se pidió que al abrir un paper
+  // Auto-marcar al abrir: se pidió que al abrir un paper
   // se marque como leído automáticamente porque "siempre me olvido de marcar
   // el botón de leído". El botón del footer sigue existiendo por dos razones:
   // (a) el usuario puede abrir un paper por curiosidad y no querer marcarlo
-  // como leído → el toggle le permite desmarcarlo en ese mismo view.
+  //     como leído → el toggle le permite desmarcarlo en ese mismo view.
   // (b) el estado visual (tick filled vs outline) es info útil en la página.
   // Exponemos `mark` además de `toggle` para la auto-marcación del useEffect
   // de abajo: `mark` es idempotente (no-op si ya está marcado, ver read.ts)
@@ -187,15 +187,45 @@ export function PaperDetail() {
         if (cached.kid) return; // already hot
 
         setExplainLoading(true);
+
+        // Orden: Explicámelo PRIMERO, título después.
+        // El endpoint gratis de Pollinations (sin API key) admite sólo 1
+        // request en vuelo por IP. Tenemos dos traducciones que competir:
+        // el título del header y el texto de Explicámelo. Elegimos que
+        // Explicámelo gane el slot inmediato porque es LO QUE EL LECTOR
+        // VIENE A LEER — el título ayuda a orientarse pero el contenido
+        // es la promesa editorial de la página.
+        //
+        // El título se traduce en paralelo via `useTranslated` más abajo.
+        // Mientras Explicámelo ocupa el slot, `useTranslated` va a recibir
+        // 429s y encolar retries con backoff exponencial (2s, 4s, 8s via
+        // pollirate.ts). Cuando Explicámelo termine, el slot queda libre
+        // y la próxima pasada del retry landea la traducción → swappea
+        // del título original al español en el header.
+        //
+        // Además, al final de Explicámelo (en el `.finally()` de abajo),
+        // hacemos un "empujón" explícito a fetchTranslation por si
+        // `useTranslated` ya agotó sus retries y quedó cacheado el
+        // original. Es barato (si ya hay cache hit, resuelve instantáneo;
+        // si hay inflight, se dedupea) y cubre el peor caso.
+        //
+        // Usamos el título en español para el prompt de Explicámelo SI ya
+        // está en cache (visita previa al paper). Si no, caemos al
+        // original — mejor empezar a streamear con título en inglés que
+        // bloquear el contenido esperando.
+        const cachedTitleEs = getCachedTranslation(p.id)?.titleEs;
+        const titleForExplain = cachedTitleEs || p.title;
+
         // onToken: por cada chunk que llega del SSE, appendeamos al state.
-        // Dejamos `explainLoading` en true durante todo el stream — el guard
-        // del render `explainLoading && !explanation` ya esconde el loader
-        // apenas hay texto, y conservar el flag nos sirve para pintar el
-        // caret "tipeando" al final del texto mientras sigue streaming.
-        // La normalización final (stripBanners) la hace el .then() de abajo
-        // con el texto completo que devuelve la promesa — eso sobreescribe
-        // cualquier fragmento sucio que hayamos pintado en vivo.
-        fetchExplanation(p.id, p.title, p.abstract, 'kid', delta => {
+        // Dejamos `explainLoading` en true durante todo el stream — el
+        // guard del render `explainLoading && !explanation` ya esconde el
+        // loader apenas hay texto, y conservar el flag nos sirve para
+        // pintar el caret "tipeando" al final del texto mientras sigue
+        // streaming. La normalización final (stripBanners) la hace el
+        // .then() de abajo con el texto completo que devuelve la promesa
+        // — eso sobreescribe cualquier fragmento sucio que hayamos
+        // pintado en vivo.
+        fetchExplanation(p.id, titleForExplain, p.abstract, 'kid', delta => {
           if (cancelled) return;
           setExplanations(prev => ({
             ...prev,
@@ -219,7 +249,22 @@ export function PaperDetail() {
             }
           })
           .finally(() => {
-            if (!cancelled) setExplainLoading(false);
+            if (cancelled) return;
+            setExplainLoading(false);
+
+            // Empujón al título: si sigue sin cachear (ej. `useTranslated`
+            // agotó sus retries mientras Explicámelo ocupaba el slot),
+            // forzamos una pasada más. Fire-and-forget: el resultado va
+            // directo al cache, y `useTranslated` lo lee en el próximo
+            // tick → swappea el header a español.
+            if (!getCachedTranslation(p.id)?.titleEs) {
+              void fetchTranslation(p, { priority: 'high' }).catch(() => {
+                // Silencio total: si falla acá, el usuario ya tiene todo
+                // el contenido visible, el título queda en el idioma
+                // original y puede apretar refresh si lo necesita en
+                // español.
+              });
+            }
           });
       })
       .catch(err => {
@@ -239,7 +284,7 @@ export function PaperDetail() {
     window.scrollTo({ top: 0 });
   }, [id]);
 
-  // Auto-marcar como leído . usuario: "siempre me olvido de
+  // Auto-marcar como leído. "siempre me olvido de
   // marcar el botón de leído". Disparamos `markRead(paper)` cada vez que
   // tenemos un paper cargado. El effect depende de `paper` (no sólo de
   // `paper?.id`) para garantizar que tengamos el objeto Paper completo,
@@ -350,7 +395,7 @@ export function PaperDetail() {
         if (cancelled) return;
         try {
           // daysBack: 7 → el top paper de la última semana (antes eran 120
-          // días, pero como usuario ya está leyendo activamente, "lo mejor
+          // días, pero como ya está leyendo activamente, "lo mejor
           // de hace 4 meses" se sentía viejo. Una semana da picks frescos
           // sin quedar vacío — los papers más citados de IA/Biología/etc.
           // acumulan cientos de citas en días).
@@ -385,12 +430,12 @@ export function PaperDetail() {
    * la cache es por (paperId, nivel). Esta función
    * es el único punto de entrada para asegurar que un nivel esté disponible
    * en state, y chequea en dos niveles antes de decidir fetchear:
-   * 1. ¿Está en React state? → no-op, ya tenemos el texto montado.
-   * 2. ¿Está en localStorage? → hidratamos state desde cache sin prender
-   * explainLoading. Esto evita el flicker del loader que aparecía
-   * brevemente cuando fetchExplanation devolvía instantáneo desde
-   * cache (el flag se prendía y apagaba en el mismo tick).
-   * 3. Si ninguno lo tiene, recién ahí fetcheamos con stream.
+   *   1. ¿Está en React state? → no-op, ya tenemos el texto montado.
+   *   2. ¿Está en localStorage? → hidratamos state desde cache sin prender
+   *      explainLoading. Esto evita el flicker del loader que aparecía
+   *      brevemente cuando fetchExplanation devolvía instantáneo desde
+   *      cache (el flag se prendía y apagaba en el mismo tick).
+   *   3. Si ninguno lo tiene, recién ahí fetcheamos con stream.
    * La condición (2) es defensiva — normalmente el useEffect del load
    * precarga todos los niveles cacheados en state. Pero si el state se
    * vació (cross-tab storage sync, re-mount, etc.) y cache sigue vivo,
@@ -408,9 +453,18 @@ export function PaperDetail() {
     setExplainLoading(true);
     setExplainError(null);
     try {
+      // Usar el título en español si ya está en cache de traducción. Cuando
+      // el user cambia de nivel, la traducción del título arrancó al mount
+      // del PaperDetail y lo más probable es que ya haya landeado en cache
+      // (ver EXPLAIN_WAIT_TITLE_MS arriba para el por qué de secuenciar
+      // título → Explicámelo). Si por algún motivo no está todavía (cache
+      // clear + Pollinations muy saturado), caemos al título original — no
+      // bloqueamos el cambio de nivel por eso; el user quiere ver el nuevo
+      // nivel ya.
+      const titleForExplain = getCachedTranslation(paper.id)?.titleEs || paper.title;
       const text = await fetchExplanation(
         paper.id,
-        paper.title,
+        titleForExplain,
         paper.abstract,
         lv,
         delta => {
@@ -511,9 +565,9 @@ export function PaperDetail() {
     );
   }
 
-  // "ciencia" : ahora Ciencia es un Topic real en TOPICS.
+  // "ciencia": ahora Ciencia es un Topic real en TOPICS.
   // Antes acá fallbackeábamos a strings literales ('var(--pv-ink)' / 'Ciencia')
-  // que generaban la inconsistencia visual que flaggeó usuario — el eyebrow
+  // que generaban la inconsistencia visual que flaggeó Carolina — el eyebrow
   // de un paper "genérico" no tenía el mismo tratamiento que los 14 temas.
   // Si `detectedTopic` es null usamos el Topic "ciencia" directamente, así
   // hereda color, name, soft, deep, etc. uniformemente.
@@ -636,7 +690,7 @@ export function PaperDetail() {
         {mode === 'original' ? (
           paper.abstract ? (
             // mostramos ambos — texto original en su
-            // idioma + traducción al español siempre. usuario: "en la 2,
+            // idioma + traducción al español siempre. "en la 2,
             // muestres ambas, que se vea el idio original pero me traduzca
             // siempre al español".
             //
@@ -663,17 +717,17 @@ export function PaperDetail() {
           // el primer delta del stream, `explanation` deja de ser null y
           // caemos al bloque `explanation ?` de más abajo, que renderiza el
           // texto que se va acumulando con un caret "tipeando" al final.
-          // usuario asked for the loader to feel like it "owns" the
+          // asked for the loader to feel like it "owns" the
           // container while waiting.
           //
           // Layout: contenedor de alto fijo (~380px) con dos slots verticales:
-          // · slot superior → loader icon + mensaje rotativo (anclado arriba
-          // con paddingTop, NO centrado vertical — así no se mueve cuando
-          // el slot de abajo se llena con el versículo).
-          // · slot inferior → versículo, siempre reservando espacio. Empieza
-          // con opacity:0 + translateY(8px) y se anima a opacity:1 +
-          // translateY(0) cuando `verseVisible` se enciende (2s después
-          // de llegar al último mensaje).
+          //   · slot superior  → loader icon + mensaje rotativo (anclado arriba
+          //     con paddingTop, NO centrado vertical — así no se mueve cuando
+          //     el slot de abajo se llena con el versículo).
+          //   · slot inferior  → versículo, siempre reservando espacio. Empieza
+          //     con opacity:0 + translateY(8px) y se anima a opacity:1 +
+          //     translateY(0) cuando `verseVisible` se enciende (2s después
+          //     de llegar al último mensaje).
           // El truco que evita el shift es que el slot de abajo siempre ocupa
           // espacio aunque la figura no se haya pintado todavía — usamos un
           // contenedor flex con altura mínima que reserva el "footprint" del
@@ -842,12 +896,12 @@ export function PaperDetail() {
           otras vistas; abajo van las acciones sobre ESTE paper
           (marcar leído, guardar, leer completo) con el CTA primario
           anclado al extremo derecho — así la lectura termina en la
-          acción más importante. Orden solicitado por usuario: 4 5 / 3 2 1. */}
+          acción más importante. Orden solicitado por Carolina: 4 5 / 3 2 1. */}
       <div className="paper-actions">
         {/* Explore-row: Ver referencias + Ver quién lo citó.
-            Revert : volvimos al patrón botón-siempre-presente,
+            Revert: volvimos al patrón botón-siempre-presente,
             con `disabled` cuando el contador es 0. Una iteración anterior
-            () había reemplazado el estado-cero por un span italic
+ había reemplazado el estado-cero por un span italic
             muted con copy explicativo ("Sin referencias indexadas" /
             "Todavía no lo citaron"), pero (a) ese texto más largo empujaba
             "Leer paper completo" a una segunda línea en desktop rompiendo

@@ -1,22 +1,22 @@
 // Paper title + lede translation/cleanup via Pollinations.ai.
 //
 // Por qué existe:
-// Los títulos y abstracts de OpenAlex vienen en el idioma original del paper
-// (mayormente inglés), con basura de LaTeX ($\alpha$, \textit{...}), entidades
-// HTML (&lt;), markup suelto, ALL-CAPS de revistas viejas, o glifos rotos por
-// OCR malo. En un feed eso es ruido: el lector rebota frente a títulos feos
-// y se pierde contenido que podría interesarle. La promesa editorial de
-// Paperverse es "ciencia para scrollear", así que en una sola pasada hacemos:
-// 1. Limpieza de basura (LaTeX, HTML, capitalización rota).
-// 2. Traducción a español neutro (LATAM) — no literal, vamos por la "crema"
-// del tema. Una frase que captura de qué va el paper, no una traducción
-// palabra-por-palabra del título académico.
+//   Los títulos y abstracts de OpenAlex vienen en el idioma original del paper
+//   (mayormente inglés), con basura de LaTeX ($\alpha$, \textit{...}), entidades
+//   HTML (&lt;), markup suelto, ALL-CAPS de revistas viejas, o glifos rotos por
+//   OCR malo. En un feed eso es ruido: el lector rebota frente a títulos feos
+//   y se pierde contenido que podría interesarle. La promesa editorial de
+//   Paperverse es "ciencia para scrollear", así que en una sola pasada hacemos:
+//     1. Limpieza de basura (LaTeX, HTML, capitalización rota).
+//     2. Traducción a español neutro (LATAM) — no literal, vamos por la "crema"
+//        del tema. Una frase que captura de qué va el paper, no una traducción
+//        palabra-por-palabra del título académico.
 //
-// Por qué español neutro y no rioplatense / Argentino: usuario es venezolana,
+// Por qué español neutro y no rioplatense / Argentino: es venezolana,
 // y aunque el lector ideal es bilingüe (porque estamos leyendo papers), forzar
 // "vos" / modismos rioplatenses creaba un sesgo regional innecesario. Español
 // neutro LATAM (sin "vos", sin "vosotros") se lee natural en cualquier país
-// hispanohablante y a usuario le queda como Venezuela.
+// hispanohablante y a le queda como Venezuela.
 //
 // Caché: localStorage, cap FIFO. Mismo patrón que Explicámelo — una vez
 // traducido, el paper conserva su título/lede en español en este dispositivo
@@ -282,7 +282,7 @@ let cacheVersion = 0;
  * cuando el usuario clickea refresh (`clearTranslationCache`). Sin esto, el
  * slot de Pollinations quedaba tomado hasta que venciera el timeout de 30s —
  * durante ese tiempo, las nuevas requests post-refresh se encolaban detrás y
- * usuario veía el feed congelado. Abortarlas libera el slot inmediatamente.
+ * veía el feed congelado. Abortarlas libera el slot inmediatamente.
  */
 const inflightAbortControllers = new Set<AbortController>();
 
@@ -327,7 +327,7 @@ export function useTranslationRefresh(): number {
 export interface FetchTranslationOptions {
   /**
    * 'high' = detail page (jumps el queue del feed).
-   * 'low' = feed (default).
+   * 'low'  = feed (default).
    */
   priority?: 'high' | 'low';
 }
@@ -526,8 +526,8 @@ export { isAbortError };
 
 /**
  * Parsea el output line-delimited del modelo. Pedimos:
- * TITULO: ...
- * LEDE: ...
+ *   TITULO: ...
+ *   LEDE: ...
  * …pero Pollinations a veces lo envuelve en ```, antepone un banner, o mete
  * una línea en blanco extra. Normalizamos y matcheamos por label así el orden
  * o el whitespace extra no nos rompe. Si igual parece JSON (cache vieja o
@@ -713,17 +713,17 @@ async function flushBatch(): Promise<void> {
     // Dos caminos según el tipo de error:
     //
     // 1) Rate-limit o abort → NO reintentamos con single. Mandar 5 requests
-    // individuales después de un 429 amplifica el problema: Pollinations
-    // nos rebotó porque ya estábamos por encima del límite, y 5 más lo
-    // empeoran. Mejor rechazar a los waiters (useTranslated cae al
-    // fallback pre-limpiado) y esperar a que la cola drene. El próximo
-    // render — o el próximo refresh manual — intenta de nuevo con la
-    // cola ya desahogada.
+    //    individuales después de un 429 amplifica el problema: Pollinations
+    //    nos rebotó porque ya estábamos por encima del límite, y 5 más lo
+    //    empeoran. Mejor rechazar a los waiters (useTranslated cae al
+    //    fallback pre-limpiado) y esperar a que la cola drene. El próximo
+    //    render — o el próximo refresh manual — intenta de nuevo con la
+    //    cola ya desahogada.
     //
     // 2) Error transitorio (red, parse, timeout corto) → sí tiene sentido
-    // el fallback single por waiter. Un single request usa gramática
-    // line-delimited más simple, y si el batch falló por JSON malformado
-    // cada paper individualmente tiene más chances de salir limpio.
+    //    el fallback single por waiter. Un single request usa gramática
+    //    line-delimited más simple, y si el batch falló por JSON malformado
+    //    cada paper individualmente tiene más chances de salir limpio.
     const errMsg = err instanceof Error ? err.message : String(err);
     const isRateLimit =
       errMsg.includes('saturado') ||
@@ -944,10 +944,10 @@ function pickField(item: Record<string, unknown>, validKeys: Set<string>): strin
 
 /**
  * Parsea el array JSON que devolvió Pollinations. Tolera:
- * - Fences ```json ... ``` (se strippean)
- * - Prose antes o después del array (tomamos de primer [ a último ])
- * - Keys en español o inglés ("titulo", "título", "Title")
- * - Keys con/sin acento y en distintas capitalizaciones
+ *   - Fences ```json ... ``` (se strippean)
+ *   - Prose antes o después del array (tomamos de primer [ a último ])
+ *   - Keys en español o inglés ("titulo", "título", "Title")
+ *   - Keys con/sin acento y en distintas capitalizaciones
  *
  * Si el JSON no parsea, logueamos el raw para debug y devolvemos map vacío.
  * flushBatch interpreta eso como "nadie fue resuelto" y cada waiter cae a
@@ -1059,7 +1059,7 @@ const USE_TRANSLATED_RETRY_DELAYS_MS = [8_000];
  * viniendo en background — swappea en cuanto llega.
  *
  * Trade-off: 3.5s es suficiente para cubrir un batch normal (~2–3s) sin
- * que el skeleton se sienta indefinido cuando las cosas van mal. usuario:
+ * que el skeleton se sienta indefinido cuando las cosas van mal. Carolina:
  * "si se satura y entro en cooldown pierdo toda la capacidad de lectura,
  * aun en inglés" — este timeout garantiza que siempre hay texto leíble
  * en ≤3.5s desde el mount, pase lo que pase con Pollinations.
@@ -1072,7 +1072,7 @@ const SKELETON_MAX_MS = 3_500;
  * la traducción cuando llega. Seguro de llamar en cada PaperCard — los
  * requests in-flight están dedupeados por paperId.
  *
- * Retry-on-error (fix ): cuando una traducción falla por 429 /
+ * Retry-on-error (fix 2026-04-21): cuando una traducción falla por 429 /
  * rate-limit / JSON malformado, el hook programa un reintento con delay
  * exponencial hasta `USE_TRANSLATED_MAX_RETRIES` veces — siempre y cuando la
  * card siga `enabled` (viewport-visible). Sin esto, cuando una ráfaga de

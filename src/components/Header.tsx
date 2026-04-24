@@ -52,7 +52,7 @@ export function Header() {
     setSearchOpen(false);
   }, [loc.pathname, loc.search]);
 
-  // Search-as-you-type .
+  // Search-as-you-type (QA 3.1, 2026-04-20).
   // Antes el buscador requería Enter para disparar — el QA heurístico
   // (Nielsen H1 + Ley de Jakob) marcó que usuarios esperan búsqueda en vivo
   // en apps modernas y el requisito de "confirmá con Enter" pasaba inadvertido.
@@ -62,15 +62,15 @@ export function Header() {
   // retroceder letra por letra: "quantu", "quant", "quan", …).
   //
   // Condiciones de guarda:
-  // · Sólo disparamos si el trim del query local difiere del query en la URL
-  // actual (evita navigates redundantes y loops de re-render).
-  // · Si el query queda vacío Y estábamos en una URL con ?q=..., volvemos a
-  // `/`. Si estamos en otra ruta (biblioteca, detail) NO forzamos navegación
-  // — el input vacío en esas pantallas es el estado default y no debería
-  // secuestrar al usuario.
-  // · Mantenemos el submit onSubmit del form para usuarios que igual prefieren
-  // Enter (Ley de Fitts aplicada al teclado: el gesto de confirmar sigue
-  // funcionando si lo querés).
+  //   · Sólo disparamos si el trim del query local difiere del query en la URL
+  //     actual (evita navigates redundantes y loops de re-render).
+  //   · Si el query queda vacío Y estábamos en una URL con ?q=..., volvemos a
+  //     `/`. Si estamos en otra ruta (biblioteca, detail) NO forzamos navegación
+  //     — el input vacío en esas pantallas es el estado default y no debería
+  //     secuestrar al usuario.
+  //   · Mantenemos el submit onSubmit del form para usuarios que igual prefieren
+  //     Enter (Ley de Fitts aplicada al teclado: el gesto de confirmar sigue
+  //     funcionando si lo querés).
   //
   // El cleanup del setTimeout en el return evita disparar navigates con queries
   // obsoletos si el user sigue escribiendo rápido: cada nueva pulsación mata
@@ -101,8 +101,8 @@ export function Header() {
 
   // Two tabs — the search bar is always visible, so a dedicated "Buscar" tab
   // is redundant. Feed covers both the default state and active queries.
-  // Feed → /
-  // Biblioteca → /biblioteca
+  //   Feed       → /
+  //   Biblioteca → /biblioteca
   const isLibrary = loc.pathname.startsWith('/biblioteca');
   const isFeed = !isLibrary;
 
@@ -145,7 +145,7 @@ export function Header() {
             tabIndex={0}
             aria-label="Ir al inicio — Paperverse"
           >
-            {/* Revert : se pidió volver al logo completo
+            {/* Revert: se pidió volver al logo completo
                 `logo-mark.svg` en el header. La variante small existe en
                 /design-system para contextos ≤32px, pero la identidad
                 "canónica" (planeta + órbita punteada + core gold) vive acá. */}
@@ -225,11 +225,12 @@ export function Header() {
               overflow horizontal. Desde el detail el usuario vuelve al feed
               (botón "< Volver") para buscar.
 
-              Comportamiento del header :
+              Comportamiento del header:
                 · Overlay cerrado → lupa (abrir).
                 · Overlay abierto → X (cerrar). Sólo cierra; no manda.
               El botón de "enviar" (avioncito azul con borde ink) vive
-              ADENTRO del overlay al lado del input, no acá. se pidió esa separación explícita: la lupa/X es navegación de
+              ADENTRO del overlay al lado del input, no acá. Carolina
+              pidió esa separación explícita: la lupa/X es navegación de
               UI (mostrar/ocultar el panel), el avioncito es la acción
               sobre el contenido (mandar la búsqueda). */}
           {!isDetail && (
@@ -252,9 +253,9 @@ export function Header() {
           El CSS lo hace responsive: en desktop queda oculto porque el botón
           lupa está display:none.
 
-          Estructura actual : input + botón avioncito al lado.
+          Estructura actual: input + botón avioncito al lado.
           Antes había una X de cerrar acá, que era redundante con la X del
-          header ("aquí hay dos equis" — usuario). La X quedó sólo arriba;
+          header ("aquí hay dos equis" ). La X quedó sólo arriba;
           acá ahora vive el botón PRIMARIO del overlay: avioncito de papel
           en cobalto con borde ink. Es el type="submit" del form, así que
           tanto Enter en el input como el tap sobre el avioncito disparan

@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="96" height="96" role="img" aria-label="Paperverse mark inverse">
- <circle cx="48" cy="48" r="44" fill="#0B1020"></circle>
- <circle cx="48" cy="48" r="44" fill="none" stroke="#F4EEE1" stroke-width="2.5"></circle>
- <ellipse cx="48" cy="48" rx="42" ry="15" fill="none" stroke="#6D8AFF" stroke-width="2.5" transform="rotate(-22 48 48)"></ellipse>
- <ellipse cx="48" cy="48" rx="42" ry="15" fill="none" stroke="#FFB88C" stroke-width="2" stroke-dasharray="2 6" transform="rotate(28 48 48)" opacity="0.8"></ellipse>
- <circle cx="48" cy="48" r="7" fill="#F4EEE1"></circle>
- <circle cx="48" cy="48" r="3" fill="#F5B638"></circle>
+  <circle cx="48" cy="48" r="44" fill="#0B1020"></circle>
+  <circle cx="48" cy="48" r="44" fill="none" stroke="#F4EEE1" stroke-width="2.5"></circle>
+  <ellipse cx="48" cy="48" rx="42" ry="15" fill="none" stroke="#6D8AFF" stroke-width="2.5" transform="rotate(-22 48 48)"></ellipse>
+  <ellipse cx="48" cy="48" rx="42" ry="15" fill="none" stroke="#FFB88C" stroke-width="2" stroke-dasharray="2 6" transform="rotate(28 48 48)" opacity="0.8"></ellipse>
+  <circle cx="48" cy="48" r="7" fill="#F4EEE1"></circle>
+  <circle cx="48" cy="48" r="3" fill="#F5B638"></circle>
 </svg>

@@ -1,13 +1,13 @@
 // Biblioteca — locally-saved + locally-read papers.
 //
-// Two tabs (, usuario): Guardados / Leídos. Guardados es la
+// Two tabs: Guardados / Leídos. Guardados es la
 // sección activa por default (lo que ella eligió conservar). Leídos es el
 // historial completo de lectura — todo lo que se marcó como leído (sea
 // porque abrió el detail, sea porque tocó el toggle), sirve como índice de
 // memoria. Antes teníamos "Para leer" + "Archivo" como dos secciones
 // apiladas; las tabs reemplazan ese layout por una vista más limpia que
 // además se alinea con el cambio en Feed (los leídos se ocultan, así que
-// la "Biblioteca > Leídos" pasa a ser donde usuario los recupera para
+// la "Biblioteca > Leídos" pasa a ser donde los recupera para
 // desmarcarlos si necesita verlos de nuevo).
 //
 // No server / no auth — ambas listas vienen de localStorage. Por eso hay
@@ -97,7 +97,7 @@ export function Library() {
     showToast('Exportamos tu biblioteca', 'info');
   };
 
-  // QA2 #68 : Importar JSON — complemento de Exportar JSON.
+  // QA2 #68: Importar JSON — complemento de Exportar JSON.
   // Permite mudar la biblioteca entre navegadores o recuperar un respaldo
   // cuando se borra el caché. El archivo esperado es el mismo shape que
   // produce `exportJson`: { version: 2, exportedAt, saved: [], read: [] }.
@@ -193,7 +193,7 @@ export function Library() {
   return (
     <div className="main-full">
       {/* `lib-header`: clase específica para que el CSS pueda apilar título
-          y botón en mobile (usuario, "1 para leer · 6 leídos"
+          y botón en mobile (2026-04-20: "1 para leer · 6 leídos"
           y "Exportar JSON" tienen que ir cada uno en su propia línea — la
           fila horizontal hacía que el título "1 para leer" se quebrara feo
           al lado del botón). En desktop sigue siendo flex horizontal. */}
@@ -389,7 +389,7 @@ export function Library() {
             </section>
           )}
 
-          {/* Panel Leídos — historial. Desde acá usuario puede desmarcar un
+          {/* Panel Leídos — historial. Desde acá puede desmarcar un
               paper (botón de leído en cada PaperCard) para que vuelva a
               aparecer en el feed. Ese es el "escape hatch" del feature de
               ocultar leídos: si ocultaste algo por error o querés revisitar,

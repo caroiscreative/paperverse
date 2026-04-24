@@ -2,26 +2,26 @@
 //
 // Por qué vive aparte del módulo de title+lede (src/lib/translate.ts):
 //
-// 1. Input distinto: acá traducimos el abstract ENTERO, no una "crema"
-// editorial de 220 caracteres. El prompt es otro (no reescribe, sólo
-// traduce fiel), y el output puede ser varios párrafos.
+//   1. Input distinto: acá traducimos el abstract ENTERO, no una "crema"
+//      editorial de 220 caracteres. El prompt es otro (no reescribe, sólo
+//      traduce fiel), y el output puede ser varios párrafos.
 //
-// 2. Cadencia distinta: el título/lede del feed se pide apenas la card
-// entra al viewport y se batchea con otros (lib/translate.ts hace
-// requests agrupados de hasta 5 papers). Acá el usuario tiene que
-// abrir un paper + hacer click en el tab "Abstract" + elegir ver
-// ambos — es un opt-in explícito, no una precarga. No tiene sentido
-// batchear algo que sólo se pide una vez cada tanto.
+//   2. Cadencia distinta: el título/lede del feed se pide apenas la card
+//      entra al viewport y se batchea con otros (lib/translate.ts hace
+//      requests agrupados de hasta 5 papers). Acá el usuario tiene que
+//      abrir un paper + hacer click en el tab "Abstract" + elegir ver
+//      ambos — es un opt-in explícito, no una precarga. No tiene sentido
+//      batchear algo que sólo se pide una vez cada tanto.
 //
-// 3. Cache independiente: si bumpeo la versión del cache de títulos (por
-// ejemplo para re-traducir feed tras un fix de prompt) no quiero
-// perder todas las traducciones de abstract que el usuario ya leyó.
-// Y viceversa.
+//   3. Cache independiente: si bumpeo la versión del cache de títulos (por
+//      ejemplo para re-traducir feed tras un fix de prompt) no quiero
+//      perder todas las traducciones de abstract que el usuario ya leyó.
+//      Y viceversa.
 //
 // Trade-off asumido: duplico un poco de plumbing (cache, in-flight dedup)
 // pero el módulo queda legible y los dos caminos evolucionan por separado.
 //
-// este módulo nace porque usuario decidió que en el
+// este módulo nace porque decidió que en el
 // modo "Abstract" del paper detail queremos mostrar el texto original +
 // siempre una traducción al español. Ver src/pages/PaperDetail.tsx.
 
@@ -225,8 +225,8 @@ ${paper.abstract}`;
 /**
  * Limpieza post-output del modelo. Cubre los dos modos de falla que vi en
  * pruebas manuales:
- * 1. Fences ``` alrededor del texto (a veces ```spanish, a veces ``` nomás).
- * 2. Preambulos del tipo "Here is the translation:" / "Traducción:" / etc.
+ *   1. Fences ``` alrededor del texto (a veces ```spanish, a veces ``` nomás).
+ *   2. Preambulos del tipo "Here is the translation:" / "Traducción:" / etc.
  */
 function sanitize(raw: string): string {
   let s = raw.trim();

@@ -1,59 +1,65 @@
 /**
- * Edge Middleware — Per-paper Open Graph preview
- * =================================================
+ * Edge Middleware — Per-paper Open Graph preview (QA2 P2.2, 2026-04-22)
+ * ======================================================================
  *
- * Paperverse is a SPA with React Router. When a paper link
- * (`/paper/W4400123456`) is pasted in WhatsApp/Slack/Twitter, the chat
- * crawler GETs the link looking for meta tags. Crawlers do NOT execute
- * JavaScript — they see the raw index.html served by Vercel. Without
- * this middleware, every link shows the same generic preview because
- * that's what's hardcoded in index.html.
+ * Problema que resuelve
+ * ---------------------
+ * Paperverse es un SPA con React Router. Cuando pega un link
+ * de paper (`/paper/W4400123456`) en WhatsApp/Slack/Twitter, el crawler
+ * del chat pega GET al link para buscar meta tags. Los crawlers NO
+ * ejecutan JavaScript: ven el index.html crudo que sirve Vercel. Sin
+ * este middleware, TODOS los links muestran el mismo preview genérico
+ * ("Paperverse — La ciencia real, para curiosos reales") porque ese es
+ * el meta tag hardcoded en index.html.
  *
- * What it does
- * ------------
- * Intercepts GETs to `/paper/:id`, detects if the caller is a chat bot
+ * Lo que hace
+ * -----------
+ * Intercepta GETs a `/paper/:id`, detecta si es un bot de chat
  * (WhatsApp, Slack, Twitter, Facebook, LinkedIn, Discord, iMessage, etc.),
- * and if it is:
- *   1. GETs OpenAlex for title + abstract + concepts
- *   2. Classifies the paper's topic (IA, clima, neuro, etc.) using the
- *      same logic as the client (topicForConcepts)
- *   3. Translates title + abstract to Spanish via Pollinations (4s
- *      timeout, best-effort, falls back to source language)
- *   4. Fetches the static index.html
- *   5. Rewrites og:*, twitter:* with paper data + dynamic image URL
- *      (/api/og?title=X&topic=Y)
- *   6. Returns modified HTML with aggressive caching
+ * y si lo es:
+ *   1. Pega GET a OpenAlex para traer title + abstract + concepts del paper
+ *   2. Clasifica el tema del paper (IA, clima, neuro, etc.) usando la misma
+ *      lógica que el cliente (topicForConcepts)
+ *   3. Traduce title + abstract al español via Pollinations (4s timeout,
+ *      best-effort, cae al original si falla)
+ *   4. Fetch del index.html estático
+ *   5. Reescribe los og:*, twitter:* con los datos del paper + URL de
+ *      imagen dinámica (/api/og?title=X&topic=Y)
+ *   6. Devuelve el HTML modificado con cache agresivo
  *
- * For humans (non-bots) we passthrough unchanged — the SPA flow
- * continues normally and React Router handles navigation. This avoids
- * paying the OpenAlex+Pollinations latency on every human click.
+ * Para humanos (no-bot) hacemos passthrough sin modificar nada: la ruta
+ * sigue el SPA flow normal y React Router se encarga. Así evitamos
+ * pagar la latencia de OpenAlex+Pollinations en cada click humano.
  *
- * Why bot-only instead of always-rewrite
- * ---------------------------------------
- * With always-rewrite, the first human visitor to an uncached paper
- * would wait 3-4s for translation to finish. Bad UX. Bot-only means
- * humans always get a fast load, bots (which don't care about timing)
- * receive correct HTML, and we cache the result at the edge so the
- * second hit to the same paper is instant.
+ * Por qué bot detection en vez de always-rewrite
+ * -----------------------------------------------
+ * Con always-rewrite, el primer visitante humano a un paper "raro" (no
+ * cacheado) esperaría 3-4s para que termine la traducción. Mal UX.
+ * Con bot-only, humanos siempre tienen carga rápida, bots (que no miran
+ * tiempo de carga) reciben el HTML correcto y nosotros cacheamos el
+ * resultado a nivel edge para que la segunda vez que el mismo bot o uno
+ * distinto pegue el mismo paper, la respuesta sea instantánea.
  *
- * Cache
+ * Caché
  * -----
- * - Edge cache: `s-maxage=86400` (24h on Vercel's CDN)
- * - Browser cache: `max-age=600` (10 min, avoids repeat hits from the
- *   same chat re-crawling)
- * - SWR: `stale-while-revalidate=604800` (7 days serve stale while
- *   revalidating in the background)
+ * - Edge cache: `s-maxage=86400` (24h en la CDN de Vercel)
+ * - Browser cache: `max-age=600` (10 min, evita pedidos repetidos del mismo
+ *   chat que crawlea varias veces)
+ * - SWR: `stale-while-revalidate=604800` (7 días devolvemos stale mientras
+ *   re-validamos en background)
  *
  * Fallback
  * --------
- * If OpenAlex returns 404/500, or Pollinations times out, we fall back
- * to the unmodified index.html. We never return a 5xx to the crawler.
+ * Si OpenAlex devuelve 404/500, o Pollinations timeoutea, caemos al
+ * index.html sin modificar. Nunca rompemos la respuesta: el preview
+ * "genérico" es peor que el dinámico pero infinitamente mejor que un
+ * 500 al crawler.
  */
 
 export const config = {
-  // Vercel matcher — only run on paper routes. Any other URL (/,
-  // /biblioteca, /manifiesto, etc.) bypasses the middleware and goes
-  // straight to static/SPA flow.
+  // Matcher de Vercel — sólo corremos en rutas de paper. Cualquier otra
+  // URL (/, /paper, /biblioteca, /manifiesto, etc.) pasa sin tocar el
+  // middleware y va directo al static/SPA flow.
   matcher: '/paper/:path*',
 };
 
@@ -61,14 +67,14 @@ export const config = {
 // Config
 // ─────────────────────────────────────────────────────────────────────────
 
-const OPENALEX_MAILTO = 'paperverse@example.com';
+const OPENALEX_MAILTO = 'francomatacarolina@gmail.com';
 const POLLINATIONS_TIMEOUT_MS = 4000;
 const POLLINATIONS_URL = 'https://text.pollinations.ai';
 
 // ─────────────────────────────────────────────────────────────────────────
-// Topic map — duplicated from src/lib/topics.ts (inlined because the
-// Edge runtime can't import from the React bundle). If colors/concepts
-// change in topics.ts, mirror the change here.
+// Topic map — duplicado de src/lib/topics.ts (inlined porque el Edge
+// runtime no puede importar desde el bundle de React). Si cambian los
+// colores/conceptos en topics.ts, hay que espejar el cambio acá.
 // ─────────────────────────────────────────────────────────────────────────
 
 interface Topic {
@@ -98,7 +104,7 @@ const TOPICS: Topic[] = [
   { id: 'ciencia',    name: 'Ciencia',       concepts: ['C144024400', 'C127313418', 'C205649164'], color: '#5B6472', soft: '#E3E6EB', deep: '#3F4752' },
 ];
 
-/** Same logic as src/lib/topics.ts → topicForConcepts. */
+/** Misma lógica que src/lib/topics.ts → topicForConcepts. */
 function topicForConcepts(concepts: Array<{ id: string; score?: number }> | undefined): Topic | null {
   if (!concepts || concepts.length === 0) return null;
   const pool = [...concepts]
@@ -128,13 +134,13 @@ function topicForConcepts(concepts: Array<{ id: string; score?: number }> | unde
   return bestId ? (TOPICS.find(t => t.id === bestId) ?? null) : null;
 }
 
-/** Fallback that never returns null — if nothing matches, falls back to ciencia. */
+/** Fallback que nunca devuelve null — si nada matchea, cae a ciencia. */
 function topicOrCiencia(concepts: Array<{ id: string; score?: number }> | undefined): Topic {
   return topicForConcepts(concepts) ?? TOPICS[TOPICS.length - 1];
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Abstract reconstruction — identical to src/lib/abstract.ts
+// Abstract reconstruction — idéntico a src/lib/abstract.ts
 // ─────────────────────────────────────────────────────────────────────────
 
 function reconstructAbstract(index: Record<string, number[]> | null | undefined): string | null {
@@ -153,8 +159,25 @@ function reconstructAbstract(index: Record<string, number[]> | null | undefined)
 // ─────────────────────────────────────────────────────────────────────────
 
 /**
- * Case-insensitive tokens that appear in the User-Agent strings of common
- * chat crawlers. Not exhaustive but covers the main targets.
+ * Lista (case-insensitive) de tokens que aparecen en los User-Agent strings
+ * de los crawlers de chat más comunes. No es exhaustiva pero cubre los que
+ * va a usar día a día:
+ *
+ * - WhatsApp: `WhatsApp/...`
+ * - Slack: `Slackbot-LinkExpanding` / `Slack-ImgProxy`
+ * - Twitter/X: `Twitterbot`
+ * - Facebook: `facebookexternalhit` / `Facebot`
+ * - LinkedIn: `LinkedInBot`
+ * - Discord: `Discordbot`
+ * - Telegram: `TelegramBot`
+ * - iMessage/Apple: `facebookexternalhit` (iMessage usa el mismo que FB)
+ *   y a veces `Apple-iMessage` — chequeamos ambos
+ * - Google: `Googlebot`, `Google-InspectionTool`
+ * - Bing: `bingbot`
+ * - Referencias generales: `bot`, `crawler`, `spider` como net seguridad
+ *   (puede haber falsos positivos pero los "humanos" nunca tienen estos
+ *   tokens en su UA — peor caso, un humano con "bot" en el UA recibe HTML
+ *   rewriteado, que también es válido, sólo un poco más lento)
  */
 const BOT_UA_PATTERNS = [
   'whatsapp',
@@ -197,12 +220,13 @@ interface PaperMeta {
 }
 
 /**
- * GETs OpenAlex and extracts only the fields we need. Returns null if
- * the paper doesn't exist or the API is down — callers should treat
- * null as "serve index.html unmodified".
+ * Pega GET a OpenAlex y extrae los campos que necesitamos. Devuelve null
+ * si el paper no existe o la API está caída — el caller debe interpretar
+ * null como "servir index.html sin modificar".
  *
- * The select param minimizes payload. No authorships/locations/cited_by
- * — none are needed for the chat preview.
+ * Select minimiza el payload: sólo traemos lo que vamos a usar. Evita
+ * traer authorships/locations/cited_by que sumarían varios KB sin utilidad
+ * para el preview de chat.
  */
 async function fetchPaper(paperId: string): Promise<PaperMeta | null> {
   const url = new URL(`https://api.openalex.org/works/${paperId}`);
@@ -211,7 +235,7 @@ async function fetchPaper(paperId: string): Promise<PaperMeta | null> {
   try {
     const res = await fetch(url.toString(), {
       headers: { accept: 'application/json' },
-      // OpenAlex usually responds in < 500ms; 6s timeout is defensive.
+      // OpenAlex suele responder en < 500ms; 6s de timeout es defensivo.
       signal: AbortSignal.timeout(6000),
     });
     if (!res.ok) return null;
@@ -231,13 +255,14 @@ async function fetchPaper(paperId: string): Promise<PaperMeta | null> {
 // ─────────────────────────────────────────────────────────────────────────
 
 /**
- * Translates title + abstract to Spanish via Pollinations. Uses the SAME
- * prompt as src/lib/translate.ts so the wording is consistent with what
- * the user sees in-app: opening a paper from a chat preview should match
- * the title shown in the UI, not two different translations.
+ * Traduce title + abstract al español via Pollinations. Usa el MISMO prompt
+ * que src/lib/translate.ts para que la redacción sea consistente con lo que
+ * el usuario ve en la card: si abre el link desde un chat y entra a la
+ * pagina, el título del preview debería matchear el título del paper en la
+ * UI, no dos traducciones distintas.
  *
- * Aggressive timeout (4s). If it expires, we fall back to the source
- * language. For bots it's better to have an English preview than a 500.
+ * Timeout agresivo (4s). Si pasa, caemos al original en inglés/idioma fuente.
+ * Para bots es preferible un preview en inglés a un 500.
  */
 interface Translated {
   title: string;
@@ -280,8 +305,8 @@ LEDE: <lede in Spanish>`;
     const text = (data?.choices?.[0]?.message?.content ?? '').toString();
     return parseTranslated(text, title, abstract);
   } catch {
-    // Fallback: return what we got. The preview ends up in the source
-    // language but still informative (title + first sentence of abstract).
+    // Fallback: devolvemos lo que vino. El preview queda en idioma original
+    // pero sigue siendo informativo (título y primera frase del abstract).
     return {
       title,
       lede: abstract ? truncate(abstract, 200) : '',
@@ -290,10 +315,10 @@ LEDE: <lede in Spanish>`;
 }
 
 function parseTranslated(raw: string, fallbackTitle: string, fallbackAbstract: string | null): Translated {
-  // We expect:
+  // Esperamos:
   //   TITULO: <line>
   //   LEDE: <line>
-  // Pollinations sometimes returns with fences or extra text — extract by regex.
+  // Pollinations a veces devuelve con fences o texto extra — extraemos por regex.
   const titleMatch = raw.match(/TITULO:\s*(.+?)(?:\n|$)/i);
   const ledeMatch = raw.match(/LEDE:\s*(.+?)(?:\n|$)/i);
   const title = titleMatch?.[1]?.trim() || fallbackTitle;
@@ -311,10 +336,10 @@ function truncate(s: string, max: number): string {
 // ─────────────────────────────────────────────────────────────────────────
 
 /**
- * Rewrites the og:* and twitter:* meta tags of index.html with paper
- * data. We use simple regex because (a) the index.html is ours and
- * we know the tags are on one line each, (b) a full HTML parser in
- * Edge is overkill for replacing 8 tags.
+ * Reescribe los meta tags og:* y twitter:* del index.html con los datos del
+ * paper. Usamos regex simples porque (a) el index.html es nuestro y sabemos
+ * que los tags están todos en una línea, (b) un parser HTML completo en
+ * edge es overkill para reemplazar 8 tags.
  */
 function rewriteMeta(
   html: string,
@@ -325,51 +350,61 @@ function rewriteMeta(
     pageUrl: string;
   }
 ): string {
-  // Escape to avoid breaking the HTML if title/description contain
-  // quotes, ampersands, or less/greater-than. Critical for scientific
-  // titles that sometimes include "p < 0.05" or "ADHD: meta-analysis".
+  // Escapamos para no romper el HTML si el título o descripción tienen
+  // comillas, ampersands, o menor/mayor. Esto es crítico para títulos
+  // científicos que a veces llevan "p < 0.05" o "ADHD: meta-analysis".
   const t = escapeHtmlAttr(opts.title);
   const d = escapeHtmlAttr(opts.description);
   const u = escapeHtmlAttr(opts.pageUrl);
   const img = escapeHtmlAttr(opts.imageUrl);
 
   return html
+    // og:title
     .replace(
       /<meta\s+property="og:title"\s+content="[^"]*"\s*\/>/i,
       `<meta property="og:title" content="${t}" />`
     )
+    // og:description
     .replace(
       /<meta\s+property="og:description"\s+content="[^"]*"\s*\/>/i,
       `<meta property="og:description" content="${d}" />`
     )
+    // og:url
     .replace(
       /<meta\s+property="og:url"\s+content="[^"]*"\s*\/>/i,
       `<meta property="og:url" content="${u}" />`
     )
+    // og:image
     .replace(
       /<meta\s+property="og:image"\s+content="[^"]*"\s*\/>/i,
       `<meta property="og:image" content="${img}" />`
     )
+    // og:image:alt
     .replace(
       /<meta\s+property="og:image:alt"\s+content="[^"]*"\s*\/>/i,
       `<meta property="og:image:alt" content="${t}" />`
     )
+    // twitter:title
     .replace(
       /<meta\s+name="twitter:title"\s+content="[^"]*"\s*\/>/i,
       `<meta name="twitter:title" content="${t}" />`
     )
+    // twitter:description
     .replace(
       /<meta\s+name="twitter:description"\s+content="[^"]*"\s*\/>/i,
       `<meta name="twitter:description" content="${d}" />`
     )
+    // twitter:image
     .replace(
       /<meta\s+name="twitter:image"\s+content="[^"]*"\s*\/>/i,
       `<meta name="twitter:image" content="${img}" />`
     )
+    // <title>
     .replace(
       /<title>[^<]*<\/title>/i,
       `<title>${t} — Paperverse</title>`
     )
+    // meta description (no-og)
     .replace(
       /<meta\s+name="description"\s+content="[^"]*"\s*\/>/i,
       `<meta name="description" content="${d}" />`
@@ -392,39 +427,41 @@ export default async function middleware(request: Request): Promise<Response> {
   const url = new URL(request.url);
   const ua = request.headers.get('user-agent');
 
-  // Passthrough for humans — let them hit the static index.html and let
-  // React Router do its work. No rewrite because OpenAlex+Pollinations
-  // latency (2-4s worst case) would show up in the initial page load.
+  // Passthrough para humanos — les dejamos el static index.html y que
+  // React Router haga su trabajo. No rewriteamos porque la latencia de
+  // OpenAlex+Pollinations (2-4s peor caso) se sentiría en la carga inicial.
   if (!isBot(ua)) {
-    return fetch(new URL('/index.html', url.origin).toString());
+    return fetch(new URL('/index.html', url.origin).toString(), {
+      // Heredamos cache del static — Vercel ya sabe cachear el index.html.
+    });
   }
 
-  // Extract paperId from path. Expected format: /paper/W4400123456
+  // Extraemos el paperId del path. Formato esperado: /paper/W4400123456
   const match = url.pathname.match(/^\/paper\/(W[0-9]+)/i);
   if (!match) {
     return fetch(new URL('/index.html', url.origin).toString());
   }
   const paperId = match[1].toUpperCase();
 
-  // Parallel fetch: paper meta + static index.html. Saves ~100-300ms
-  // versus sequential because the static HTML usually comes back in
-  // < 50ms and can resolve while we wait for OpenAlex.
+  // Fetch paralelo: meta del paper + index.html estático. Optimiza ~100-300ms
+  // versus secuencial porque el HTML estático suele venir en < 50ms y puede
+  // resolverse mientras esperamos OpenAlex.
   const [meta, htmlRes] = await Promise.all([
     fetchPaper(paperId),
     fetch(new URL('/index.html', url.origin).toString()),
   ]);
 
-  // If OpenAlex failed or the paper doesn't exist, serve index.html
-  // unmodified. The bot sees the site's generic meta tags — not ideal,
-  // but never a 500.
+  // Si OpenAlex falló o el paper no existe, servimos index.html tal cual.
+  // El bot va a ver los meta tags genéricos del sitio — no ideal, pero nunca
+  // un 500.
   if (!meta) {
     return htmlRes;
   }
 
-  // Spanish translation (best-effort, with timeout).
+  // Traducción al español (best-effort, con timeout).
   const translated = await translateToEs(paperId, meta.title, meta.abstract);
 
-  // Build the dynamic OG image URL: /api/og?title=...&topic=...
+  // Construimos la URL de la imagen OG dinámica: /api/og?title=...&topic=...
   const ogImageUrl = new URL('/api/og', url.origin);
   ogImageUrl.searchParams.set('title', truncate(translated.title, 180));
   ogImageUrl.searchParams.set('topic', meta.topic.id);
@@ -444,10 +481,16 @@ export default async function middleware(request: Request): Promise<Response> {
     status: 200,
     headers: {
       'content-type': 'text/html; charset=utf-8',
-      // Aggressive edge cache — the translation of a paper is stable.
+      // Cache agresivo en el edge — la traducción de un paper es estable.
+      // - max-age=600: browsers (y crawlers que respetan cache) re-usan 10 min
+      // - s-maxage=86400: CDN de Vercel cachea 24h por URL — la segunda vez
+      //   que alguien pega el mismo link, 0ms de latencia
+      // - stale-while-revalidate=604800: 7 días servimos stale mientras
+      //   revalidamos en background. Para este caso (título de paper) es
+      //   prácticamente infinito — los títulos no cambian.
       'cache-control': 'public, max-age=600, s-maxage=86400, stale-while-revalidate=604800',
-      // Vary by UA so bots and humans correctly receive different
-      // responses from the edge cache.
+      // Vary por UA para que bots y humanos reciban respuestas distintas
+      // del edge cache correctamente.
       'vary': 'user-agent',
     },
   });

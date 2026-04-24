@@ -8,16 +8,16 @@
 .ta-stage svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 
 /* Fine-grained motion: every element's transform-origin is its own center. */
-.ta-spin { animation: ta-spin 22s linear infinite; transform-box: fill-box; transform-origin: center; }
-.ta-spin-r { animation: ta-spin 16s linear infinite reverse; transform-box: fill-box; transform-origin: center; }
+.ta-spin    { animation: ta-spin 22s linear infinite; transform-box: fill-box; transform-origin: center; }
+.ta-spin-r  { animation: ta-spin 16s linear infinite reverse; transform-box: fill-box; transform-origin: center; }
 /* Sin transform-box: fill-box — el JS les setea un transform-origin inline
    en coordenadas del viewBox (ej "160px 100px"). Con fill-box esos valores
    se interpretan como offsets desde el bbox del elemento y el pivote cae
    lejos del centro (fue el bug de la hélice de medicina descentrada). */
 .ta-spin-slow { animation: ta-spin 36s linear infinite; transform-origin: center; }
-.ta-orbit { animation: ta-orbit 12s linear infinite; transform-origin: center; }
-.ta-float { animation: ta-float 5.5s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
-.ta-pulse { animation: ta-pulse 2.6s ease-in-out infinite; transform-origin: center; }
+.ta-orbit   { animation: ta-orbit 12s linear infinite; transform-origin: center; }
+.ta-float   { animation: ta-float 5.5s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.ta-pulse   { animation: ta-pulse 2.6s ease-in-out infinite; transform-origin: center; }
 .ta-pulse-2 { animation: ta-pulse 2.6s ease-in-out infinite 0.7s; transform-box: fill-box; transform-origin: center; }
 .ta-pulse-3 { animation: ta-pulse 2.6s ease-in-out infinite 1.4s; transform-box: fill-box; transform-origin: center; }
 .ta-twinkle { animation: ta-twinkle 3.2s ease-in-out infinite; }
@@ -26,10 +26,10 @@
 .ta-twinkle.d3 { animation-delay: 1.8s; }
 .ta-twinkle.d4 { animation-delay: 2.5s; }
 
-@keyframes ta-spin { to { transform: rotate(360deg); } }
-@keyframes ta-orbit { to { transform: rotate(-360deg); } }
-@keyframes ta-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
-@keyframes ta-pulse { 0%,100% { transform: scale(1); opacity: 0.95; } 50% { transform: scale(1.12); opacity: 1; } }
+@keyframes ta-spin    { to { transform: rotate(360deg); } }
+@keyframes ta-orbit   { to { transform: rotate(-360deg); } }
+@keyframes ta-float   { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes ta-pulse   { 0%,100% { transform: scale(1); opacity: 0.95; } 50% { transform: scale(1.12); opacity: 1; } }
 @keyframes ta-twinkle { 0%,100% { opacity: 0.2; } 50% { opacity: 1; } }
 
 /* Neuron impulse — a dash traveling along a stroked path. */
@@ -62,27 +62,27 @@
 .ta-drop.d3 { animation-delay: 0.8s; }
 .ta-drop.d4 { animation-delay: 1.0s; }
 @keyframes ta-drop {
-  0% { transform: translateY(-18px); opacity: 0; }
-  20% { opacity: 1; }
-  80% { opacity: 1; }
+  0%   { transform: translateY(-18px); opacity: 0; }
+  20%  { opacity: 1; }
+  80%  { opacity: 1; }
   100% { transform: translateY(36px); opacity: 0; }
 }
 
 /* Cloud drift. */
-.ta-drift { animation: ta-drift 14s ease-in-out infinite; }
+.ta-drift   { animation: ta-drift 14s ease-in-out infinite; }
 .ta-drift.d1 { animation-delay: 1.2s; animation-duration: 18s; }
 @keyframes ta-drift {
   0%,100% { transform: translateX(0); }
-  50% { transform: translateX(8px); }
+  50%     { transform: translateX(8px); }
 }
 
 /* DNA strand — continuous helix via skew. */
-.ta-helix { animation: ta-helix 6s ease-in-out infinite; transform-origin: center; }
+.ta-helix   { animation: ta-helix 6s ease-in-out infinite; transform-origin: center; }
 @keyframes ta-helix {
   0%,100% { transform: scaleX(1); }
-  50% { transform: scaleX(-1); }
+  50%     { transform: scaleX(-1); }
 }
-.ta-rung { animation: ta-rung 6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.ta-rung    { animation: ta-rung 6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
 .ta-rung.d1 { animation-delay: 0.4s; }
 .ta-rung.d2 { animation-delay: 0.8s; }
 .ta-rung.d3 { animation-delay: 1.2s; }
@@ -90,14 +90,30 @@
 .ta-rung.d5 { animation-delay: 2.0s; }
 @keyframes ta-rung {
   0%,100% { transform: scaleX(1); opacity: 1; }
-  50% { transform: scaleX(0.15); opacity: 0.55; }
+  50%     { transform: scaleX(0.15); opacity: 0.55; }
+}
+
+/* Bacterial colonies in a Petri dish (Medicina). Each colony scales
+   0.85 → 1.15 → 0.85 on a 5s loop, staggered via .d1..d4 so the five
+   colonies don't pulse in sync (that reads robotic, not alive).
+   transform-origin comes from inline style on each <g> — apunta al
+   centro exacto de la colonia en SVG user coords, no al bbox, para
+   que las 3 capas concéntricas queden bien alineadas al escalar. */
+.ta-colony  { animation: ta-colony 5s ease-in-out infinite; }
+.ta-colony.d1 { animation-delay: 0.6s; }
+.ta-colony.d2 { animation-delay: 1.2s; }
+.ta-colony.d3 { animation-delay: 1.8s; }
+.ta-colony.d4 { animation-delay: 2.4s; }
+@keyframes ta-colony {
+  0%,100% { transform: scale(0.88); }
+  50%     { transform: scale(1.12); }
 }
 
 /* Mitochondria breath. */
 .ta-breath { animation: ta-breath 4s ease-in-out infinite; transform-origin: center; }
 @keyframes ta-breath {
   0%,100% { transform: scale(1); }
-  50% { transform: scale(1.04); }
+  50%     { transform: scale(1.04); }
 }
 
 /* Electron orbit rotation around an atom (applied to the whole orbit group). */
@@ -121,12 +137,12 @@
 /* ——— New topic animations ——— */
 
 /* Ring radiation (energia, tecnologia). */
-.ta-ring { animation: ta-ring 3.2s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+.ta-ring    { animation: ta-ring 3.2s ease-out infinite; transform-box: fill-box; transform-origin: center; }
 .ta-ring.d1 { animation-delay: 1.0s; }
 .ta-ring.d2 { animation-delay: 2.0s; }
 @keyframes ta-ring {
-  0% { transform: scale(0.3); opacity: 0; }
-  15% { opacity: 0.9; }
+  0%   { transform: scale(0.3); opacity: 0; }
+  15%  { opacity: 0.9; }
   100% { transform: scale(2.6); opacity: 0; }
 }
 
@@ -136,57 +152,57 @@
    Ahora: 3 copias del MISMO arco con escala 0.3→2.0 desde su base
    (transform-origin: center bottom). Al estar desfasadas por delay, lees
    un pulso radial continuo — una onda "de verdad" radiando hacia afuera. */
-.ta-ripple { animation: ta-ripple 3.6s ease-out infinite; transform-box: fill-box; transform-origin: center bottom; }
+.ta-ripple    { animation: ta-ripple 3.6s ease-out infinite; transform-box: fill-box; transform-origin: center bottom; }
 .ta-ripple.d1 { animation-delay: 1.2s; }
 .ta-ripple.d2 { animation-delay: 2.4s; }
 @keyframes ta-ripple {
-  0% { transform: translateY(6px) scale(0.2); opacity: 0; }
-  18% { opacity: 1; }
-  70% { opacity: 0.9; }
+  0%   { transform: translateY(6px) scale(0.2);  opacity: 0; }
+  18%  { opacity: 1; }
+  70%  { opacity: 0.9; }
   100% { transform: translateY(-14px) scale(3.0); opacity: 0; }
 }
 
 /* Leaf sway (ecologia). */
-.ta-sway { animation: ta-sway 4.2s ease-in-out infinite; }
+.ta-sway    { animation: ta-sway 4.2s ease-in-out infinite; }
 @keyframes ta-sway {
   0%,100% { transform: rotate(-3deg); }
-  50% { transform: rotate(3deg); }
+  50%     { transform: rotate(3deg); }
 }
 
 /* Floating particles rising (ecologia). */
-.ta-float-up { animation: ta-float-up 5.5s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.ta-float-up    { animation: ta-float-up 5.5s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
 .ta-float-up.d1 { animation-delay: 0.8s; }
 .ta-float-up.d2 { animation-delay: 1.8s; }
 .ta-float-up.d3 { animation-delay: 2.6s; }
 @keyframes ta-float-up {
-  0% { transform: translateY(6px); opacity: 0; }
-  20% { opacity: 1; }
-  80% { opacity: 1; }
+  0%   { transform: translateY(6px); opacity: 0; }
+  20%  { opacity: 1; }
+  80%  { opacity: 1; }
   100% { transform: translateY(-30px); opacity: 0; }
 }
 
 /* Draw-in (matematica, ecologia). */
-.ta-draw { stroke-dasharray: 400; stroke-dashoffset: 400; animation: ta-draw 3.6s ease-in-out infinite; }
+.ta-draw    { stroke-dasharray: 400; stroke-dashoffset: 400; animation: ta-draw 3.6s ease-in-out infinite; }
 .ta-draw.d1 { animation-delay: 0.4s; }
 .ta-draw.d2 { animation-delay: 0.8s; }
 .ta-draw.d3 { animation-delay: 1.2s; }
 .ta-draw.d4 { animation-delay: 1.6s; }
 @keyframes ta-draw {
-  0% { stroke-dashoffset: 400; }
-  40% { stroke-dashoffset: 0; }
-  80% { stroke-dashoffset: 0; opacity: 1; }
+  0%   { stroke-dashoffset: 400; }
+  40%  { stroke-dashoffset: 0; }
+  80%  { stroke-dashoffset: 0; opacity: 1; }
   100% { stroke-dashoffset: 400; opacity: 0.6; }
 }
 
 /* Bubbles rising (quimica). */
-.ta-bubble { animation: ta-bubble 2.8s ease-in infinite; transform-box: fill-box; transform-origin: center; }
+.ta-bubble    { animation: ta-bubble 2.8s ease-in infinite; transform-box: fill-box; transform-origin: center; }
 .ta-bubble.d1 { animation-delay: 0.5s; }
 .ta-bubble.d2 { animation-delay: 1.0s; }
 .ta-bubble.d3 { animation-delay: 1.8s; }
 @keyframes ta-bubble {
-  0% { transform: translateY(8px); opacity: 0; }
-  20% { opacity: 1; }
-  85% { opacity: 1; }
+  0%   { transform: translateY(8px); opacity: 0; }
+  20%  { opacity: 1; }
+  85%  { opacity: 1; }
   100% { transform: translateY(-28px); opacity: 0; }
 }
 
@@ -204,9 +220,9 @@
   animation: ta-fill 6s cubic-bezier(0.2, 0.8, 0.3, 1) infinite;
 }
 @keyframes ta-fill {
-  0% { transform: scaleX(0); opacity: 0.75; }
-  8% { transform: scaleX(1); opacity: 1; }
-  92% { transform: scaleX(1); opacity: 1; }
+  0%   { transform: scaleX(0); opacity: 0.75; }
+  8%   { transform: scaleX(1); opacity: 1; }
+  92%  { transform: scaleX(1); opacity: 1; }
   100% { transform: scaleX(0); opacity: 0; }
 }
 
@@ -223,9 +239,9 @@
   animation: ta-release-h 3.5s cubic-bezier(0.3, 0, 0.5, 1) infinite;
 }
 @keyframes ta-release-h {
-  0% { transform: translateX(0) scale(0.4); opacity: 0; }
-  10% { transform: translateX(4px) scale(1); opacity: 1; }
-  75% { transform: translateX(50px) scale(1); opacity: 1; }
+  0%   { transform: translateX(0)    scale(0.4); opacity: 0; }
+  10%  { transform: translateX(4px)  scale(1);   opacity: 1; }
+  75%  { transform: translateX(50px) scale(1);   opacity: 1; }
   100% { transform: translateX(58px) scale(0.5); opacity: 0; }
 }
 
@@ -235,9 +251,9 @@
   animation: ta-release-v 3.5s cubic-bezier(0.3, 0, 0.5, 1) infinite;
 }
 @keyframes ta-release-v {
-  0% { transform: translateY(0) scale(0.4); opacity: 0; }
-  10% { transform: translateY(4px) scale(1); opacity: 1; }
-  75% { transform: translateY(50px) scale(1); opacity: 1; }
+  0%   { transform: translateY(0)    scale(0.4); opacity: 0; }
+  10%  { transform: translateY(4px)  scale(1);   opacity: 1; }
+  75%  { transform: translateY(50px) scale(1);   opacity: 1; }
   100% { transform: translateY(58px) scale(0.5); opacity: 0; }
 }
 
@@ -254,10 +270,10 @@
   animation: ta-stamp 6s ease-out infinite;
 }
 @keyframes ta-stamp {
-  0%, 38% { opacity: 0; transform: scale(1.7) rotate(-20deg); }
-  42% { opacity: 1; transform: scale(1.25) rotate(-8deg); }
-  48% { opacity: 1; transform: scale(0.92) rotate(-14deg); }
-  52% { opacity: 1; transform: scale(1) rotate(-12deg); }
-  92% { opacity: 1; transform: scale(1) rotate(-12deg); }
-  100% { opacity: 0; transform: scale(1) rotate(-12deg); }
+  0%, 38%  { opacity: 0; transform: scale(1.7)  rotate(-20deg); }
+  42%      { opacity: 1; transform: scale(1.25) rotate(-8deg);  }
+  48%      { opacity: 1; transform: scale(0.92) rotate(-14deg); }
+  52%      { opacity: 1; transform: scale(1)    rotate(-12deg); }
+  92%      { opacity: 1; transform: scale(1)    rotate(-12deg); }
+  100%     { opacity: 0; transform: scale(1)    rotate(-12deg); }
 }

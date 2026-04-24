@@ -1,7 +1,7 @@
 // Floating theme dock — small vertical pill anchored to the middle-left edge
 // of the viewport. Contiene dos cosas:
-// · Toggle claro/oscuro (sol/luna)
-// · Atajo al Manifiesto (ícono de papel)
+//   · Toggle claro/oscuro (sol/luna)
+//   · Atajo al Manifiesto (ícono de papel)
 //
 // Por qué acá y no en el Header: el Header ya compite por atención entre
 // Feed / Biblioteca / Buscar. Meter el tema acá deja esa barra limpia y
@@ -11,7 +11,7 @@
 // Nota histórica: antes este dock tenía un selector de 15 idiomas. Lo quitamos
 // porque Paperverse quedó definido como single-language (español neutro LATAM)
 // — el multi-idioma agregaba complejidad (cache por idioma, prompts por idioma,
-// rate limits multiplicados) sin un caso de uso real para usuario, que lee
+// rate limits multiplicados) sin un caso de uso real para Carolina, que lee
 // en español.
 //
 // Y antes del file-text había un botón de refresh para forzar re-traducir

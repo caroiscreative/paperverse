@@ -17,7 +17,7 @@ interface Props {
 }
 
 export function PaperCard({ paper, onClick, variant = 'full' }: Props) {
-  // "ciencia" : ahora Ciencia es un Topic real, así que usamos
+  // "ciencia": ahora Ciencia es un Topic real, así que usamos
   // `topicOrCiencia` que devuelve un Topic completo siempre (nunca null).
   // Antes teníamos 4 fallbacks literales dispersos (color/name/illus/soft)
   // que se iban desincronizando cuando tocábamos uno — ahora un solo call
@@ -36,7 +36,7 @@ export function PaperCard({ paper, onClick, variant = 'full' }: Props) {
   // flash cuando se vuelve a renderizar.
   const [visibilityRef, isVisible] = useOnScreen<HTMLElement>('300px');
 
-  // Editorial Spanish title + lede. Ataque 3 : antes caíamos al
+  // Editorial Spanish title + lede. Ataque 3: antes caíamos al
   // título original pre-limpiado durante el loading, pero en papers en idiomas
   // que el lector no entiende (francés, portugués, malayo) ese texto leía como
   // basura hasta que Pollinations respondía. Ahora mientras `loading` está
@@ -137,14 +137,14 @@ export function PaperCard({ paper, onClick, variant = 'full' }: Props) {
       className={`paper-card${read ? ' is-read' : ''}`}
       onClick={onClick}
     >
-      {/* Variedad de arte por paper (): 3 tintas derivadas del color
+      {/* Variedad de arte por paper: 3 tintas derivadas del color
           del tema, rotadas por hash del paperId. Genera ritmo cromático
           dentro de la lista sin salirse de la familia del tema. Papers sin
           match específico caen a Ciencia (slate neutral) — también con las
           3 tintas rotadas, así mantienen el mismo tratamiento visual que
           el resto.
 
-          antes acá también aplicábamos una
+          QA2 P2.3 rollback: antes acá también aplicábamos una
           transform (rotaciones/flip) al SVG por paper, pero se veía
           "extrañísimo" cuando un paper venía inclinado 5° random y los
           bordes del ícono chocaban contra el fondo. Eliminado. */}

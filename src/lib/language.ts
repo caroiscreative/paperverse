@@ -2,18 +2,18 @@
 //
 // OpenAlex devuelve el idioma del paper como código ISO 639-1 (dos letras,
 // p.ej. "en", "zh", "de"). Para la UI lo queremos en español neutro y
-// legible ("Inglés", "Chino", "Alemán") — ver , donde decidimos que
+// legible ("Inglés", "Chino", "Alemán") — ver QA 3.12, donde decidimos que
 // el modo "original" del abstract muestre ambas versiones (texto original +
 // etiqueta de idioma + traducción al español siempre).
 //
 // Convenciones:
 // - En los pocos casos que no conocemos el código (paper con language: null
-// o algún ISO raro) devolvemos "idioma desconocido" — preferimos la
-// honestidad a mentir sobre el idioma.
+//   o algún ISO raro) devolvemos "idioma desconocido" — preferimos la
+//   honestidad a mentir sobre el idioma.
 // - "Inglés" con mayúscula inicial porque en la UI se muestra dentro de una
-// etiqueta tipo badge ("ORIGINAL EN INGLÉS") y/o frase decorativa; no
-// aparece en medio de una oración donde las normas del español pedirían
-// minúscula.
+//   etiqueta tipo badge ("ORIGINAL EN INGLÉS") y/o frase decorativa; no
+//   aparece en medio de una oración donde las normas del español pedirían
+//   minúscula.
 
 const ISO_TO_ES: Record<string, string> = {
   en: 'Inglés',

@@ -6,34 +6,34 @@
 // es core de la marca, así que queremos que el usuario opte-in a la
 // variante "cosmic night" en vez de adivinar su gusto por el OS.
 //
-// Arquitectura : se reescribió de un hook con
+// Arquitectura (QA2 P1.1, 2026-04-20): se reescribió de un hook con
 // useState privado a un *store externo* consumido vía
 // `useSyncExternalStore`. Razones del cambio:
 //
-// 1) Sync entre instancias. Antes, cada `useTheme()` tenía su propio
-// useState. Si en algún momento montábamos dos toggles al mismo
-// tiempo (sidebar del Feed + algún control en Header en mobile),
-// uno cambiaba el tema pero el otro seguía mostrando el label
-// viejo hasta que su propio re-render lo alineara. Ahora todos
-// los subscribers leen del mismo `currentTheme` module-level, así
-// que cualquier setTheme dispara un re-render coordinado en todos
-// los lugares donde se lo lee.
+//   1) Sync entre instancias. Antes, cada `useTheme()` tenía su propio
+//      useState. Si en algún momento montábamos dos toggles al mismo
+//      tiempo (sidebar del Feed + algún control en Header en mobile),
+//      uno cambiaba el tema pero el otro seguía mostrando el label
+//      viejo hasta que su propio re-render lo alineara. Ahora todos
+//      los subscribers leen del mismo `currentTheme` module-level, así
+//      que cualquier setTheme dispara un re-render coordinado en todos
+//      los lugares donde se lo lee.
 //
-// 2) FOUC en first paint. El bootstrap inline en index.html ya aplica
-// la clase `pv-dark` al <html> antes de que React monte — eso
-// solucionó el flash de canvas crema en usuarios de modo oscuro.
-// Pero la inicialización del useState en el hook corría ya con el
-// valor correcto porque lee directo de localStorage. Mantenemos
-// consistencia: el bootstrap y el store comparten la misma
-// clave (`pv_theme_v1`); si cambiamos una, hay que cambiar la
-// otra también (ver nota en index.html).
+//   2) FOUC en first paint. El bootstrap inline en index.html ya aplica
+//      la clase `pv-dark` al <html> antes de que React monte — eso
+//      solucionó el flash de canvas crema en usuarios de modo oscuro.
+//      Pero la inicialización del useState en el hook corría ya con el
+//      valor correcto porque lee directo de localStorage. Mantenemos
+//      consistencia: el bootstrap y el store comparten la misma
+//      clave (`pv_theme_v1`); si cambiamos una, hay que cambiar la
+//      otra también (ver nota en index.html).
 //
-// 3) Cross-tab sync. Subscribímonos al evento `storage` del window
-// para que si el usuario tiene Paperverse abierto en dos tabs y
-// cambia el tema en una, la otra se actualice sin refresh. El
-// `storage` event sólo dispara entre tabs de la misma origin,
-// no dentro de la misma tab que originó el write — por eso
-// seguimos llamando a `notify()` explícitamente desde `setTheme`.
+//   3) Cross-tab sync. Subscribímonos al evento `storage` del window
+//      para que si el usuario tiene Paperverse abierto en dos tabs y
+//      cambia el tema en una, la otra se actualice sin refresh. El
+//      `storage` event sólo dispara entre tabs de la misma origin,
+//      no dentro de la misma tab que originó el write — por eso
+//      seguimos llamando a `notify()` explícitamente desde `setTheme`.
 
 import { useSyncExternalStore } from 'react';
 

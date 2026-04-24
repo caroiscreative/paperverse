@@ -17,6 +17,7 @@ import { useNavigate } from 'react-router-dom';
 import { Icon } from '../components/Icon';
 import { TOPICS } from '../lib/topics';
 import { TopicBanner } from '../components/TopicBanner';
+import { TopicIcon } from '../components/TopicIcon';
 import { useDocumentTitle } from '../lib/useDocumentTitle';
 
 /**
@@ -302,11 +303,18 @@ export function DesignSystem() {
                   marginBottom: 14,
                 }}
               >
+                {/* Tile con el ícono real del chip.
+                    Antes era un cuadradito 34×34 rounded con un dot del
+                    `color` del tema adentro — genérico, no comunicaba qué
+                    tema era. Ahora usamos el mismo TopicIcon que el
+                    TopicChip (IA = red neuronal, Biología = doble hélice,
+                    etc.) para que el header del DS sea el catálogo
+                    verdadero de los glifos del sistema. Tile cuadrado
+                    (border-radius 0) matchea el flat del resto del DS. */}
                 <span
                   style={{
                     width: 34,
                     height: 34,
-                    borderRadius: 8,
                     background: t.soft,
                     display: 'inline-flex',
                     alignItems: 'center',
@@ -314,15 +322,7 @@ export function DesignSystem() {
                     flexShrink: 0,
                   }}
                 >
-                  <span
-                    style={{
-                      width: 12,
-                      height: 12,
-                      borderRadius: '50%',
-                      background: t.color,
-                      display: 'block',
-                    }}
-                  />
+                  <TopicIcon topicId={t.id} color={t.deep} size={20} />
                 </span>
                 <span
                   style={{
@@ -335,6 +335,10 @@ export function DesignSystem() {
                 >
                   {t.name}
                 </span>
+                {/* Swatches rectos — antes tenían
+                    border-radius 4 que chocaba con el flat del resto del
+                    design system (chips border-radius 0, topics sin
+                    redondeo). Ahora border-radius 0, coherente. */}
                 <div style={{ display: 'flex', gap: 4 }}>
                   {(['soft', 'color', 'deep'] as const).map(k => {
                     const hex = t[k];
@@ -345,7 +349,7 @@ export function DesignSystem() {
                           minWidth: 78,
                           height: 26,
                           padding: '0 8px',
-                          borderRadius: 4,
+                          borderRadius: 0,
                           background: hex,
                           color: textOn(hex),
                           fontFamily: 'var(--font-mono)',

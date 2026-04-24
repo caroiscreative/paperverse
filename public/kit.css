@@ -45,8 +45,9 @@ body {
 .pv-header .brand { display: flex; align-items: center; gap: 10px; cursor: pointer; justify-self: start; }
 .pv-header .brand img { width: 30px; height: 30px; display: block; }
 .pv-header .wordmark { font-family: var(--font-display); font-size: 26px; letter-spacing: -0.02em; color: var(--pv-ink); line-height: 1; font-weight: 400; }
-/* El "." final del wordmark lleva color cobalto. Revert :
-   habíamos probado magma para unificar con el wordmark SVG, pero se pidió volver al cobalto original. Consistente con el dot en dark mode
+/* El "." final del wordmark lleva color cobalto. Revert:
+   habíamos probado magma para unificar con el wordmark SVG, pero Carolina
+   pidió volver al cobalto original. Consistente con el dot en dark mode
    (que siempre fue cobalto). */
 .pv-header .wordmark .dot { color: var(--pv-cobalto); }
 .pv-header .search { width: 100%; max-width: 560px; margin: 0 !important; justify-self: center; }
@@ -69,7 +70,7 @@ body {
 .sidebar { position: sticky; top: 96px; align-self: start; display: flex; flex-direction: column; gap: 24px; }
 
 /* ————————————————————————————————————————— Topic chips ————————— */
-/* Restyle estético Fase 3.2 . El chip mantiene su personalidad
+/* Restyle estético Fase 3.2. El chip mantiene su personalidad
    "stamp editorial" (borde 2px ink, casi sin radio, tile cuadrado con
    color de tema) pero recibe pulido:
      · `border-radius: 2px` para harmonizar con .btn (que también usa 2px) —
@@ -88,7 +89,7 @@ body {
      · Padding 6/12/6/8 — quité 2px del lado derecho para que el chip no
        quede tan ancho en la fila densa del sidebar; el tile sigue pegado
        al borde izquierdo y el label respira con el extra del gap. */
-/* Fase 3.2 redo (, usuario). Dirección final de los chips:
+/* Fase 3.2 redo. Dirección final de los chips:
    · border-radius 0 (se quedan cuadrados, alineados con el lenguaje
      editorial del resto del sistema).
    · SIN bordes en ningún estado. Las chips se comunican por fondo, no
@@ -112,7 +113,11 @@ body {
 .topic-chip {
   display: inline-flex; align-items: center; gap: 10px;
   font-family: var(--font-sans); font-size: 13px; font-weight: 600;
-  border-radius: 0; padding: 6px 12px 6px 8px;
+  border-radius: 0;
+  /* Padding vertical reducido de 6 → 4. Con el tile
+     a 24px y font-size 13, total ≈ 32px de alto (antes ≈ 40px). La caja se
+     siente compacta sin perder generosidad de tap target en mobile. */
+  padding: 4px 12px 4px 8px;
   border: 0;
   background: var(--chip-bg, var(--bg-surface)); color: var(--pv-ink);
   cursor: pointer;
@@ -130,11 +135,20 @@ body {
    reaparece como stamp topic.soft, preservando la identidad del tópico
    con la chip seleccionada. */
 .topic-chip .tico {
+  /* Tile 24×24 (2026-04-23, Carolina — revertido de 28 para bajar la altura
+     total del chip). Con el ícono a 16px queda 4px de padding cada lado
+     dentro del tile, suficiente respiro visual. */
   width: 24px; height: 24px; border-radius: 0;
   display: inline-flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
-.topic-chip .tico svg { width: 14px; height: 14px; display: block; }
+/* Tamaño estable a 16px. Antes estaba en 14 y los
+   íconos se veían chicos e inconsistentes entre sí porque cada SVG pintaba
+   en una zona distinta del viewBox. Con el pase de normalización en
+   TopicIcon.tsx cada ícono ahora pinta dentro de una caja 3-21 centrada
+   (20×20 útil dentro del 24×24 del viewBox) y a 16px todos se sienten del
+   mismo peso visual. Tile a 28 (antes 24) para darles un poco más de aire. */
+.topic-chip .tico svg { width: 16px; height: 16px; display: block; }
 /* Plus chip — el "+ Agregar tema" del onboarding/sidebar. Queda como
    variante outline dashed (no tiene color de tópico porque representa
    "agregar otro"), y sin bordes cuadrados — mantenemos el dashed como
@@ -142,7 +156,8 @@ body {
 .topic-chip.plus { background: transparent; border: 2px dashed var(--fg-3); color: var(--fg-3); padding: 6px 12px; gap: 6px; border-radius: 0; }
 .topic-chip.plus:hover { border-color: var(--pv-cobalto); color: var(--pv-cobalto); border-style: dashed; filter: none; }
 
-/* "Limpiar (N)" — chip de reset para los filtros de "Tus temas" del sidebar. : antes era una palabra ("limpiar") con underline
+/* "Limpiar (N)" — chip de reset para los filtros de "Tus temas" del sidebar.
+   QA2 extra: antes era una palabra ("limpiar") con underline
    sutil en mono uppercase, indistinguible visualmente de un label. El QA
    lo leyó como texto inerte y no intuyó que era clickeable. Ahora comparte
    el vocabulary de los TopicChip (border ink, Sentence case, padding
@@ -153,7 +168,7 @@ body {
    con los chips reales de abajo. Hover invierte a tinta llena como feedback
    claro; el ✕ empuja la interpretación hacia "cerrar/quitar" en vez de
    "agregar". */
-/* Rediseño (usuario): el chip con border 2px + ícono × grande
+/* Rediseño 2026-04-21 (Carolina): el chip con border 2px + ícono × grande
    era muy "destacado" y empujaba verticalmente el section-head cuando
    aparecía → desaparecía. Ahora es un link-style tipográficamente
    IDÉNTICO al h2 de "Tus temas" (misma fuente, mismo size, mismo
@@ -284,7 +299,7 @@ body {
 /* Sticky feed top bar — se pega debajo del header y mantiene visible
    "N papers · Xd" + toggle Lista/Tarjetas mientras las cards scrollean.
 
-   Trampa pasada : el primer intento usaba top: 96px (copiado
+   Trampa pasada: el primer intento usaba top: 96px (copiado
    del sidebar viejo). Pero el header sticky es ~70-75px en desktop; eso
    dejaba un GAP de ~20px entre el borde inferior del header y el borde
    superior de la barra donde las cards pasaban a la vista completamente.
@@ -303,7 +318,7 @@ body {
   top: 60px; /* header desktop ~70px → solapamos 10px para cerrar el gap */
   z-index: 40;
   isolation: isolate;
-  /* Fase 4.1 : el contador de papers dejó el top-bar. Ahora
+  /* Fase 4.1: el contador de papers dejó el top-bar. Ahora
      sólo viven acá los controles (SortDropdown + ViewToggle), alineados
      a la derecha. Con flex-end no necesitamos el "space-between" del
      section-head heredado — lo pisamos acá. */
@@ -319,12 +334,12 @@ body {
   background: var(--bg-canvas);
   align-items: center;
   margin: 0 0 0 0;
-  /* Ritmo vertical (Fase 4.1, ):
+  /* Ritmo vertical (Fase 4.1, 2026-04-21):
      · Divider ARRIBA de los controles (se pidió que el separador
        del sidebar y el del feed queden coherentes visualmente — el
        divider "abre" el bloque de controles en vez de cerrar el bar).
      · padding-top 0 — los controles se apoyan directo sobre el divider
-       sin aire extra. usuario lo pidió explícito: el "gap" entre
+       sin aire extra. lo pidió explícito: el "gap" entre
        divider y controles es demasiado, mejor que lean como un bloque
        compacto y dejar el aire sólo donde hace falta (abajo).
      · 16px abajo — separación entre controles y meta-row.
@@ -364,7 +379,7 @@ body {
    original sigue aplicando pero como margin ya es 0, es no-op. */
 
 /* ————————————————————————————————————————— Sort dropdown ——————
-   Control de "Ordenar por" del Feed/Refs/Cites (Fase 4, ).
+   Control de "Ordenar por" del Feed/Refs/Cites (Fase 4, 2026-04-21).
    Es un popover custom — no un <select> nativo — para poder usar las
    mismas tipografías e tintas del resto del sistema y meter labels
    con hints. Lenguaje visual: sin bordes visibles en el botón (se
@@ -379,7 +394,7 @@ body {
    serlo. */
 .pv-sort { position: relative; display: inline-flex; }
 
-/* Fase 4 redo : el trigger ahora es un botón secundario
+/* Fase 4 redo: el trigger ahora es un botón secundario
    cuadrado, con el mismo lenguaje visual que pv-view-group y
    pv-window-group — border 2px ink + fondo bg-2 + mono 11px uppercase.
    Esto lo alinea con el resto de los controles de la toolbar en vez de
@@ -477,7 +492,7 @@ body {
 }
 
 /* ————————————————————————————————————————— Feed meta row —————
-   Fase 4.1 . Vive debajo del divider del feed-top-bar y
+   Fase 4.1. Vive debajo del divider del feed-top-bar y
    concentra la metadata del resultset: conteo de papers, hint de leídos
    ocultos/visibles, y un toggle discreto (Ver/Ocultar) para que el
    usuario pueda traer de vuelta los papers que ya leyó.
@@ -491,10 +506,10 @@ body {
   flex-wrap: wrap;
   column-gap: 8px;
   row-gap: 4px;
-  /* Ritmo vertical (Fase 4.1, ): el padding-top 0 deja que el
+  /* Ritmo vertical (Fase 4.1, 2026-04-21): el padding-top 0 deja que el
      padding-bottom del feed-top-bar sea el único gap entre controles y
      meta (16px, coherente con el gap divider↔controles). El padding-bottom
-     20px da un poco más de aire antes de la primera card — usuario lo
+     20px da un poco más de aire antes de la primera card  lo
      pidió explícitamente: el texto de resultado no debe lamerse con las
      cards, necesita que se lea como metadata separada del contenido. */
   padding: 0 0 20px 0;
@@ -559,9 +574,9 @@ body {
 .paper-card:hover { background: var(--bg-sunken); }
 .paper-card .thumb {
   width: 112px; height: 112px; overflow: hidden;
-  /* Peso del borde : subimos de 0.35 → 0.55 porque las líneas
+  /* Peso del borde: subimos de 0.35 → 0.55 porque las líneas
      internas del SVG de la ilustración se dibujan en ink casi sólido y el
-     35% dejaba al frame "washed out" frente al contenido — usuario lo
+     35% dejaba al frame "washed out" frente al contenido  lo
      flaggeó mirando Ciencia (donde el soft tint #E3E6EB es neutro gris
      claro, así que el desbalance frame/ilustración era más evidente). 55%
      es el sweet spot: sigue leyéndose como marco secundario (no compite
@@ -660,13 +675,13 @@ body {
 .orbit-slow { transform-origin: center; animation: pv-orbit 32s linear infinite; }
 .orbit-fast { transform-origin: center; animation: pv-orbit 18s linear infinite reverse; }
 .planet-wob { animation: pv-wob 6s ease-in-out infinite; transform-origin: center; }
-.twinkle { animation: pv-tw 3s ease-in-out infinite; }
-.twinkle.a { animation-delay: 0.6s; }
-.twinkle.b { animation-delay: 1.4s; }
-.twinkle.c { animation-delay: 2.2s; }
+.twinkle    { animation: pv-tw 3s ease-in-out infinite; }
+.twinkle.a  { animation-delay: 0.6s; }
+.twinkle.b  { animation-delay: 1.4s; }
+.twinkle.c  { animation-delay: 2.2s; }
 @keyframes pv-orbit { to { transform: rotate(360deg); } }
-@keyframes pv-wob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
-@keyframes pv-tw { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
+@keyframes pv-wob   { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+@keyframes pv-tw    { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
 
 /* ————————————————————————————————————————— Dato random FAB ————————— */
 .fab {
@@ -850,9 +865,9 @@ body {
 /* ════════════════════════════════════════════════════════════════════
    Responsive — 3 tiers
    ──────────────────────────────────────────────────────────────────
-   - Desktop : ≥ 1024px (base styles above — no media query)
-   - Tablet : 640 – 1023 (sidebar colapsa arriba del feed)
-   - Mobile : < 640 (todo stacked + buscador como overlay)
+   - Desktop : ≥ 1024px   (base styles above — no media query)
+   - Tablet  : 640 – 1023  (sidebar colapsa arriba del feed)
+   - Mobile  : < 640       (todo stacked + buscador como overlay)
 
    Escribimos desktop-first porque Paperverse nació en desktop y estamos
    retrofitteando. Los media queries de abajo SOLO sobreescriben lo que
@@ -963,7 +978,7 @@ body {
   }
   .search-overlay .search { flex: 1; max-width: 100%; }
   /* Botón "enviar" — avioncito de papel al lado del input. Pedido de
-     usuario : cobalto lleno con borde ink, para que lea
+     Carolina: cobalto lleno con borde ink, para que lea
      como botón primario-secundario (fill coloreado + borde negro es el
      lenguaje del kit para CTAs de peso medio — más grito que un ghost,
      menos que un primario puro). 38x38 cuadrado igual que el input
@@ -994,7 +1009,7 @@ body {
   .search-overlay .send-btn svg { display: block; }
   @keyframes pv-slide-down {
     from { transform: translateY(-8px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+    to   { transform: translateY(0);    opacity: 1; }
   }
 
   /* Layout general — stack con padding más chico aún. Bottom padding
@@ -1117,7 +1132,7 @@ body {
      del toggle-row, así que los dos botones tienen que crecer en
      partes iguales para rellenar el ancho. Si no, los botones se
      quedan pegados a la izquierda y queda un rectángulo crema vacío
-     a la derecha — eso era el "botón roto" que usuario reportó. */
+     a la derecha — eso era el "botón roto" que se reportó. */
   .toggle { display: flex; width: 100%; }
   .toggle button { flex: 1; justify-content: center; padding: 9px 12px; }
 

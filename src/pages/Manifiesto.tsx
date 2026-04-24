@@ -10,9 +10,39 @@
 // (manifiesto) y al final el "con qué" (colophon) como bloque técnico. Un
 // solo link en el sidebar, un solo scroll para leer toda la historia.
 
+import { useForm, ValidationError } from '@formspree/react';
 import { useNavigate } from 'react-router-dom';
 import { Icon } from '../components/Icon';
 import { useDocumentTitle } from '../lib/useDocumentTitle';
+
+/**
+ * URL del link de donación. Cuando arme la cuenta de Ko-fi
+ * (o Buy Me a Coffee, o GitHub Sponsors — da igual la plataforma), va acá.
+ *
+ * Si es null, la columna de "Invitame un café" queda oculta y sólo se ve
+ * la caja de sugerencias. Así podemos mergear el componente antes de que
+ * exista la cuenta de donaciones sin mostrar un botón que apunta a un
+ * link placeholder.
+ */
+const SUPPORT_URL: string | null = 'https://ko-fi.com/caroiscreative';
+const SUPPORT_LABEL = 'Invitame un café';
+
+/**
+ * ID del form de Formspree donde caen las sugerencias. Lo configura
+ * en formspree.io; el endpoint final es
+ * `https://formspree.io/f/<FORM_ID>`.
+ *
+ * Migramos de `mailto:` a Formspree para NO exponer el mail
+ * personal en el HTML público. Trade-offs:
+ *   + el email no aparece en el DOM — los scrapers de spam no lo levantan
+ *   + funciona sin que el usuario tenga cliente de mail configurado
+ *   + incluye dashboard y notificaciones de Formspree para revisar el
+ *     historial de sugerencias
+ *   - dependemos de un SaaS externo (el tier gratis aguanta 50 envíos/mes)
+ *   - el mensaje hace pass-through por la infra de Formspree antes de
+ *     llegar al inbox configurado en la cuenta
+ */
+const FORMSPREE_FORM_ID = 'xykllvzd';
 
 interface Row {
   label: string;
@@ -98,6 +128,17 @@ export function Manifiesto() {
   // tab title "Manifiesto — Paperverse".
   useDocumentTitle('Manifiesto');
 
+  // Hook de Formspree. Maneja internamente:
+  //   · submitting  → true mientras la request está en vuelo
+  //   · succeeded   → true después de que Formspree confirmó la recepción
+  //   · errors      → errores de validación del lado servidor
+  //
+  // `handleSubmit` va directo al `onSubmit` del <form>. Hace POST a
+  // https://formspree.io/f/<id> con los campos del form (FormData), previene
+  // el default del submit, y actualiza el state. No necesitamos estado
+  // local propio — el hook maneja todo.
+  const [formState, handleFormSubmit] = useForm(FORMSPREE_FORM_ID);
+
   return (
     <div className="detail-wrap">
       <button type="button" onClick={() => nav(-1)} className="back">
@@ -181,7 +222,7 @@ export function Manifiesto() {
             key={p.label}
             style={{
               padding: '24px 20px',
-              // Fix dark mode : antes usábamos var(--bg-1, #FAF5E6)
+              // Fix dark mode: antes usábamos var(--bg-1, #FAF5E6)
               // pero --bg-1 nunca fue un token real del sistema, así que
               // siempre caía al fallback crema — en dark mode los 3 tiles
               // quedaban como parches crema sobre el canvas navy. Ahora
@@ -210,6 +251,275 @@ export function Manifiesto() {
             </p>
           </div>
         ))}
+      </div>
+
+      {/* Sumate — apoyar + sugerencias. Va después
+          del bloque de principios (Libre/Privado/Sin techo) porque es el
+          paso natural de "entender el proyecto" → "sumarte a él". Antes
+          del Colophon porque pertenece al "por qué" relacional (vínculo
+          lector-autora), no al "con qué" técnico.
+
+          Dos columnas en desktop, una en mobile. La columna izquierda
+          (SUPPORT) es conditional-render: mientras SUPPORT_URL sea null,
+          la columna no se muestra y el form de sugerencias ocupa el ancho
+          completo. En cuanto arme la cuenta de Ko-fi (u otra),
+          setea la URL arriba y la columna aparece sola. */}
+      <div
+        style={{
+          marginTop: 80,
+          paddingTop: 48,
+          borderTop: '1px solid var(--border-1)',
+        }}
+      >
+        <span className="eyebrow" style={{ color: 'var(--fg-3)' }}>
+          Sumate
+        </span>
+
+        <h2
+          style={{
+            fontFamily: 'var(--font-display)',
+            fontSize: 32,
+            lineHeight: 1.15,
+            margin: '6px 0 0 0',
+            fontWeight: 400,
+            maxWidth: 820,
+          }}
+        >
+          Si te sirve, ayudá a que siga creciendo.
+        </h2>
+
+        <p
+          style={{
+            maxWidth: 620,
+            marginTop: 20,
+            fontSize: 16,
+            lineHeight: 1.65,
+            color: 'var(--fg-2)',
+          }}
+        >
+          Paperverse es gratis y open source. {SUPPORT_URL ? 'Si te resulta útil, podés apoyarme con un cafecito para empezar a pagar los modelos de IA que traducen los papers: hoy son gratuitos y a veces pueden resultar lentos. ' : ''}
+          Y si tenés una idea, una crítica o encontraste algo que no anda,
+          contámela acá abajo. Leo todos los mensajes.
+        </p>
+
+        <p
+          style={{
+            maxWidth: 620,
+            marginTop: 12,
+            fontSize: 16,
+            lineHeight: 1.65,
+            color: 'var(--fg-2)',
+            fontStyle: 'italic',
+          }}
+        >
+          - Caro.
+        </p>
+
+        <div
+          style={{
+            marginTop: 40,
+            display: 'grid',
+            gridTemplateColumns: SUPPORT_URL
+              ? 'repeat(auto-fit, minmax(260px, 1fr))'
+              : '1fr',
+            gap: 48,
+          }}
+        >
+          {/* Apoyar — se renderiza sólo si hay URL configurada */}
+          {SUPPORT_URL && (
+            <section>
+              <span
+                className="eyebrow"
+                style={{ color: 'var(--fg-3)', display: 'block', marginBottom: 10 }}
+              >
+                Apoyar
+              </span>
+              <p
+                style={{
+                  fontSize: 14,
+                  lineHeight: 1.55,
+                  color: 'var(--fg-2)',
+                  margin: '0 0 20px 0',
+                }}
+              >
+                Cada aporte me ayuda a mejorar la experiencia para todos y así mantengo el proyecto vivo.
+              </p>
+              <a
+                href={SUPPORT_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="btn btn-primary"
+                style={{ textDecoration: 'none' }}
+              >
+                {SUPPORT_LABEL} <Icon name="external" size={13} />
+              </a>
+            </section>
+          )}
+
+          {/* Sugerencias — siempre visible. Usa Formspree (endpoint
+              https://formspree.io/f/xykllvzd) en vez de mailto: así el
+              email personal no queda expuesto en el HTML del sitio. */}
+          <section>
+            <span
+              className="eyebrow"
+              style={{ color: 'var(--fg-3)', display: 'block', marginBottom: 10 }}
+            >
+              Sugerencias
+            </span>
+            <p
+              style={{
+                fontSize: 14,
+                lineHeight: 1.55,
+                color: 'var(--fg-2)',
+                margin: '0 0 16px 0',
+              }}
+            >
+              Ideas, bugs, cosas que te molestan, features que te gustaría
+              ver. Todo sirve.
+            </p>
+
+            {formState.succeeded ? (
+              // Mensaje de confirmación. No volvemos al form
+              // después de enviar — queremos que el usuario sienta que el
+              // mensaje llegó. Si quiere mandar otro, puede recargar la
+              // página. Mantener el form visible post-success empuja a
+              // "renviar" el mismo mensaje múltiples veces.
+              <div
+                style={{
+                  padding: '20px 18px',
+                  border: '1px solid var(--border-1)',
+                  background: 'var(--bg-surface)',
+                  color: 'var(--fg-1)',
+                }}
+              >
+                <span
+                  className="eyebrow"
+                  style={{
+                    color: 'var(--pv-clorofila-deep, #2E8B57)',
+                    display: 'block',
+                    marginBottom: 8,
+                  }}
+                >
+                  Recibido
+                </span>
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: 15,
+                    lineHeight: 1.55,
+                    color: 'var(--fg-2)',
+                  }}
+                >
+                  Gracias por tomarte el tiempo de escribir. Leo todo —
+                  puede tardar un poco en responder, pero tu mensaje no
+                  se pierde.
+                </p>
+              </div>
+            ) : (
+              <form onSubmit={handleFormSubmit}>
+                <label htmlFor="suggestion-box" className="pv-sr-only">
+                  Tu sugerencia para Paperverse
+                </label>
+                <textarea
+                  id="suggestion-box"
+                  name="message"
+                  placeholder="Contame…"
+                  rows={5}
+                  required
+                  minLength={1}
+                  style={{
+                    width: '100%',
+                    boxSizing: 'border-box',
+                    padding: 12,
+                    border: '1px solid var(--border-1)',
+                    borderRadius: 0,
+                    background: 'var(--bg-surface)',
+                    color: 'var(--fg-1)',
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: 15,
+                    lineHeight: 1.55,
+                    resize: 'vertical',
+                    marginBottom: 12,
+                  }}
+                />
+
+                {/* Campo oculto `_subject` — Formspree lo usa como subject
+                    del mail que llega a la inbox de Carolina. Así las
+                    sugerencias se distinguen del ruido del resto del
+                    inbox sin que el usuario tenga que pensarlo. */}
+                <input
+                  type="hidden"
+                  name="_subject"
+                  value="Sugerencia para Paperverse"
+                />
+
+                {/* Honeypot anti-spam. Campo oculto al usuario humano via
+                    `pv-sr-only` + `tabIndex={-1}` + `autoComplete="off"`.
+                    Los bots rellenan todos los campos del form
+                    automáticamente; Formspree reconoce `_gotcha` como
+                    honeypot y descarta los envíos donde viene con valor.
+                    Gratis, zero-maintenance, para volumen de Paperverse
+                    alcanza. */}
+                <input
+                  type="text"
+                  name="_gotcha"
+                  className="pv-sr-only"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  aria-hidden="true"
+                />
+
+                {/* ValidationError renderiza el error devuelto por
+                    Formspree para un campo específico. Si no hay error,
+                    no pinta nada (es null-safe). */}
+                <ValidationError
+                  field="message"
+                  errors={formState.errors}
+                  style={{
+                    display: 'block',
+                    marginBottom: 8,
+                    fontSize: 13,
+                    color: 'var(--pv-error, #C73F1D)',
+                  }}
+                />
+
+                <button
+                  type="submit"
+                  disabled={formState.submitting}
+                  className="btn btn-primary"
+                >
+                  {formState.submitting ? 'Enviando…' : 'Enviar sugerencia'}
+                </button>
+
+                {/* Error genérico a nivel del form — cuando Formspree
+                    rechaza el envío por razones que no son de campo
+                    (rate limit, honeypot positivo, etc.). En esos casos
+                    no queremos mostrar nada técnico, sólo "algo no
+                    anduvo, probá de nuevo". */}
+                <ValidationError
+                  errors={formState.errors}
+                  style={{
+                    display: 'block',
+                    marginTop: 12,
+                    fontSize: 13,
+                    color: 'var(--pv-error, #C73F1D)',
+                  }}
+                />
+
+                <p
+                  style={{
+                    marginTop: 12,
+                    fontSize: 12,
+                    lineHeight: 1.55,
+                    color: 'var(--fg-4)',
+                  }}
+                >
+                  Las sugerencias son completamente anónimas.
+                </p>
+              </form>
+            )}
+          </section>
+        </div>
       </div>
 
       {/* Colophon inline — "con qué está hecho". Va después del manifiesto
@@ -286,22 +596,10 @@ export function Manifiesto() {
                 e.preventDefault();
                 nav('/design-system');
               }}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 6,
-                marginTop: 18,
-                fontFamily: 'var(--font-mono)',
-                fontSize: 11,
-                letterSpacing: '0.14em',
-                textTransform: 'uppercase',
-                color: 'var(--fg-3)',
-                textDecoration: 'none',
-                borderBottom: '1px solid var(--border-2)',
-                paddingBottom: 2,
-              }}
+              className="btn btn-secondary"
+              style={{ marginTop: 18, textDecoration: 'none' }}
             >
-              Ver sistema de diseño <Icon name="arrow-right" size={11} />
+              Ver sistema de diseño <Icon name="arrow-right" size={13} />
             </a>
           </section>
 

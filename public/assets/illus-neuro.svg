@@ -1,28 +1,84 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300" role="img" aria-label="Brain synapses">
- <rect width="300" height="300" fill="#E8DCF9"></rect>
- <g stroke="#8B4FE0" stroke-width="2" fill="none" stroke-linecap="round">
- <path d="M150 250 C 150 200, 150 180, 150 150"></path>
- <path d="M150 150 C 125 130, 100 120, 80 100"></path>
- <path d="M150 150 C 175 130, 200 120, 220 100"></path>
- <path d="M150 150 C 135 115, 120 90, 115 65"></path>
- <path d="M150 150 C 165 115, 180 90, 185 65"></path>
- <path d="M80 100 C 65 95, 55 95, 50 85"></path>
- <path d="M80 100 C 70 115, 60 120, 52 132"></path>
- <path d="M220 100 C 235 95, 245 95, 250 85"></path>
- <path d="M220 100 C 230 115, 240 120, 248 132"></path>
- </g>
- <!-- Outline ink en synapses dots : los terminales llevan
- stroke 1.5 para emparejar con los outlines del resto del sistema. El
- núcleo central abajo (r=16) tiene fill ink, no necesita stroke. El
- pupil amarillo (r=7) queda sin stroke — es accent interno. -->
- <g fill="#8B4FE0" stroke="#0E1116" stroke-width="1.5">
- <circle cx="50" cy="85" r="5"></circle>
- <circle cx="52" cy="132" r="4"></circle>
- <circle cx="115" cy="65" r="5"></circle>
- <circle cx="185" cy="65" r="5"></circle>
- <circle cx="250" cy="85" r="5"></circle>
- <circle cx="248" cy="132" r="4"></circle>
- </g>
- <circle cx="150" cy="250" r="16" fill="#0E1116"></circle>
- <circle cx="150" cy="250" r="7" fill="#F5B638"></circle>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300" role="img" aria-label="Sinapsis — transferencia química entre dos neuronas">
+  <!-- Fondo soft del tema -->
+  <rect width="300" height="300" fill="#E8DCF9"></rect>
+
+  <!-- Pre-synaptic bulb (izquierda). Mismos colores que el hero:
+       fill = color del tema, stroke = deep del tema. -->
+  <ellipse cx="82" cy="150" rx="56" ry="62" fill="#8B4FE0" stroke="#6A2FC0" stroke-width="2"></ellipse>
+
+  <!-- Vesículas dentro del pre: 3 rings huecos con neurotransmisor (dots
+       verdes) adentro. Los 7 dots por vesícula están en posiciones
+       deterministas, distribuidos con seno/coseno para que no formen
+       patrones obvios. -->
+  <!-- Vesícula 1 (arriba-izq) -->
+  <g>
+    <circle cx="66" cy="112" r="14" fill="none" stroke="#4A9A2F" stroke-width="1.4" opacity="0.75"></circle>
+    <circle cx="74" cy="110" r="2.2" fill="#6BC946"></circle>
+    <circle cx="70" cy="104" r="2.2" fill="#6BC946"></circle>
+    <circle cx="60" cy="108" r="2.2" fill="#6BC946"></circle>
+    <circle cx="58" cy="117" r="2.2" fill="#6BC946"></circle>
+    <circle cx="64" cy="122" r="2.2" fill="#6BC946"></circle>
+    <circle cx="72" cy="118" r="2.2" fill="#6BC946"></circle>
+    <circle cx="66" cy="113" r="1.6" fill="#6BC946"></circle>
+  </g>
+  <!-- Vesícula 2 (centro) -->
+  <g>
+    <circle cx="88" cy="160" r="16" fill="none" stroke="#4A9A2F" stroke-width="1.4" opacity="0.75"></circle>
+    <circle cx="96" cy="158" r="2.2" fill="#6BC946"></circle>
+    <circle cx="92" cy="152" r="2.2" fill="#6BC946"></circle>
+    <circle cx="82" cy="154" r="2.2" fill="#6BC946"></circle>
+    <circle cx="80" cy="165" r="2.2" fill="#6BC946"></circle>
+    <circle cx="86" cy="170" r="2.2" fill="#6BC946"></circle>
+    <circle cx="94" cy="168" r="2.2" fill="#6BC946"></circle>
+    <circle cx="88" cy="160" r="1.6" fill="#6BC946"></circle>
+  </g>
+  <!-- Vesícula 3 (abajo) -->
+  <g>
+    <circle cx="62" cy="195" r="12" fill="none" stroke="#4A9A2F" stroke-width="1.4" opacity="0.75"></circle>
+    <circle cx="68" cy="194" r="2" fill="#6BC946"></circle>
+    <circle cx="64" cy="189" r="2" fill="#6BC946"></circle>
+    <circle cx="57" cy="191" r="2" fill="#6BC946"></circle>
+    <circle cx="55" cy="199" r="2" fill="#6BC946"></circle>
+    <circle cx="61" cy="202" r="2" fill="#6BC946"></circle>
+    <circle cx="68" cy="200" r="2" fill="#6BC946"></circle>
+    <circle cx="62" cy="195" r="1.4" fill="#6BC946"></circle>
+  </g>
+
+  <!-- Canales de calcio (media luna roja) en el borde derecho del pre.
+       Son los que disparan la liberación de neurotransmisor. Dos en la
+       zona del cleft para no saturar a 300×300. -->
+  <path d="M 134 123 a 7 7 0 0 1 0 14" fill="#E74C3C" stroke="#E74C3C" stroke-width="1.2" stroke-linejoin="round"></path>
+  <path d="M 134 163 a 7 7 0 0 1 0 14" fill="#E74C3C" stroke="#E74C3C" stroke-width="1.2" stroke-linejoin="round"></path>
+
+  <!-- Post-synaptic bulb (derecha) — mismo tratamiento que el pre. -->
+  <ellipse cx="218" cy="150" rx="56" ry="62" fill="#8B4FE0" stroke="#6A2FC0" stroke-width="2"></ellipse>
+
+  <!-- Receptores T-shape en el borde izquierdo del post, apuntando al
+       cleft. Cada T = tronco horizontal hacia la izq + barra vertical al
+       final del tronco. 4 receptores distribuidos en y=110, 135, 165, 190. -->
+  <g stroke="#6A2FC0" stroke-width="2.4" stroke-linecap="round">
+    <!-- T1 -->
+    <line x1="162" y1="110" x2="153" y2="110"></line>
+    <line x1="153" y1="104" x2="153" y2="116"></line>
+    <!-- T2 -->
+    <line x1="162" y1="135" x2="153" y2="135"></line>
+    <line x1="153" y1="129" x2="153" y2="141"></line>
+    <!-- T3 -->
+    <line x1="162" y1="165" x2="153" y2="165"></line>
+    <line x1="153" y1="159" x2="153" y2="171"></line>
+    <!-- T4 -->
+    <line x1="162" y1="190" x2="153" y2="190"></line>
+    <line x1="153" y1="184" x2="153" y2="196"></line>
+  </g>
+
+  <!-- Neurotransmisores verdes "capturados" cruzando el cleft. En la
+       animación estas partículas viajan; acá son 5 estáticas en distintos
+       puntos del recorrido, insinuando el flujo de un solo frame. -->
+  <g fill="#6BC946" stroke="#4A9A2F" stroke-width="0.8">
+    <circle cx="141" cy="128" r="3.5"></circle>
+    <circle cx="148" cy="148" r="3.5"></circle>
+    <circle cx="144" cy="170" r="3.5"></circle>
+    <circle cx="150" cy="138" r="3"></circle>
+    <circle cx="147" cy="182" r="3"></circle>
+  </g>
 </svg>

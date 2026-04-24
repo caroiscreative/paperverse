@@ -20,7 +20,7 @@ export type TopicId =
   | 'ecologia'
   | 'tecnologia'
   | 'quimica'
-  // "ciencia" : agregado como tema general para papers que
+  // "ciencia": agregado como tema general para papers que
   // no clasifican cleanly en ninguno de los 14 específicos. Antes era un
   // string-fallback ("topic?.name ?? 'Ciencia'") y los papers sin tema
   // matcheado se pintaban sin el tratamiento visual completo (sin tinta
@@ -52,29 +52,29 @@ export interface Topic {
  * PRD §6 Onboarding O-02 defines this canonical list.
  */
 export const TOPICS: Topic[] = [
-  { id: 'ia', name: 'IA', concepts: ['C154945302', 'C119857082'], color: '#2E4BE0', soft: '#E0E6FF', deep: '#1E34B0', illus: 'illus-ia.svg' },
-  { id: 'clima', name: 'Clima', concepts: ['C132651083', 'C39432304'], color: '#1BA5B8', soft: '#CDEEF2', deep: '#0F7E8E', illus: 'illus-clima.svg' },
-  { id: 'neuro', name: 'Neurociencia', concepts: ['C169760540'], color: '#8B4FE0', soft: '#E8DCF9', deep: '#6A2FC0', illus: 'illus-neuro.svg' },
-  { id: 'espacio', name: 'Espacio', concepts: ['C1276947', 'C111368507'], color: '#F5B638', soft: '#FDEEC8', deep: '#C48A1A', illus: 'illus-espacio.svg' },
-  { id: 'fisica', name: 'Física', concepts: ['C121332964'], color: '#F2542D', soft: '#FDE4DA', deep: '#C73F1D', illus: 'illus-fisica.svg' },
-  { id: 'biologia', name: 'Biología', concepts: ['C86803240'], color: '#2E8B57', soft: '#D6EEDE', deep: '#1F6B3F', illus: 'illus-biologia.svg' },
-  { id: 'medicina', name: 'Medicina', concepts: ['C71924100'], color: '#E03E8C', soft: '#FADCEA', deep: '#B32168', illus: 'illus-medicina.svg' },
+  { id: 'ia',         name: 'IA',            concepts: ['C154945302', 'C119857082'], color: '#2E4BE0', soft: '#E0E6FF', deep: '#1E34B0', illus: 'illus-ia.svg' },
+  { id: 'clima',      name: 'Clima',         concepts: ['C132651083', 'C39432304'],  color: '#1BA5B8', soft: '#CDEEF2', deep: '#0F7E8E', illus: 'illus-clima.svg' },
+  { id: 'neuro',      name: 'Neurociencia',  concepts: ['C169760540'],               color: '#8B4FE0', soft: '#E8DCF9', deep: '#6A2FC0', illus: 'illus-neuro.svg' },
+  { id: 'espacio',    name: 'Espacio',       concepts: ['C1276947', 'C111368507'],   color: '#F5B638', soft: '#FDEEC8', deep: '#C48A1A', illus: 'illus-espacio.svg' },
+  { id: 'fisica',     name: 'Física',        concepts: ['C121332964'],               color: '#F2542D', soft: '#FDE4DA', deep: '#C73F1D', illus: 'illus-fisica.svg' },
+  { id: 'biologia',   name: 'Biología',      concepts: ['C86803240'],                color: '#2E8B57', soft: '#D6EEDE', deep: '#1F6B3F', illus: 'illus-biologia.svg' },
+  { id: 'medicina',   name: 'Medicina',      concepts: ['C71924100'],                color: '#E03E8C', soft: '#FADCEA', deep: '#B32168', illus: 'illus-medicina.svg' },
   // Los 7 temas "secundarios" comparten familia de color con los 7 primeros
   // (energia↔fisica rojo, materiales↔clima teal, etc.) pero cada uno tiene
   // su propio tono para distinguirse — antes heredaban literal el mismo hex
   // y quedaban indistinguibles del primario. La paleta acá tiene que coincidir
   // 1:1 con public/topic-anim.js (que es donde viven las animaciones del hero):
   // si divergen, chip + ilustración 300px + animación se ven en tres colores
-  // distintos por tema, que es exactamente el bug que se detectó en
+  // distintos por tema, que es exactamente el bug que se flaggeó en
   // tecnología. Regla: si tocás un color acá, espejá el cambio en topic-anim.js.
-  { id: 'energia', name: 'Energía', concepts: ['C172651191', 'C548081761'], color: '#E8572C', soft: '#FBE0D3', deep: '#B8401A', illus: 'illus-energia.svg' },
-  { id: 'materiales', name: 'Materiales', concepts: ['C192562407'], color: '#0E1116', soft: '#DADCE0', deep: '#2A2F38', illus: 'illus-materiales.svg' },
-  { id: 'matematica', name: 'Matemática', concepts: ['C33923547'], color: '#3D6AE0', soft: '#D9E3FB', deep: '#254AB0', illus: 'illus-matematica.svg' },
-  { id: 'psicologia', name: 'Psicología', concepts: ['C15744967'], color: '#A35FD8', soft: '#ECDCF9', deep: '#7A3FB8', illus: 'illus-psicologia.svg' },
-  { id: 'ecologia', name: 'Ecología', concepts: ['C18903297'], color: '#4FA068', soft: '#DFEEDF', deep: '#2F7040', illus: 'illus-ecologia.svg' },
-  { id: 'tecnologia', name: 'Tecnología', concepts: ['C41008148', 'C127413603'], color: '#D89A2C', soft: '#F6E7C7', deep: '#A87818', illus: 'illus-tecnologia.svg' },
-  { id: 'quimica', name: 'Química', concepts: ['C185592680'], color: '#E06AA8', soft: '#F9DCE8', deep: '#B34378', illus: 'illus-quimica.svg' },
-  // "Ciencia" : tema general para papers que no clasifican cleanly
+  { id: 'energia',    name: 'Energía',       concepts: ['C172651191', 'C548081761'], color: '#E8572C', soft: '#FBE0D3', deep: '#B8401A', illus: 'illus-energia.svg' },
+  { id: 'materiales', name: 'Materiales',    concepts: ['C192562407'],               color: '#0E1116', soft: '#DADCE0', deep: '#2A2F38', illus: 'illus-materiales.svg' },
+  { id: 'matematica', name: 'Matemática',    concepts: ['C33923547'],                color: '#3D6AE0', soft: '#D9E3FB', deep: '#254AB0', illus: 'illus-matematica.svg' },
+  { id: 'psicologia', name: 'Psicología',    concepts: ['C15744967'],                color: '#A35FD8', soft: '#ECDCF9', deep: '#7A3FB8', illus: 'illus-psicologia.svg' },
+  { id: 'ecologia',   name: 'Ecología',      concepts: ['C18903297'],                color: '#4FA068', soft: '#DFEEDF', deep: '#2F7040', illus: 'illus-ecologia.svg' },
+  { id: 'tecnologia', name: 'Tecnología',    concepts: ['C41008148', 'C127413603'],  color: '#D89A2C', soft: '#F6E7C7', deep: '#A87818', illus: 'illus-tecnologia.svg' },
+  { id: 'quimica',    name: 'Química',       concepts: ['C185592680'],               color: '#E06AA8', soft: '#F9DCE8', deep: '#B34378', illus: 'illus-quimica.svg' },
+  // "Ciencia": tema general para papers que no clasifican cleanly
   // en ninguno de los 14 anteriores. Antes era un string-fallback literal
   // ("topic?.name ?? 'Ciencia'") que dejaba a esos papers sin el tratamiento
   // visual completo: sin tinta de fondo en el thumbnail, sin ilustración de
@@ -85,7 +85,7 @@ export const TOPICS: Topic[] = [
   // están cubiertas por los temas específicos y suelen aparecer en papers
   // interdisciplinarios o de ciencias sociales que deberían caer en "Ciencia
   // general" en vez de ser clasificados incorrectamente en uno de los 14.
-  { id: 'ciencia', name: 'Ciencia', concepts: ['C144024400', 'C127313418', 'C205649164'], color: '#5B6472', soft: '#E3E6EB', deep: '#3F4752', illus: 'illus-paper.svg' },
+  { id: 'ciencia',    name: 'Ciencia',       concepts: ['C144024400', 'C127313418', 'C205649164'], color: '#5B6472', soft: '#E3E6EB', deep: '#3F4752', illus: 'illus-paper.svg' },
 ];
 
 export const TOPICS_BY_ID: Record<TopicId, Topic> = Object.fromEntries(
@@ -93,48 +93,44 @@ export const TOPICS_BY_ID: Record<TopicId, Topic> = Object.fromEntries(
 ) as Record<TopicId, Topic>;
 
 /**
- * "Variedad de arte por categoría". El feed mostraba
- * todos los papers de un tema con el mismo thumbnail SVG sobre el mismo
- * fondo `topic.soft`, lo que generaba muros de cards visualmente idénticos
- * (especialmente notable en feeds filtrados a 1-2 temas). Esta función rota
- * 3 tintas derivadas del color del tema según un hash determinístico del
- * paperId: misma paper → mismo tinte (estable entre renders), papers
- * distintos → tintes distintos para crear ritmo visual.
+ * Misma data que TOPICS pero ordenada alfabéticamente por `name` (español,
+ * con localeCompare — respeta acentos y Ñ). Lo usamos en los listados de
+ * chips (Feed sidebar, Welcome onboarding, DesignSystem showcase) donde
+ * el usuario está escaneando la lista para elegir un tema y el orden
+ * alfabético es lo esperado.
  *
- * Variantes:
- * 0 → topic.soft (la base — pastel del tema, default histórico)
- * 1 → soft con un toque del color saturado (más cálido/vivo)
- * 2 → soft con un toque del ink (más profundo/serio)
- *
- * Implementación: usamos CSS `color-mix()` inline porque (a) no tenemos
- * que pre-computar los hex en JS y mantenerlos en sync con cambios de
- * paleta, (b) el browser maneja el espacio de color, (c) soporte universal
- * en navegadores modernos (Chrome 111+, Safari 16.2+, FF 113+).
+ * NO reemplaza a TOPICS: `nextTopicsFrom()` y `resolveTopicVisual()`
+ * siguen dependiendo del orden canónico editorial (primarios → secundarios
+ * → Ciencia) porque eso controla la secuencia de recomendaciones en
+ * PaperDetail. El orden canónico es semántico, el alfabético es UX.
  */
-export function thumbTintForPaper(topic: Topic, paperId: string): string {
-  // Hash simple — DJB2-ish. Suficiente para distribuir 3 buckets uniformemente
-  // entre paperIds que son básicamente "W4400123456" (hex pseudo-aleatorio).
-  let h = 0;
-  for (let i = 0; i < paperId.length; i++) h = (h * 31 + paperId.charCodeAt(i)) | 0;
-  const variant = Math.abs(h) % 3;
-  switch (variant) {
-    case 0:
-      return topic.soft;
-    case 1:
-      // Tinte "cálido": soft con 18% del color saturado del tema. Sigue siendo
-      // pastel pero un escalón más vibrante que la base.
-      return `color-mix(in srgb, ${topic.soft} 82%, ${topic.color} 18%)`;
-    case 2:
-    default:
-      // Tinte "sobrio": soft con 10% de ink (#0E1116). Empuja el pastel hacia
-      // un gris-tinte sin perder la familia cromática del tema.
-      return `color-mix(in srgb, ${topic.soft} 90%, #0E1116 10%)`;
-  }
+export const TOPICS_ALPHABETICAL: Topic[] = [...TOPICS].sort((a, b) =>
+  a.name.localeCompare(b.name, 'es'),
+);
+
+/**
+ * Fondo del thumb de un paper — siempre `topic.soft` del tema.
+ *
+ * Historia: antes esta función rotaba 3 tintas derivadas del soft (la base,
+ * una "cálida" con 18% color, una "sobria" con 10% ink) según un hash del
+ * paperId, con la idea de dar "variedad de arte por categoría" en feeds
+ * filtrados a 1-2 temas. En la práctica eso generaba
+ * una sensación de inconsistencia: dos papers de IA se veían con fondos
+ * distintos, la lectura "este es el color de IA" se diluía. Simplificamos
+ * a un fondo estable por tema — si queremos variedad más adelante, lo
+ * hacemos con diferentes ilustraciones (no con tintas del fondo).
+ *
+ * Mantenemos la firma `(topic, paperId)` por back-compat con los callers,
+ * aunque `paperId` ya no se use. Si algún día nadie lo pasa, podemos
+ * deprecarla y usar `topic.soft` directo.
+ */
+export function thumbTintForPaper(topic: Topic, _paperId: string): string {
+  return topic.soft;
 }
 
-// rollback — `thumbTransformForPaper` se eliminó porque
+// QA2 P2.3 rollback — `thumbTransformForPaper` se eliminó porque
 // las ilustraciones rotadas/espejadas "se veían extrañísimas" (palabras de
-// usuario). La idea original era generar ritmo visual rotando ±5° y
+// Carolina). La idea original era generar ritmo visual rotando ±5° y
 // espejando horizontalmente los SVG de cada paper, pero en la práctica las
 // cards quedaban inclinadas de forma inconsistente y el flip horizontal
 // rompía elementos con direccionalidad sutil (ej. el gradiente de
@@ -219,16 +215,16 @@ function mulberry32(seed: number): () => number {
  * vea siempre — entonces forzamos una elección visual aunque el clasificador
  * no esté convencido.
  *
- * Update: Ciencia ya tiene su propio renderer DS2
+ * Update 2026-04-20: Ciencia ya tiene su propio renderer DS2
  * (paper llenándose + sello aprobado) en public/topic-anim.js, así que
  * dejamos de excluirla del flujo. Ahora:
- * - Si `topicForConcepts` matchea un tema específico (incluyendo Ciencia
- * cuando los conceptos Sociology/Geology/Geography ganan), lo usamos tal
- * cual — la animación correspondiente existe.
- * - Si no hay match, seguimos cayendo a un tema hasheado por paperId.
- * Dejamos Ciencia EN el pool de fallback para que papers sin clasificar
- * también puedan aterrizar en la animación "paper genérico" que le da
- * coherencia narrativa a un paper "sin tema fuerte".
+ *   - Si `topicForConcepts` matchea un tema específico (incluyendo Ciencia
+ *     cuando los conceptos Sociology/Geology/Geography ganan), lo usamos tal
+ *     cual — la animación correspondiente existe.
+ *   - Si no hay match, seguimos cayendo a un tema hasheado por paperId.
+ *     Dejamos Ciencia EN el pool de fallback para que papers sin clasificar
+ *     también puedan aterrizar en la animación "paper genérico" que le da
+ *     coherencia narrativa a un paper "sin tema fuerte".
  */
 export function resolveTopicVisual(
   openAlexConcepts: { id: string; display_name?: string; score?: number }[] | undefined,
@@ -270,22 +266,22 @@ export function topicForConcepts(
   // un tag vestigial de "Computer science" termina etiquetado como IA.
   //
   // dos mejoras de precisión:
-  // 1. Subimos el threshold mínimo de 0.25 → 0.35. OpenAlex usa scores 0-1
-  // y los tags "de relleno" suelen caer por debajo de 0.3. Con 0.25
-  // aceptábamos matches borderline que arrastraban papers al tema
-  // equivocado (ej. un paper de neurociencia con C.S. 0.27 terminaba
-  // en IA). Con 0.35 exigimos que el concepto sea una seña fuerte.
-  // 2. Position weighting: el concepto #1 por score domina sobre los
-  // secundarios con un multiplicador. Antes, si el #1 y el #2 eran
-  // de temas distintos pero tenían scores cercanos, el empate se
-  // rompía por el orden de TOPICS (determinista pero arbitrario).
-  // Ahora el #1 pesa 1.0x, el #2 0.7x y el #3 0.5x, así el tema
-  // dominante del paper gana de forma previsible.
-  // 3. Accumulation: un paper con DOS conceptos del mismo tema (ej.
-  // C154945302 y C119857082 ambos en IA) debería quedar en ese
-  // tema con más confianza que uno con un solo match. Sumamos los
-  // scores ponderados por tema en vez de tomar el máximo, así el
-  // match múltiple gana al match único en casos ambiguos.
+  //   1. Subimos el threshold mínimo de 0.25 → 0.35. OpenAlex usa scores 0-1
+  //      y los tags "de relleno" suelen caer por debajo de 0.3. Con 0.25
+  //      aceptábamos matches borderline que arrastraban papers al tema
+  //      equivocado (ej. un paper de neurociencia con C.S. 0.27 terminaba
+  //      en IA). Con 0.35 exigimos que el concepto sea una seña fuerte.
+  //   2. Position weighting: el concepto #1 por score domina sobre los
+  //      secundarios con un multiplicador. Antes, si el #1 y el #2 eran
+  //      de temas distintos pero tenían scores cercanos, el empate se
+  //      rompía por el orden de TOPICS (determinista pero arbitrario).
+  //      Ahora el #1 pesa 1.0x, el #2 0.7x y el #3 0.5x, así el tema
+  //      dominante del paper gana de forma previsible.
+  //   3. Accumulation: un paper con DOS conceptos del mismo tema (ej.
+  //      C154945302 y C119857082 ambos en IA) debería quedar en ese
+  //      tema con más confianza que uno con un solo match. Sumamos los
+  //      scores ponderados por tema en vez de tomar el máximo, así el
+  //      match múltiple gana al match único en casos ambiguos.
   const pool = [...openAlexConcepts]
     .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
     .slice(0, 3)

@@ -1,7 +1,7 @@
 // Country flags via flagcdn.com — free CDN that serves ISO-3166 flags as SVG
 // at every possible ISO code. Replaces the hand-drawn set from before, which
 // only covered ~30 countries and fell through to an ugly ink-square-with-
-// letters for everything else (usuario flagged this: papers from Morocco,
+// letters for everything else (flagged this: papers from Morocco,
 // Iran, Peru, Vietnam, etc. showed "MA", "IR", "PE", "VN" instead of a
 // flag). flagcdn.com covers every country OpenAlex ever returns.
 //

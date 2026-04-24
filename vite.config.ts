@@ -5,13 +5,13 @@ import react from '@vitejs/plugin-react';
 // src/lib/explain.ts), so there is no local `/api` server to proxy anymore.
 // If you bring back a Vercel function under /api/, re-add the proxy block.
 export default defineConfig({
-  plugins: [react()],
-  server: {
-    port: 5173,
-  },
-  build: {
-    target: 'es2020',
-    outDir: 'dist',
-    sourcemap: false,
-  },
+ plugins: [react],
+ server: {
+ port: 5173,
+ },
+ build: {
+ target: 'es2020',
+ outDir: 'dist',
+ sourcemap: false,
+ },
 });

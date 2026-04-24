@@ -1,19 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300" role="img" aria-label="Two mirrored human silhouettes with thought ripples between them">
- <rect width="300" height="300" fill="#ECDCF9"></rect>
- <g fill="none" stroke="#7A3FB8" stroke-width="2" stroke-linecap="round">
- <path d="M 120 150 Q 150 126 180 150"></path>
- <path d="M 108 150 Q 150 116 192 150" opacity="0.7"></path>
- <path d="M 96 150 Q 150 106 204 150" opacity="0.45"></path>
- </g>
- <!-- Outline ink en siluetas : las dos figuras humanas son las
- formas principales. Stroke 2 ink las iguala con el papelito de Ciencia
- y con los nodos de IA. -->
- <g stroke="#0E1116" stroke-width="2" stroke-linejoin="round">
- <path d="M 85 190 L 95 190 L 115 220 L 65 220 Z" fill="#A35FD8"></path>
- <circle cx="90" cy="176" r="16" fill="#A35FD8"></circle>
- </g>
- <g stroke="#0E1116" stroke-width="2" stroke-linejoin="round">
- <path d="M 205 190 L 215 190 L 235 220 L 185 220 Z" fill="#7A3FB8"></path>
- <circle cx="210" cy="176" r="16" fill="#7A3FB8"></circle>
- </g>
+  <rect width="300" height="300" fill="#ECDCF9"></rect>
+  <g fill="none" stroke="#7A3FB8" stroke-width="2" stroke-linecap="round">
+    <path d="M 120 150 Q 150 126 180 150"></path>
+    <path d="M 108 150 Q 150 116 192 150" opacity="0.7"></path>
+    <path d="M  96 150 Q 150 106 204 150" opacity="0.45"></path>
+  </g>
+  <!-- Outline ink en siluetas: las dos figuras humanas son las
+       formas principales. Stroke 2 ink las iguala con el papelito de Ciencia
+       y con los nodos de IA. -->
+  <g stroke="#0E1116" stroke-width="2" stroke-linejoin="round">
+    <path d="M 85 190 L 95 190 L 115 220 L 65 220 Z" fill="#A35FD8"></path>
+    <circle cx="90" cy="176" r="16" fill="#A35FD8"></circle>
+  </g>
+  <g stroke="#0E1116" stroke-width="2" stroke-linejoin="round">
+    <path d="M 205 190 L 215 190 L 235 220 L 185 220 Z" fill="#7A3FB8"></path>
+    <circle cx="210" cy="176" r="16" fill="#7A3FB8"></circle>
+  </g>
 </svg>

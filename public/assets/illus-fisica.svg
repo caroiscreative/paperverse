@@ -1,15 +1,32 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300" role="img" aria-label="Atomic orbitals">
- <rect width="300" height="300" fill="#FDE4DA"></rect>
- <g fill="none" stroke-width="2.2">
- <ellipse cx="150" cy="150" rx="110" ry="42" stroke="#F2542D"></ellipse>
- <ellipse cx="150" cy="150" rx="110" ry="42" stroke="#2E4BE0" transform="rotate(60 150 150)"></ellipse>
- <ellipse cx="150" cy="150" rx="110" ry="42" stroke="#F5B638" transform="rotate(120 150 150)"></ellipse>
- </g>
- <circle cx="150" cy="150" r="14" fill="#FBF7EC" stroke="#C73F1D" stroke-width="2"></circle>
- <!-- Outline ink en electrones : los 3 electrones llevan
- stroke 1.5 para consistencia con el papelito de Ciencia. El núcleo
- (r=14) ya traía stroke propio. -->
- <circle cx="260" cy="150" r="5.5" fill="#F2542D" stroke="#0E1116" stroke-width="1.5"></circle>
- <circle cx="95" cy="55" r="5.5" fill="#2E4BE0" stroke="#0E1116" stroke-width="1.5"></circle>
- <circle cx="95" cy="245" r="5.5" fill="#F5B638" stroke="#0E1116" stroke-width="1.5"></circle>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300" role="img" aria-label="Modelo atómico — órbitas de electrones">
+  <rect width="300" height="300" fill="#FDE4DA"></rect>
+
+  <!-- 3 órbitas elípticas. Antes cada una usaba
+       un color de OTRO tema — #F2542D magma (OK, es física), #2E4BE0
+       cobalto (IA) y #F5B638 amarillo (espacio). Ahora las 3 son deep
+       físicas (#C73F1D) a 65% opacity, matcheando exactamente el look
+       de la animación hero. La diferenciación visual viene del ángulo
+       de rotación (0°, 60°, 120°), no del color. -->
+  <g fill="none" stroke="#C73F1D" stroke-width="2.2" opacity="0.65">
+    <ellipse cx="150" cy="150" rx="110" ry="42"></ellipse>
+    <ellipse cx="150" cy="150" rx="110" ry="42" transform="rotate(60 150 150)"></ellipse>
+    <ellipse cx="150" cy="150" rx="110" ry="42" transform="rotate(120 150 150)"></ellipse>
+  </g>
+
+  <!-- Núcleo — bola física color con 2 dots deep adentro (protones/
+       neutrones). Réplica exacta del patrón que usa el hero en
+       renderFisica(): big fill + 2 smaller dots off-center.
+       Antes el núcleo era un anillo cream con stroke — estructura
+       distinta a la animación. Ahora son gemelos. -->
+  <circle cx="150" cy="150" r="16" fill="#F2542D"></circle>
+  <circle cx="146" cy="147" r="4" fill="#C73F1D"></circle>
+  <circle cx="155" cy="154" r="3.2" fill="#C73F1D"></circle>
+
+  <!-- 3 electrones en los endpoints de cada órbita. Colores alternan
+       física color / deep / color para que no se lean como "tres
+       idénticos" sin meter colores de otros temas. Stroke ink 1.5
+       consistente con el resto del sistema. -->
+  <circle cx="260" cy="150" r="6" fill="#F2542D" stroke="#0E1116" stroke-width="1.5"></circle>
+  <circle cx="95" cy="55" r="6" fill="#C73F1D" stroke="#0E1116" stroke-width="1.5"></circle>
+  <circle cx="95" cy="245" r="6" fill="#F2542D" stroke="#0E1116" stroke-width="1.5"></circle>
 </svg>

@@ -1,26 +1,26 @@
 // SortDropdown — control de orden para Feed, Refs y Cites.
 //
-// Fase 4 redo : se pidió un botón secundario cuadrado
+// Fase 4 redo: se pidió un botón secundario cuadrado
 // que diga "Ordenar por" + chevron, igual en mobile y desktop. Antes el
 // botón mostraba el label activo al lado ("Ordenar: Mayor impacto ▾") —
 // ahora el valor activo vive SÓLO dentro del menú (checkmark sobre la
 // opción elegida). Esto:
-// · Le da un hit-target cuadrado fijo, sin ancho variable según el
-// texto del orden elegido.
-// · Unifica mobile/desktop: el mismo botón funciona en ambos breakpoints
-// sin necesidad de truncar labels largos ("Título A → Z" no cabía en
-// 360px al lado del eyebrow).
-// · Se comporta como los otros controles del DS (View toggle, Period)
-// que son botones cuadrados con ícono + label corto.
+//   · Le da un hit-target cuadrado fijo, sin ancho variable según el
+//     texto del orden elegido.
+//   · Unifica mobile/desktop: el mismo botón funciona en ambos breakpoints
+//     sin necesidad de truncar labels largos ("Título A → Z" no cabía en
+//     360px al lado del eyebrow).
+//   · Se comporta como los otros controles del DS (View toggle, Period)
+//     que son botones cuadrados con ícono + label corto.
 //
 // Por qué no usamos <select> nativo:
-// · No podemos estilizar el dropdown con tokens del DS (cada browser
-// pinta sus propios triángulos/pixeles y el menu usa la fuente del
-// OS, no Instrument Serif ni Inter).
-// · Queremos hints descriptivos ("Citas normalizadas por campo (FWCI)")
-// debajo de algunos labels — un <select> no soporta eso.
-// · Cierra con click fuera / Escape / perder focus (aria-expanded,
-// aria-haspopup, role=listbox/option para a11y).
+//   · No podemos estilizar el dropdown con tokens del DS (cada browser
+//     pinta sus propios triángulos/pixeles y el menu usa la fuente del
+//     OS, no Instrument Serif ni Inter).
+//   · Queremos hints descriptivos ("Citas normalizadas por campo (FWCI)")
+//     debajo de algunos labels — un <select> no soporta eso.
+//   · Cierra con click fuera / Escape / perder focus (aria-expanded,
+//     aria-haspopup, role=listbox/option para a11y).
 //
 // Toggle snap: sin transition/fade — memoria del proyecto dice que en
 // Paperverse los toggles cambian de estado al instante. Abrir/cerrar el
@@ -38,31 +38,31 @@ import type { SortKey } from '../lib/openalex';
 
 interface SortOption {
   key: SortKey;
-  label: string; // Texto del item del menú
-  hint?: string; // Subtítulo chico debajo del label, explicando qué hace (opcional)
-  searchOnly?: boolean; // Sólo aparece cuando hasSearch=true
+  label: string;          // Texto del item del menú
+  hint?: string;          // Subtítulo chico debajo del label, explicando qué hace (opcional)
+  searchOnly?: boolean;   // Sólo aparece cuando hasSearch=true
 }
 
-// Orden del menú (fijado por usuario, ):
-// 1. Reciente y citado (default editorial)
-// 2. Mayor impacto (FWCI)
-// 3. Más citados
-// 4. Menos citados
-// 5. Más recientes
-// 6. Más antiguos
-// 7. Título A → Z
-// 8. Título Z → A
+// Orden del menú (fijado por Carolina, 2026-04-21):
+//   1. Reciente y citado (default editorial)
+//   2. Mayor impacto (FWCI)
+//   3. Más citados
+//   4. Menos citados
+//   5. Más recientes
+//   6. Más antiguos
+//   7. Título A → Z
+//   8. Título Z → A
 // Relevancia queda al final, sólo visible cuando hay search.
 const OPTIONS: SortOption[] = [
   { key: 'latest_cited', label: 'Reciente y citado', hint: 'Lo nuevo que ya pega' },
-  { key: 'fwci_desc', label: 'Mayor impacto', hint: 'Citas normalizadas por campo (FWCI)' },
-  { key: 'cites_desc', label: 'Más citados' },
-  { key: 'cites_asc', label: 'Menos citados' },
-  { key: 'date_desc', label: 'Más recientes' },
-  { key: 'date_asc', label: 'Más antiguos' },
-  { key: 'title_asc', label: 'Título A → Z' },
-  { key: 'title_desc', label: 'Título Z → A' },
-  { key: 'relevance', label: 'Más relevantes', hint: 'Score de búsqueda', searchOnly: true },
+  { key: 'fwci_desc',    label: 'Mayor impacto',     hint: 'Citas normalizadas por campo (FWCI)' },
+  { key: 'cites_desc',   label: 'Más citados' },
+  { key: 'cites_asc',    label: 'Menos citados' },
+  { key: 'date_desc',    label: 'Más recientes' },
+  { key: 'date_asc',     label: 'Más antiguos' },
+  { key: 'title_asc',    label: 'Título A → Z' },
+  { key: 'title_desc',   label: 'Título Z → A' },
+  { key: 'relevance',    label: 'Más relevantes', hint: 'Score de búsqueda', searchOnly: true },
 ];
 
 interface Props {

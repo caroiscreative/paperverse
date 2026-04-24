@@ -17,13 +17,13 @@ La ciencia real, servida para curiosos reales. Papers científicos indexados por
 
 ## Stack
 
-| Pieza                      | Por qué                                                             |
+| Pieza | Por qué |
 | -------------------------- | ------------------------------------------------------------------- |
-| React 18 + Vite + TS       | Bundle mínimo, dev server instantáneo, tipado fuerte.               |
-| React Router 6             | Dos rutas: `/` (feed/search/cites/citedBy) y `/paper/:id`.          |
-| OpenAlex                   | ~250M papers, gratis, sin auth. Polite pool con `mailto=`.           |
-| Claude Haiku 4.5           | Explicámelo: traducción a prosa simple. Barato y rápido.            |
-| Vercel Serverless (Edge)   | `/api/explain` protege la API key. Free tier alcanza sobrado.       |
+| React 18 + Vite + TS | Bundle mínimo, dev server instantáneo, tipado fuerte. |
+| React Router 6 | Dos rutas: `/` (feed/search/cites/citedBy) y `/paper/:id`. |
+| OpenAlex | ~250M papers, gratis, sin auth. Polite pool con `mailto=`. |
+| Claude Haiku 4.5 | Explicámelo: traducción a prosa simple. Barato y rápido. |
+| Vercel Serverless (Edge) | `/api/explain` protege la API key. Free tier alcanza sobrado. |
 
 Sin Tailwind: el design system trae todas las clases en `public/kit.css` y los tokens en `public/colors_and_type.css`.
 
@@ -94,18 +94,18 @@ Si las variables no están seteadas, la función lo detecta y degrada a *solo ti
 2. Entrá a [vercel.com](https://vercel.com) → *Add New* → *Project* → importá el repo.
 3. Vercel detecta Vite solo. Dejá todo por defecto.
 4. En *Environment Variables* agregá:
-   - `ANTHROPIC_API_KEY` = tu key de Anthropic. **Production + Preview + Development**.
-   - `VITE_POLITE_MAILTO` = tu email (para OpenAlex).
-   - *(opcional)* `PV_ALLOWED_ORIGIN` = `https://paperverse.vercel.app` una vez que tengas dominio.
+ - `ANTHROPIC_API_KEY` = tu key de Anthropic. **Production + Preview + Development**.
+ - `VITE_POLITE_MAILTO` = tu email (para OpenAlex).
+ - *(opcional)* `PV_ALLOWED_ORIGIN` = `https://paperverse.vercel.app` una vez que tengas dominio.
 5. *Deploy*. En ~2 minutos tenés URL pública con HTTPS.
 
 ### Costos estimados (free tier)
 
-| Servicio          | Límite free                                    | ¿Alcanza? |
+| Servicio | Límite free | ¿Alcanza? |
 | ----------------- | ---------------------------------------------- | --------- |
-| Vercel Hobby      | 100 GB bandwidth, 100k function invocations/mes | Sobra para MVP. |
-| OpenAlex          | 100k req/día con mailto                        | Cada vista del feed = 1 req. Aguanta miles de usuarios. |
-| Anthropic Haiku   | ~$0.25/M input tokens                          | Un abstract ~500 tokens → ~$0.0001 por Explicámelo. Con cache de localStorage, casi nunca pegás dos veces al mismo paper. |
+| Vercel Hobby | 100 GB bandwidth, 100k function invocations/mes | Sobra para MVP. |
+| OpenAlex | 100k req/día con mailto | Cada vista del feed = 1 req. Aguanta miles de usuarios. |
+| Anthropic Haiku | ~$0.25/M input tokens | Un abstract ~500 tokens → ~$0.0001 por Explicámelo. Con cache de localStorage, casi nunca pegás dos veces al mismo paper. |
 
 ### Después del deploy
 
@@ -131,25 +131,25 @@ Más pasos, misma experiencia final. Por eso recomiendo Vercel salvo que ya teng
 
 ```
 src/
-  lib/
-    topics.ts        — las 14 categorías (PRD O-02), orden canónico, mapping a OpenAlex
-    openalex.ts      — cliente tipado (feed, search, paper, refs, citedBy, similar)
-    abstract.ts      — reconstruye el inverted index de OpenAlex a texto plano
-    explain.ts       — client-side cache + llamada a /api/explain
-  components/
-    Header.tsx       — branding + search bar
-    TopicChip.tsx    — filtro lateral
-    PaperCard.tsx    — full (feed) / compact (recomendaciones)
-    HeroPaperCard.tsx, HeroBanner.tsx — el paper destacado de la semana
-    Byline.tsx, CountryFlag.tsx, Icon.tsx, TopicIcon.tsx
-  pages/
-    Feed.tsx         — 4 modos según URL: feed / search / cites / citedBy
-    PaperDetail.tsx  — abstract ↔ Explicámelo, refs, citedBy, similares, próximos temas
-  App.tsx, main.tsx, index.css
+ lib/
+ topics.ts — las 14 categorías (PRD O-02), orden canónico, mapping a OpenAlex
+ openalex.ts — cliente tipado (feed, search, paper, refs, citedBy, similar)
+ abstract.ts — reconstruye el inverted index de OpenAlex a texto plano
+ explain.ts — client-side cache + llamada a /api/explain
+ components/
+ Header.tsx — branding + search bar
+ TopicChip.tsx — filtro lateral
+ PaperCard.tsx — full (feed) / compact (recomendaciones)
+ HeroPaperCard.tsx, HeroBanner.tsx — el paper destacado de la semana
+ Byline.tsx, CountryFlag.tsx, Icon.tsx, TopicIcon.tsx
+ pages/
+ Feed.tsx — 4 modos según URL: feed / search / cites / citedBy
+ PaperDetail.tsx — abstract ↔ Explicámelo, refs, citedBy, similares, próximos temas
+ App.tsx, main.tsx, index.css
 api/
-  explain.ts         — Vercel Edge Function con rate limit + CORS
+ explain.ts — Vercel Edge Function con rate limit + CORS
 public/
-  colors_and_type.css, kit.css, assets/*.svg
+ colors_and_type.css, kit.css, assets/*.svg
 ```
 
 ---

@@ -1,7 +1,7 @@
 // Helper chico para preservar el estado del feed cuando el usuario navega
 // a otra vista (paper detail, biblioteca) y vuelve.
 //
-// Motivación : si el usuario estaba en
+// Motivación (QA2 P1.2, 2026-04-20): si el usuario estaba en
 // "/?q=quantum" viendo resultados de búsqueda, clickeaba un paper y de
 // /paper/:id apretaba el tab "Feed" o el logo del header, terminaba en
 // "/" pelado — el query se evaporaba. Para volver a la búsqueda tenía
@@ -10,15 +10,15 @@
 // que el usuario dejó.
 //
 // Estrategia:
-// · El Feed escribe su URL actual (pathname + search) en sessionStorage
-// cada vez que cambia. Sólo guarda URLs que son realmente "feed
-// state" — o sea, pathname === '/'. No queremos confundir "última
-// página visitada" con "última vista del feed".
-// · Cualquier consumidor que quiera "volver al feed" (tab Feed en el
-// header, logo, botón de volver desde error states, etc.) puede
-// llamar a `getLastFeedUrl()` y usar eso en lugar de '/' pelado.
-// · Si no hay nada guardado (primer load, storage bloqueado), cae a
-// '/' default — nunca se pierde la ruta base.
+//   · El Feed escribe su URL actual (pathname + search) en sessionStorage
+//     cada vez que cambia. Sólo guarda URLs que son realmente "feed
+//     state" — o sea, pathname === '/'. No queremos confundir "última
+//     página visitada" con "última vista del feed".
+//   · Cualquier consumidor que quiera "volver al feed" (tab Feed en el
+//     header, logo, botón de volver desde error states, etc.) puede
+//     llamar a `getLastFeedUrl()` y usar eso en lugar de '/' pelado.
+//   · Si no hay nada guardado (primer load, storage bloqueado), cae a
+//     '/' default — nunca se pierde la ruta base.
 //
 // Por qué sessionStorage y no localStorage: el estado del feed (query,
 // filtros de citas) es contextual de la sesión, no de la identidad del

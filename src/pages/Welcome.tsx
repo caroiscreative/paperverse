@@ -6,21 +6,21 @@
 // sienta variado. No hay tope máximo: si querés todo, elegí todo.
 //
 // Layout (vertical, stack, de arriba a abajo):
-// 1. Logo grande (wordmark: isotipo + "Paperverse.")
-// 2. Tagline editorial: "La ciencia real, para curiosos reales."
-// 3. Título — "Elegí tres temas para empezar."
-// 4. Descripción
-// 5. Grilla de chips (topics) — sin límite superior
-// 6. Contador en su propia línea ("2 de 3 temas" / "5 temas seleccionados")
-// 7. Botón "Empezar" en otra línea
+//   1. Logo grande (wordmark: isotipo + "Paperverse.")
+//   2. Tagline editorial: "La ciencia real, para curiosos reales."
+//   3. Título — "Elegí tres temas para empezar."
+//   4. Descripción
+//   5. Grilla de chips (topics) — sin límite superior
+//   6. Contador en su propia línea ("2 de 3 temas" / "5 temas seleccionados")
+//   7. Botón "Empezar" en otra línea
 //
 // After onboarding we persist:
-// · pv_topics_v1 → the selected topic ids (used by Feed)
-// · pv_onboarded_v1 → marker so we don't show this screen again
+//   · pv_topics_v1        → the selected topic ids (used by Feed)
+//   · pv_onboarded_v1     → marker so we don't show this screen again
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { TOPICS, type TopicId } from '../lib/topics';
+import { TOPICS_ALPHABETICAL, type TopicId } from '../lib/topics';
 import { TopicChip } from '../components/TopicChip';
 import { Icon } from '../components/Icon';
 import { useDocumentTitle } from '../lib/useDocumentTitle';
@@ -81,7 +81,7 @@ export function Welcome() {
         </p>
 
         <div className="topics">
-          {TOPICS.map(t => (
+          {TOPICS_ALPHABETICAL.map(t => (
             <TopicChip
               key={t.id}
               topic={t}

@@ -1,97 +1,97 @@
 <!doctype html>
 <html lang="es">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-    <meta name="theme-color" content="#FAF5EC" />
-    <meta name="description" content="La ciencia real, servida para curiosos reales. Papers científicos traducidos al español claro." />
+ <head>
+ <meta charset="utf-8" />
+ <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+ <meta name="theme-color" content="#FAF5EC" />
+ <meta name="description" content="La ciencia real, servida para curiosos reales. Papers científicos traducidos al español claro." />
 
-    <!--
-      Open Graph + Twitter Card. Estos son los meta tags que leen los
-      crawlers de WhatsApp, Twitter/X, Slack, iMessage, LinkedIn,
-      Discord, etc. para armar el preview cuando se pega un link de
-      Paperverse en un chat.
+ <!--
+ Open Graph + Twitter Card. Estos son los meta tags que leen los
+ crawlers de WhatsApp, Twitter/X, Slack, iMessage, LinkedIn,
+ Discord, etc. para armar el preview cuando se pega un link de
+ Paperverse en un chat.
 
-      Importante: Paperverse es un SPA con React Router. Los crawlers
-      NO ejecutan JavaScript, así que todas las rutas (/, /paper/:id,
-      /biblioteca, etc.) sirven este mismo index.html y comparten los
-      mismos tags "genéricos" del sitio. Para tener un preview distinto
-      por paper (título, abstract, ilustración del tópico) hay que meter
-      un Edge Middleware en Vercel que intercepte /paper/:id y reescriba
-      estos tags server-side antes de mandar el HTML al crawler.
+ Importante: Paperverse es un SPA con React Router. Los crawlers
+ NO ejecutan JavaScript, así que todas las rutas (/, /paper/:id,
+ /biblioteca, etc.) sirven este mismo index.html y comparten los
+ mismos tags "genéricos" del sitio. Para tener un preview distinto
+ por paper (título, abstract, ilustración del tópico) hay que meter
+ un Edge Middleware en Vercel que intercepte /paper/:id y reescriba
+ estos tags server-side antes de mandar el HTML al crawler.
 
-      og:image es PNG 1200x630 (estándar de Facebook/LinkedIn/Twitter).
-      Vive en /og-image.png (root de /public) para que la URL absoluta
-      quede limpia: paperverse.vercel.app/og-image.png
-    -->
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Paperverse" />
-    <meta property="og:title" content="Paperverse — La ciencia real, para curiosos reales" />
-    <meta property="og:description" content="Papers científicos traducidos al español claro. Navegá el universo de la ciencia por tópico, nivel y país." />
-    <meta property="og:url" content="https://paperverse.vercel.app" />
-    <meta property="og:image" content="https://paperverse.vercel.app/og-image.png" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="Paperverse. La ciencia real, para curiosos reales." />
-    <meta property="og:locale" content="es_ES" />
+ og:image es PNG 1200x630 (estándar de Facebook/LinkedIn/Twitter).
+ Vive en /og-image.png (root de /public) para que la URL absoluta
+ quede limpia: paperverse.vercel.app/og-image.png
+ -->
+ <meta property="og:type" content="website" />
+ <meta property="og:site_name" content="Paperverse" />
+ <meta property="og:title" content="Paperverse — La ciencia real, para curiosos reales" />
+ <meta property="og:description" content="Papers científicos traducidos al español claro. Navegá el universo de la ciencia por tópico, nivel y país." />
+ <meta property="og:url" content="https://paperverse.vercel.app" />
+ <meta property="og:image" content="https://paperverse.vercel.app/og-image.png" />
+ <meta property="og:image:width" content="1200" />
+ <meta property="og:image:height" content="630" />
+ <meta property="og:image:alt" content="Paperverse. La ciencia real, para curiosos reales." />
+ <meta property="og:locale" content="es_ES" />
 
-    <!-- Twitter Card: summary_large_image muestra la imagen completa,
-         no el thumbnail chico. Es el formato que queremos. -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Paperverse — La ciencia real, para curiosos reales" />
-    <meta name="twitter:description" content="Papers científicos traducidos al español claro. Navegá el universo de la ciencia por tópico, nivel y país." />
-    <meta name="twitter:image" content="https://paperverse.vercel.app/og-image.png" />
+ <!-- Twitter Card: summary_large_image muestra la imagen completa,
+ no el thumbnail chico. Es el formato que queremos. -->
+ <meta name="twitter:card" content="summary_large_image" />
+ <meta name="twitter:title" content="Paperverse — La ciencia real, para curiosos reales" />
+ <meta name="twitter:description" content="Papers científicos traducidos al español claro. Navegá el universo de la ciencia por tópico, nivel y país." />
+ <meta name="twitter:image" content="https://paperverse.vercel.app/og-image.png" />
 
-    <!-- Favicon: reutilizamos el mark del design system original. -->
-    <link rel="icon" type="image/svg+xml" href="/assets/logo-mark.svg" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preconnect" href="https://api.openalex.org" />
-    <link rel="preconnect" href="https://flagcdn.com" crossorigin />
+ <!-- Favicon: reutilizamos el mark del design system original. -->
+ <link rel="icon" type="image/svg+xml" href="/assets/logo-mark.svg" />
+ <link rel="preconnect" href="https://fonts.googleapis.com" />
+ <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+ <link rel="preconnect" href="https://api.openalex.org" />
+ <link rel="preconnect" href="https://flagcdn.com" crossorigin />
 
-    <!-- DS2 topic animation styles (keyframes + .ta-stage sizing). The matching
-         IIFE that defines window.mountTopicAnim is loaded below, before the app
-         bundle, so components can call it inside useEffect. -->
-    <link rel="stylesheet" href="/topic-anim.css" />
+ <!-- DS2 topic animation styles (keyframes + .ta-stage sizing). The matching
+ IIFE that defines window.mountTopicAnim is loaded below, before the app
+ bundle, so components can call it inside useEffect. -->
+ <link rel="stylesheet" href="/topic-anim.css" />
 
-    <title>Paperverse — La ciencia real, para curiosos reales</title>
+ <title>Paperverse — La ciencia real, para curiosos reales</title>
 
-    <!--
-      Bootstrap del tema (QA2 P1.1, 2026-04-20). Corre ANTES de que React
-      monte para evitar FOUC (flash of light content): si el usuario tenía
-      modo oscuro guardado, al recargar la página durante un segundo se veía
-      el canvas crema antes de que el useEffect de useTheme aplicara la
-      clase `pv-dark` a <html>. Ese flash se sentía roto, sobre todo de
-      noche.
+ <!--
+ Bootstrap del tema (QA2 P1.1, 2026-04-20). Corre ANTES de que React
+ monte para evitar FOUC (flash of light content): si el usuario tenía
+ modo oscuro guardado, al recargar la página durante un segundo se veía
+ el canvas crema antes de que el useEffect de useTheme aplicara la
+ clase `pv-dark` a <html>. Ese flash se sentía roto, sobre todo de
+ noche.
 
-      Script inline, síncrono, blocking. Corre antes del bundle, lee
-      `pv_theme_v1` de localStorage y aplica la clase. Si el storage está
-      bloqueado (incógnito estricto o permisos restringidos), cae al
-      default claro sin romper. Mantenemos la clave de storage
-      ("pv_theme_v1") en sync con lib/theme.ts — si ese archivo cambia la
-      key, hay que acordarse de actualizar este script también.
+ Script inline, síncrono, blocking. Corre antes del bundle, lee
+ `pv_theme_v1` de localStorage y aplica la clase. Si el storage está
+ bloqueado (incógnito estricto o permisos restringidos), cae al
+ default claro sin romper. Mantenemos la clave de storage
+ ("pv_theme_v1") en sync con lib/theme.ts — si ese archivo cambia la
+ key, hay que acordarse de actualizar este script también.
 
-      Por qué inline en vez de un src externo: un <script src> agregaría
-      un round-trip de red antes del primer render. Este bloque es de
-      unas pocas líneas y corre en microsegundos, no vale la pena
-      optimizarlo como archivo separado.
-    -->
-    <script>
-      (function () {
-        try {
-          var t = localStorage.getItem('pv_theme_v1');
-          if (t === 'dark') document.documentElement.classList.add('pv-dark');
-        } catch (_) {
-          /* storage bloqueado — no tema oscuro forzado, default light */
-        }
-      })();
-    </script>
-  </head>
-  <body class="pv">
-    <div id="root"></div>
-    <!-- Vanilla IIFE — must run before main.tsx so window.mountTopicAnim is
-         defined by the time React mounts the hero. -->
-    <script src="/topic-anim.js"></script>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+ Por qué inline en vez de un src externo: un <script src> agregaría
+ un round-trip de red antes del primer render. Este bloque es de
+ unas pocas líneas y corre en microsegundos, no vale la pena
+ optimizarlo como archivo separado.
+ -->
+ <script>
+ (function {
+ try {
+ var t = localStorage.getItem('pv_theme_v1');
+ if (t === 'dark') document.documentElement.classList.add('pv-dark');
+ } catch (_) {
+ /* storage bloqueado — no tema oscuro forzado, default light */
+ }
+ });
+ </script>
+ </head>
+ <body class="pv">
+ <div id="root"></div>
+ <!-- Vanilla IIFE — must run before main.tsx so window.mountTopicAnim is
+ defined by the time React mounts the hero. -->
+ <script src="/topic-anim.js"></script>
+ <script type="module" src="/src/main.tsx"></script>
+ </body>
 </html>

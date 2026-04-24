@@ -1,4 +1,4 @@
-// Lightweight toast system — .
+// Lightweight toast system — QA 3.13.
 //
 // Problema que resuelve: al clickear "Guardar" o "Marcar como leído" el
 // estado visual del botón cambia (ícono se llena / se vacía) pero no hay
@@ -7,19 +7,19 @@
 // se pierde el feedback y el usuario duda si realmente guardó el paper.
 //
 // Diseño deliberado:
-// · Singleton store con event bus — cualquier componente puede disparar
-// un toast sin prop drilling. La alternativa (Context Provider) agregaba
-// jerarquía innecesaria para un efecto tan puntual.
-// · Una cola con una sola posición visible: si aparece otro toast antes
-// de que el anterior expire, el nuevo pisa al viejo. Paperverse no
-// tiene acciones en ráfaga que ameriten un stack.
-// · Sin animación de entrada (consistente con la regla "toggles sin
-// animación" del proyecto). Snap in, snap out.
-// · Auto-dismiss en 2.2s — suficiente para leer "Guardado en biblioteca"
-// sin convertir el toast en ruido persistente.
-// · API pública: el hook devuelve { toast, show } para consumidor. El
-// registro global <ToastRegion /> se monta una vez en App.tsx y
-// escucha el store. Los componentes disparan con show(msg, variant).
+//  · Singleton store con event bus — cualquier componente puede disparar
+//    un toast sin prop drilling. La alternativa (Context Provider) agregaba
+//    jerarquía innecesaria para un efecto tan puntual.
+//  · Una cola con una sola posición visible: si aparece otro toast antes
+//    de que el anterior expire, el nuevo pisa al viejo. Paperverse no
+//    tiene acciones en ráfaga que ameriten un stack.
+//  · Sin animación de entrada (consistente con la regla "toggles sin
+//    animación" del proyecto). Snap in, snap out.
+//  · Auto-dismiss en 2.2s — suficiente para leer "Guardado en biblioteca"
+//    sin convertir el toast en ruido persistente.
+//  · API pública: el hook devuelve { toast, show } para consumidor. El
+//    registro global <ToastRegion /> se monta una vez en App.tsx y
+//    escucha el store. Los componentes disparan con show(msg, variant).
 
 import { useEffect, useState } from 'react';
 

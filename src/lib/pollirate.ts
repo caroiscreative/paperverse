@@ -2,30 +2,30 @@
 //
 // Pollinations rate-limits strictly per IP (1 en vuelo, sin cola propia). El
 // payload de 429 que tocó en prod fue:
-// 429 {"error":"Queue full for IP: ... 1 requests already queued (max: 1)", ...}
+//   429 {"error":"Queue full for IP: ... 1 requests already queued (max: 1)", ...}
 // Así que TENEMOS que serializar localmente. Esta lib es el cuello de botella
 // compartido entre translate.ts (títulos del feed) y explain.ts (Explicámelo).
 //
 // Antes era un FIFO simple. Eso causaba que una tarjeta del feed #50 en
 // cola bloqueara el Explicámelo de la página de detalle abierta por el
-// usuario — usuario vio "TRADUCIENDO A CRISTIANO…" colgado durante más de
+// usuario  vio "TRADUCIENDO A CRISTIANO…" colgado durante más de
 // un minuto mientras el feed vaciaba sus 60+ traducciones queue-adelante.
 //
 // Ahora tenemos:
 //
-// · Priority queue (high/low). Las requests del detail page entran en
-// `queueHigh` y brincan por encima del feed. Así, apenas termina la
-// request en vuelo, el próximo slot va para el Explicámelo, no para la
-// card #23 que ya se scrolleó fuera de pantalla.
+//   · Priority queue (high/low). Las requests del detail page entran en
+//     `queueHigh` y brincan por encima del feed. Así, apenas termina la
+//     request en vuelo, el próximo slot va para el Explicámelo, no para la
+//     card #23 que ya se scrolleó fuera de pantalla.
 //
-// · AbortSignal all the way through. Si un componente se desmonta o la
-// tarjeta sale del viewport, cancela su request — si está en cola se
-// marca cancelled (se saltea al pickear el próximo); si ya está en
-// vuelo, el fetch se aborta.
+//   · AbortSignal all the way through. Si un componente se desmonta o la
+//     tarjeta sale del viewport, cancela su request — si está en cola se
+//     marca cancelled (se saltea al pickear el próximo); si ya está en
+//     vuelo, el fetch se aborta.
 //
-// · Timeout por request. El que llama pasa un AbortSignal con un
-// setTimeout; si Pollinations no contestó en el presupuesto, se aborta
-// y caemos al fallback pre-limpiado.
+//   · Timeout por request. El que llama pasa un AbortSignal con un
+//     setTimeout; si Pollinations no contestó en el presupuesto, se aborta
+//     y caemos al fallback pre-limpiado.
 //
 // Un solo retry rápido en 429 — más que eso estira latencia por encima
 // del presupuesto de 5s.

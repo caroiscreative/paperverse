@@ -4,16 +4,16 @@
 // razonamiento pesado.
 //
 // Tres niveles de lectura:
-// · kid — "como si tuviera 5 años": metáforas, cero jerga, 2 oraciones máx.
-// · teen — "adolescente/secundario": tono casual, oraciones cortas, 2–4
-// párrafos. Este es el nivel por defecto.
-// · sci — "científico/universitario": rigor alto, jerga aceptada,
-// preservando cifras, métodos y limitaciones.
+//   · kid  — "como si tuviera 5 años": metáforas, cero jerga, 2 oraciones máx.
+//   · teen — "adolescente/secundario": tono casual, oraciones cortas, 2–4
+//            párrafos. Este es el nivel por defecto.
+//   · sci  — "científico/universitario": rigor alto, jerga aceptada,
+//            preservando cifras, métodos y limitaciones.
 // Cada nivel se cachea por separado — pedir "kid" no regenera "teen".
 //
 // Cache shape: Record<paperId, { kid?, teen?, sci? }>.
 //
-// Español neutro (no rioplatense): usuario es venezolana; forzar "vos"
+// Español neutro (no rioplatense): es venezolana; forzar "vos"
 // creaba un sesgo regional innecesario. Neutral LATAM se lee natural en
 // cualquier país hispanohablante.
 //
@@ -48,23 +48,23 @@ import {
  * modelos o cuando migremos a la nueva API.
  *
  * Histórico:
- * - Arrancamos con `['openai', 'mistral', 'openai-large']`. Pollinations
- * deprecó `openai-large` en 2026 y después también `mistral` en el
- * legacy endpoint. El único sobreviviente es `openai-fast`.
- * - Probamos migrar a `nova-fast`/`gemini-fast` (P95 ~1-2s en el monitor
- * de Pollinations). Esos modelos solo viven en la nueva API
- * (`gen.pollinations.ai`), que requiere Bearer key. El legacy no los
- * acepta.
- * - La latencia alta que nota el usuario no es el modelo sino la cola:
- * el legacy limita a 1 request en vuelo por IP y encola/rebota el
- * resto con 429 "Queue full". Con `openai-fast` (P95 ~38s en el
- * monitor), una explicación típica cae en 6-15s cuando hay suerte.
- * - Decisión: quedarse en legacy anónimo. Cada usuario consume su propia
- * IP, usuario no paga ni gestiona cuenta, el deploy en Vercel no se
- * ve afectado por la cuota. Una `pk_` key nos daría modelos más
- * rápidos pero el rate limit es 1 pollen/IP/hora — peor para un lector
- * activo que la cola legacy, que permite ~60-90 requests/hora en
- * serie. Si el legacy eventualmente cae del todo, tocará migrar.
+ *   - Arrancamos con `['openai', 'mistral', 'openai-large']`. Pollinations
+ *     deprecó `openai-large` en 2026 y después también `mistral` en el
+ *     legacy endpoint. El único sobreviviente es `openai-fast`.
+ *   - Probamos migrar a `nova-fast`/`gemini-fast` (P95 ~1-2s en el monitor
+ *     de Pollinations). Esos modelos solo viven en la nueva API
+ *     (`gen.pollinations.ai`), que requiere Bearer key. El legacy no los
+ *     acepta.
+ *   - La latencia alta que nota el usuario no es el modelo sino la cola:
+ *     el legacy limita a 1 request en vuelo por IP y encola/rebota el
+ *     resto con 429 "Queue full". Con `openai-fast` (P95 ~38s en el
+ *     monitor), una explicación típica cae en 6-15s cuando hay suerte.
+ *   - Decisión: quedarse en legacy anónimo. Cada usuario consume su propia
+ *     IP, no paga ni gestiona cuenta, el deploy en Vercel no se
+ *     ve afectado por la cuota. Una `pk_` key nos daría modelos más
+ *     rápidos pero el rate limit es 1 pollen/IP/hora — peor para un lector
+ *     activo que la cola legacy, que permite ~60-90 requests/hora en
+ *     serie. Si el legacy eventualmente cae del todo, tocará migrar.
  */
 const MODELS: ReadonlyArray<string> = ['openai'];
 
@@ -200,7 +200,7 @@ const inflight = new Map<string, Promise<string>>();
 
 /**
  * Un solo intento contra Pollinations con un modelo específico. Sin timeout:
- * esperamos hasta que el modelo responda o dé error HTTP. Si usuario quiere
+ * esperamos hasta que el modelo responda o dé error HTTP. Si quiere
  * cancelar, recarga la página — pero nunca abortamos nosotros por lentitud,
  * porque Pollinations a veces responde bien a los 20s y eso sigue siendo
  * mejor que no tener explicación.

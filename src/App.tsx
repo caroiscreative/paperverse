@@ -17,7 +17,7 @@ import { DesignSystem } from './pages/DesignSystem';
  * cards. Esto también aplica al volver al feed, navegar entre feed/biblioteca,
  * y al cambiar de query de búsqueda.
  *
- * Excepción : si la ÚNICA diferencia entre el search
+ * Excepción (QA 3.1, 2026-04-20): si la ÚNICA diferencia entre el search
  * anterior y el actual es el parámetro `q` (search-as-you-type), no
  * reseteamos. Si lo hiciéramos, cada pulsación mientras el usuario tipea
  * dispararía un jump al top que haría perder el lugar donde estaba mirando
@@ -85,16 +85,16 @@ export function App() {
     // nos suscribimos por adelantado al comportamiento que trae v7 para
     // que la migración futura sea un bump de versión sin sorpresas.
     //
-    // · v7_startTransition: envuelve los state updates del router en
-    // React.startTransition. Evita bloqueos del main thread en
-    // navegaciones con Suspense y es no-op en este proyecto (no usamos
-    // suspense-based data loading) pero nos asegura que si lo agregamos
-    // después, el router ya se comporta como v7.
-    // · v7_relativeSplatPath: cambia cómo resuelve paths relativos dentro
-    // de rutas splat ("*"). En App.tsx montamos un splat-wrapper con el
-    // shell (Header + Routes internas) y todas las rutas internas son
-    // absolutas ("/", "/paper/:id", …), por lo que el cambio es neutral
-    // para nosotros. Activarlo igual así no arrastramos el warning.
+    //   · v7_startTransition: envuelve los state updates del router en
+    //     React.startTransition. Evita bloqueos del main thread en
+    //     navegaciones con Suspense y es no-op en este proyecto (no usamos
+    //     suspense-based data loading) pero nos asegura que si lo agregamos
+    //     después, el router ya se comporta como v7.
+    //   · v7_relativeSplatPath: cambia cómo resuelve paths relativos dentro
+    //     de rutas splat ("*"). En App.tsx montamos un splat-wrapper con el
+    //     shell (Header + Routes internas) y todas las rutas internas son
+    //     absolutas ("/", "/paper/:id", …), por lo que el cambio es neutral
+    //     para nosotros. Activarlo igual así no arrastramos el warning.
     //
     // Los otros flags de v7 (v7_fetcherPersist, v7_normalizeFormMethod,
     // v7_partialHydration, v7_skipActionErrorRevalidation) son exclusivos
@@ -122,11 +122,11 @@ export function App() {
           element={
             <div className="app">
               <Header />
-              {/* ThemeDock eliminado : el toggle de tema
+              {/* ThemeDock eliminado: el toggle de tema
                   vive en el meta-row del sidebar del Feed — tres bloques
                   hermanos ("¿Qué es Paperverse?", "Creado por", "Tema").
                   El dock flotante se sacó tanto en mobile como en desktop
-                  por decisión de producto: ya no lo necesitamos como barra
+                  por pedido de Carolina: ya no lo necesitamos como barra
                   separada. El componente ThemeDock.tsx sigue en el repo
                   por si volviera en otra forma, pero no se renderiza. */}
               <Routes>

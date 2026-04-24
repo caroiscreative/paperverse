@@ -8,23 +8,23 @@
 // científica abierta). se pidió reemplazarla por citas seculares de
 // autores que ella aprecia.
 //
-// Pool curado — tres autores elegidos por usuario:
+// Pool curado — tres autores elegidos por Carolina:
 //
-// · Stanisław Lem (polaco, 1921-2006) — su favorito. Peso fuerte (21
-// citas) con énfasis especial en Summa Technologiae, el libro que ella
-// pidió explícitamente que dominara. Summa es un tratado filosófico-
-// especulativo sobre tecnología, evolución y conocimiento publicado en
-// 1964, y es un match editorial extraordinario con Paperverse: Lem
-// escribía con tono divulgativo, erudito y lúcido sobre los mismos
-// temas que el feed pone arriba (IA, espacio, complejidad, evolución).
+//   · Stanisław Lem (polaco, 1921-2006) — su favorito. Peso fuerte (21
+//     citas) con énfasis especial en Summa Technologiae, el libro que ella
+//     pidió explícitamente que dominara. Summa es un tratado filosófico-
+//     especulativo sobre tecnología, evolución y conocimiento publicado en
+//     1964, y es un match editorial extraordinario con Paperverse: Lem
+//     escribía con tono divulgativo, erudito y lúcido sobre los mismos
+//     temas que el feed pone arriba (IA, espacio, complejidad, evolución).
 //
-// · Aldous Huxley (inglés, 1894-1963) — 6 citas. Contrabalance ensayístico,
-// observaciones sobre percepción, hábito, claridad mental.
+//   · Aldous Huxley (inglés, 1894-1963) — 6 citas. Contrabalance ensayístico,
+//     observaciones sobre percepción, hábito, claridad mental.
 //
-// · George Orwell (inglés, 1903-1950) — 6 citas. Lenguaje, verdad, poder,
-// pensamiento claro. Match con Paperverse en la obsesión por traducir
-// jerga en algo entendible (Explicámelo es, literalmente, el antídoto
-// de la "Newspeak" académica).
+//   · George Orwell (inglés, 1903-1950) — 6 citas. Lenguaje, verdad, poder,
+//     pensamiento claro. Match con Paperverse en la obsesión por traducir
+//     jerga en algo entendible (Explicámelo es, literalmente, el antídoto
+//     de la "Newspeak" académica).
 //
 // Idioma: todas las citas se publican acá en español neutro LATAM. Las
 // obras originales están en polaco (Lem) o inglés (Huxley/Orwell). Donde
@@ -34,7 +34,7 @@
 // — no es sacrilegio, es cita divulgativa, no crítica textual.
 //
 // Sobre los em dashes: la app evita el em dash (—) en copy propia por
-// pedido de producto, pero en citas literales preservamos la puntuación
+// pedido de Carolina, pero en citas literales preservamos la puntuación
 // original donde aparece. El framing y los créditos no los usan.
 //
 // API: conservamos la signature `fetchRandomQuote(signal): Promise<Quote>`

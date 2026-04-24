@@ -65,7 +65,7 @@ button { font: inherit; }
 
 /* Utility para ocultar texto visualmente pero mantenerlo accesible a screen
    readers y al outline semántico (H1, labels implícitos, etc.). Lo usamos
-   principalmente para (jerarquía de headings): el Feed necesita un
+   principalmente para QA 3.6 (jerarquía de headings): el Feed necesita un
    <h1> que comunique el contexto de la vista — "Feed de papers",
    "Resultados para 'quantum'" — sin introducir un encabezado visible que
    duplique el H2 que ya funciona como header visual ("20 papers · últimos
@@ -89,7 +89,7 @@ button { font: inherit; }
   border: 0 !important;
 }
 
-/* Promovemos "Mi biblioteca" a <h1> por jerarquía .
+/* Promovemos "Mi biblioteca" a <h1> por jerarquía (QA 3.6, 2026-04-20).
    kit.css ya estilea `.section-head h2` como un "eyebrow" mono uppercase
    de 10.5px. Al cambiar la etiqueta semántica a h1, necesitamos replicar
    el mismo look para que el eyebrow siga siendo visualmente consistente
@@ -108,7 +108,7 @@ button { font: inherit; }
   margin: 0;
 }
 
-/* Toast de feedback — confirma visualmente acciones
+/* Toast de feedback (QA 3.13, 2026-04-20) — confirma visualmente acciones
    tipo "guardar paper" o "marcar como leído". Posición fixed al pie del
    viewport, centrado horizontalmente. Sin animación de entrada/salida
    por decisión de producto (toggles y feedback son instantáneos en
@@ -183,7 +183,7 @@ button { font: inherit; }
 
 /* Header — drop the heavy ink line y usamos fondo OPACO (no rgba con alpha).
    Antes teníamos rgba(250,245,236,0.75) + backdrop-filter blur(12px) para un
-   efecto "glass". Problema (, reportado por usuario): quedaba una
+   efecto "glass". Problema (2026-04-20, reportado por Carolina): quedaba una
    línea sutil visible justo encima de la feed-top-bar "20 PAPERS". Causa:
    la .feed-top-bar::before extiende 12px hacia arriba con bg-canvas OPACO
    como safety net contra gaps; cuando la barra está sticky, esos 12px
@@ -207,7 +207,7 @@ button { font: inherit; }
 /* Header mobile — layout consistente: logo SIEMPRE pegado al borde
    izquierdo, tabs (Feed/Biblioteca) SIEMPRE alineadas al borde
    derecho del cuerpo del header, y la lupa (cuando existe) queda
-   AFUERA de las tabs, en la última esquina. usuario :
+   AFUERA de las tabs, en la última esquina. Carolina:
    "[logo ............ Feed Biblioteca (🔍)]" en Feed, "[logo ......
    Feed Biblioteca]" en otras páginas.
 
@@ -237,7 +237,8 @@ button { font: inherit; }
   grid-template-columns: repeat(6, 1fr);
   gap: 0;
   width: 100%;
-  /* Stroke 2px — alineado con chips, cards, search, toggles. se pidió consistencia: "todo debería ser consistentemente
+  /* Stroke 2px — alineado con chips, cards, search, toggles. Carolina
+ pidió consistencia: "todo debería ser consistentemente
      de 2px en toda la interfaz". Antes era 1px y se sentía más fino que
      el resto del kit. */
   border: 2px solid var(--pv-ink, #0E1116);
@@ -278,7 +279,7 @@ button { font: inherit; }
    Mismo lenguaje que pv-window-group pero compacto y con icono + label,
    así vive cómodo al lado del count en el section-head.
 
-   Patrón adaptativo : el botón ACTIVO muestra ícono + texto.
+   Patrón adaptativo: el botón ACTIVO muestra ícono + texto.
    El INACTIVO colapsa a ícono-only para ahorrar ancho — así el conteo
    "N papers · Xd" del section-head no se parte en dos líneas. Al hacer
    click, el label del recién activado crece desde 0 (fade + slide), y
@@ -418,7 +419,7 @@ button { font: inherit; }
 }
 
 /* Fix el "dot" de categoría (el cuadradito de color al inicio del eyebrow).
-   Dos problemas que usuario flagueó:
+   Dos problemas que flagueó:
    (1) Cuando el eyebrow envuelve a 2-3 líneas (journals largos tipo
        "Philosophical Transactions of the Royal Society B Biological
        Sciences"), el dot se iba al centro vertical del bloque porque el
@@ -426,7 +427,7 @@ button { font: inherit; }
        `flex-start` y un `margin-top` chiquito para alinear ópticamente
        con la cap-height de la primera línea.
    (2) Sin `flex-shrink: 0`, el dot se podía achicar horizontalmente en
-       eyebrows muy estrechos — eso es lo que usuario veía como
+       eyebrows muy estrechos — eso es lo que veía como
        "rectángulos irregulares". El dot debería ser siempre 7×7 cuadrado
        perfecto, independientemente del texto que lo acompaña. */
 .paper-card .eyebrow,
@@ -521,10 +522,10 @@ button { font: inherit; }
    On PaperDetail the content column narrows to 760px y matcheamos ese width
    exactly so the header rail lines up with the paper body below.
 
-   IMPORTANTE : esto es SOLO desktop (≥1024px). Antes estaba
+   IMPORTANTE: esto es SOLO desktop (≥1024px). Antes estaba
    aplicado a todos los viewports con `!important` y eso rompía el header
    en mobile/tablet — fijaba 240px para el brand, dejando migajas para tabs
-   + lupa, y las media queries de kit.css no podían pisarlo. usuario lo
+   + lupa, y las media queries de kit.css no podían pisarlo. lo
    reportó: "me da la impresión de que hay un div que está tomando mucho
    espacio fijo y no están dándole espacio al botón de búsqueda". Ahora
    scopeamos a desktop con min-width:1024px y ya no necesita !important
@@ -550,7 +551,7 @@ button { font: inherit; }
   }
 }
 
-/* PaperDetail Abstract ↔ Explicámelo toggle. usuario wanted the active pill
+/* PaperDetail Abstract ↔ Explicámelo toggle. wanted the active pill
    flush against the outer border (no inner padding gap), and the labels to
    feel kin to the sidebar's mono/uppercase "Período" group.
    Trampa pasada: sin focus-visible propio, el browser pintaba un outline
@@ -560,11 +561,11 @@ button { font: inherit; }
    DENTRO del container — el grupo no cambia de tamaño al enfocar. */
 .detail-wrap .toggle {
   border-width: 2px;
-  padding: 0; /* active pill touches the border */
+  padding: 0;                 /* active pill touches the border */
   height: 40px;
   box-sizing: border-box;
-  gap: 0; /* no space between segments either */
-  overflow: hidden; /* corta cualquier shadow/outline que quiera salirse */
+  gap: 0;                     /* no space between segments either */
+  overflow: hidden;           /* corta cualquier shadow/outline que quiera salirse */
 }
 .detail-wrap .toggle button {
   padding: 0 16px;
@@ -577,7 +578,7 @@ button { font: inherit; }
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  outline: none; /* nada de anillo azul default */
+  outline: none;              /* nada de anillo azul default */
 }
 .detail-wrap .toggle button:focus-visible {
   /* Ring INSET — vive adentro del container, sin empujar el layout ni
@@ -594,7 +595,8 @@ button { font: inherit; }
 
 /* "Paper al azar" — sidebar variant (not floating). Matches the FAB palette
    but sits inline with the Estado panel so the sidebar reads as one column
-   of controls. La clase sigue llamándose .pv-dato-random (legacy, renombró sólo la copy user-facing); renombrar el selector tocaría varios
+   of controls. La clase sigue llamándose .pv-dato-random (legacy, QA2 P3.4
+   renombró sólo la copy user-facing); renombrar el selector tocaría varios
    archivos sin beneficio funcional. */
 .pv-dato-random {
   display: inline-flex;
@@ -876,7 +878,7 @@ button { font: inherit; }
   align-items: center;
   justify-content: center;
   /* Instant state change — sin transition ni animación. Pedido explícito
-     de usuario : el fade de 120ms se sentía gomoso contra el
+     de Carolina: el fade de 120ms se sentía gomoso contra el
      cambio de tema global y contra la estética editorial/brutalista del
      resto del kit. `transition: none !important` con cascada a hijos/SVG
      para matar cualquier transición heredada del kit base o de caché. */
@@ -915,7 +917,8 @@ button { font: inherit; }
   .pv-theme-dock-btn { width: 30px; height: 30px; }
 }
 
-/* Mobile (<640px): el ThemeDock flotante deja de aparecer. usuario : "no sé dónde colocar el toolbar para que no estorbe,
+/* Mobile (<640px): el ThemeDock flotante deja de aparecer. Carolina
+: "no sé dónde colocar el toolbar para que no estorbe,
    siento que odio la lectura así... además no me gustan las esquinas
    redondeadas". Probamos primero un footer fijo al pie con el toggle
    de tema, pero también lo descartó ("el footer no me gustó, capaz
@@ -940,7 +943,8 @@ button { font: inherit; }
 
 /* ============================================================
    Perilla — reading-level selector for Explicámelo (compact)
-   usuario wanted this to step back from the top of the page:
+   ------------------------------------------------------------
+   wanted this to step back from the top of the page:
    no title row, no surface panel, smaller knobs. It now reads
    as a supporting control (medium prominence), matching the
    tone of the eyebrow-scale text around it rather than the
@@ -957,7 +961,7 @@ button { font: inherit; }
      0.14em). Antes eran 24px (ancho del knob) y las labels "5 AÑOS" y
      "CIENTÍFICO" overflowaban a ambos lados; con el contenedor padre
      teniendo overflow:hidden o padding escaso, la primera letra ("5")
-     se clippeaba (bug reportado ).
+     se clippeaba (bug reportado 2026-04-19).
      El knob (24px) se centra horizontalmente en su columna de 80px
      gracias a `align-items: center` del stop flex. Para que la pista
      (track) siga aterrizando exacto en el centro de los knobs extremos,
@@ -1056,6 +1060,7 @@ button { font: inherit; }
 
 /* ============================================================
    Paper actions — bottom row
+   ------------------------------------------------------------
    Pulled out from the toggle row so the top of the detail page
    isn't a wall of five interactive controls. Sits below the
    content body with a hairline above it, grouped from most-to-
@@ -1092,9 +1097,9 @@ button { font: inherit; }
   flex-wrap: wrap;
 }
 
-/* NOTA : se removió la regla `.paper-actions-empty` (texto
+/* NOTA: se removió la regla `.paper-actions-empty` (texto
    italic muted "Sin referencias indexadas" / "Todavía no lo citaron")
-   a pedido de producto. El tratamiento italic-muted no encajaba con el
+   a pedido de Carolina. El tratamiento italic-muted no encajaba con el
    lenguaje btn-ghost del resto de la fila, y el copy largo empujaba el
    CTA primario "Leer paper completo" a una segunda línea en desktop
    rompiendo la regla de los-5-botones-en-una-sola-fila. Ahora el estado
@@ -1125,9 +1130,9 @@ button { font: inherit; }
    come el espacio que sobra después de los dos icon-buttons fijos
    (pv-read 44px + pv-bookmark 44px + gap).
 
-   Scoping a MOBILE-ONLY (, corrección del 2ª intento):
+   Scoping a MOBILE-ONLY (2026-04-19, corrección del 2ª intento):
    Primero puse estas reglas sin media query y terminaron pisando desktop
-   también. "en desktop también se volvieron dos líneas, en
+   también — "en desktop también se volvieron dos líneas, en
    desktop debería ser una sola línea y en mobile deberían ser dos".
    Lógica correcta:
      · Desktop (≥640px): los dos rows (explore + acciones) conviven en
@@ -1142,7 +1147,8 @@ button { font: inherit; }
 @media (max-width: 639px) {
   /* AMBOS rows a 100% width — antes la fila --explore (Ver referencias +
      Ver quién lo citó) quedaba en su ancho natural apretado contra el
-     centro, con márgenes huecos a los costados. se pidió que esos dos botones también llenaran todo el ancho del
+     centro, con márgenes huecos a los costados. Carolina
+     pidió que esos dos botones también llenaran todo el ancho del
      contenedor en mobile, con gap de 16px entre ellos para que respiren.
      Sin `:not(.paper-actions-row--explore)` ambos rows se tratan igual:
      cada uno toma 100% del ancho, y sus hijos crecen con flex:1. */
@@ -1168,7 +1174,7 @@ button { font: inherit; }
   }
 
   /* Biblioteca header en mobile — apilar título y botones de data en
-     líneas separadas. usuario : la fila horizontal hacía
+     líneas separadas. Carolina: la fila horizontal hacía
      que "1 para leer · 6 leídos" se quebrara feo al lado del botón, que
      además partía la cuadrícula tipográfica editorial.
      `.lib-header` es una clase auxiliar específica del header principal
@@ -1176,7 +1182,7 @@ button { font: inherit; }
      Archivo) que SÍ pueden quedarse en fila horizontal porque su
      contenido es mucho más corto.
 
-     QA2 #68 : ahora hay dos botones (Importar + Exportar)
+     QA2 #68: ahora hay dos botones (Importar + Exportar)
      dentro de `.lib-actions`. En mobile los dejamos en fila porque cada
      uno ocupa poco ancho y "Importar JSON / Exportar JSON" lado a lado
      leen como una acción pareada — son la cara A y B de la misma función
@@ -1287,6 +1293,7 @@ button { font: inherit; }
 
 /* ============================================================
    Dark mode pass
+   ------------------------------------------------------------
    The kit hardcodes `color: var(--pv-ink)` on a lot of surfaces
    (titles, toggles, card borders). Those never switch on their
    own. This block re-points them at the theme tokens so the UI
@@ -1375,7 +1382,7 @@ button { font: inherit; }
 /* Nav tabs */
 .pv-dark .pv-header nav button.active { color: var(--fg-1); border-bottom-color: var(--fg-1); }
 
-/* Topic chips en dark — Fase 3.2 .
+/* Topic chips en dark — Fase 3.2.
    El inactivo no necesita override: el --chip-bg (topic.soft) inyectado
    por TopicChip.tsx se renderiza como un parche de color claro sobre el
    cosmic-night, que es el efecto buscado. El texto sigue en --pv-ink
@@ -1485,7 +1492,7 @@ button { font: inherit; }
      (calc(100vh - 60px)). Sin esto, durante el loading state del feed
      (0 papers + spinner) el ~espacio sobrante se repartía por arriba/abajo
      del col-feed y la feed-top-bar quedaba empujada muy lejos del sidebar.
-     Reportado por usuario : "queda un espacio muy grande
+     Reportado por "queda un espacio muy grande
      entre la parte del manifiesto y los toggles y los resultados". Ahora
      los dos rows (sidebar + col-feed) se apilan al tope del main y el
      espacio sobrante vive al final, debajo del spinner, donde no molesta. */

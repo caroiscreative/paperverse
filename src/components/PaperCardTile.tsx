@@ -5,14 +5,14 @@
 //
 // Decisiones:
 // - Cada tile resuelve su propio tema vía topicForConcepts. Si no matchea
-// ningún tema conocido cae a un pseudo-topic neutro (ink/cream) en vez de
-// saltar el paper — queremos que la grilla refleje el feed completo, no
-// una selección.
+//   ningún tema conocido cae a un pseudo-topic neutro (ink/cream) en vez de
+//   saltar el paper — queremos que la grilla refleje el feed completo, no
+//   una selección.
 // - Hooks (useTranslated, useLibrary, useReadPapers) viven acá adentro
-// porque se indexan por paperId. Separar el tile como subcomponente evita
-// correr N llamadas en el padre.
+//   porque se indexan por paperId. Separar el tile como subcomponente evita
+//   correr N llamadas en el padre.
 // - El "eyebrow" con weekLabel es opcional: el feed normal no lo necesita,
-// pero queda disponible por si se reusa en una sección tipo Más citado.
+//   pero queda disponible por si se reusa en una sección tipo Más citado.
 import type { Paper } from '../lib/openalex';
 import { topicOrCiencia, resolveTopicVisual } from '../lib/topics';
 import { TopicBanner } from './TopicBanner';
@@ -53,7 +53,7 @@ export function PaperCardTile({ paper, onClick, weekLabel }: Props) {
   // primera pintura.
   const [visibilityRef, isVisible] = useOnScreen<HTMLElement>('300px');
 
-  // Ataque 3 : mientras la traducción está en vuelo mostramos
+  // Ataque 3: mientras la traducción está en vuelo mostramos
   // skeleton en lugar del título original en idioma foráneo. En la vista
   // grilla esto es especialmente importante porque el título es el único
   // texto visible de cada tile (no hay lede), así que un título en francés

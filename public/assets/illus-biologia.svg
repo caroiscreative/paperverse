@@ -1,35 +1,53 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300" role="img" aria-label="DNA helix">
- <rect width="300" height="300" fill="#D6EEDE"></rect>
- <g stroke="#2E8B57" stroke-width="2.5" fill="none">
- <path d="M115 55 Q 185 95 115 135 Q 45 175 115 215 Q 185 245 115 255"></path>
- <path d="M185 55 Q 115 95 185 135 Q 255 175 185 215 Q 150 235 185 255"></path>
- </g>
- <g stroke="#0E1116" stroke-width="2">
- <line x1="125" y1="72" x2="175" y2="72"></line>
- <line x1="110" y1="98" x2="190" y2="98"></line>
- <line x1="100" y1="125" x2="200" y2="125"></line>
- <line x1="110" y1="155" x2="190" y2="155"></line>
- <line x1="125" y1="182" x2="175" y2="182"></line>
- <line x1="140" y1="210" x2="160" y2="210"></line>
- <line x1="125" y1="236" x2="175" y2="236"></line>
- </g>
- <!-- Outline ink en nucleotidos : consistencia con Ciencia —
- todas las formas principales llevan stroke 1.5 ink para no leerse
- "más blandas" que el papelito de Ciencia. -->
- <g fill="#F2542D" stroke="#0E1116" stroke-width="1.5">
- <circle cx="125" cy="72" r="4.5"></circle>
- <circle cx="190" cy="98" r="4.5"></circle>
- <circle cx="100" cy="125" r="4.5"></circle>
- <circle cx="190" cy="155" r="4.5"></circle>
- <circle cx="125" cy="182" r="4.5"></circle>
- <circle cx="160" cy="210" r="4.5"></circle>
- </g>
- <g fill="#F5B638" stroke="#0E1116" stroke-width="1.5">
- <circle cx="175" cy="72" r="4.5"></circle>
- <circle cx="110" cy="98" r="4.5"></circle>
- <circle cx="200" cy="125" r="4.5"></circle>
- <circle cx="110" cy="155" r="4.5"></circle>
- <circle cx="175" cy="182" r="4.5"></circle>
- <circle cx="140" cy="210" r="4.5"></circle>
- </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300" role="img" aria-label="Doble hélice de ADN">
+  <rect width="300" height="300" fill="#D6EEDE"></rect>
+
+  <!-- Dos hebras sinusoidales (reconstrucción 2026-04-23). La
+       versión anterior tenía geometría rota: las hebras no se cruzaban
+       en puntos definidos, la cola inferior era asimétrica, y los base
+       pairs no alineaban con la posición real de las hebras en cada y.
+       Ahora ambas hebras atraviesan los MISMOS 7 puntos de cruce sobre
+       el eje central (x=150) a y=40, 77, 114, 150, 187, 223, 260, y
+       entre crossings bulgen hacia lados opuestos. Geometría idéntica a
+       la del chip, sólo escalada. Stroke deep green, sin ink. -->
+  <g stroke="#1F6B3F" stroke-width="2.5" fill="none">
+    <path d="M 150 40 Q 188 58 150 77 Q 112 96 150 114 Q 188 132 150 150 Q 112 169 150 187 Q 188 205 150 223 Q 112 242 150 260"></path>
+    <path d="M 150 40 Q 112 58 150 77 Q 188 96 150 114 Q 112 132 150 150 Q 188 169 150 187 Q 112 205 150 223 Q 188 242 150 260"></path>
+  </g>
+
+  <!-- Base pairs horizontales ink. Van en los midpoints de cada Q (donde
+       las hebras están a máxima separación), x=131 a x=169 — 6 pairs. -->
+  <g stroke="#0E1116" stroke-width="2">
+    <line x1="131" y1="58" x2="169" y2="58"></line>
+    <line x1="131" y1="96" x2="169" y2="96"></line>
+    <line x1="131" y1="132" x2="169" y2="132"></line>
+    <line x1="131" y1="169" x2="169" y2="169"></line>
+    <line x1="131" y1="205" x2="169" y2="205"></line>
+    <line x1="131" y1="242" x2="169" y2="242"></line>
+  </g>
+
+  <!-- Nucleótidos. Alternan green color y green deep entre filas para
+       distinguir base types sin meter colores de otros temas (antes
+       usaba naranja física + amarillo espacio, rompía la regla "un
+       tema, una paleta"). Stroke ink 1.5 en todos, consistente con el
+       resto del sistema. -->
+  <g stroke="#0E1116" stroke-width="1.5">
+    <!-- y=58 -->
+    <circle cx="131" cy="58" r="4.5" fill="#2E8B57"></circle>
+    <circle cx="169" cy="58" r="4.5" fill="#1F6B3F"></circle>
+    <!-- y=96 (swap) -->
+    <circle cx="131" cy="96" r="4.5" fill="#1F6B3F"></circle>
+    <circle cx="169" cy="96" r="4.5" fill="#2E8B57"></circle>
+    <!-- y=132 -->
+    <circle cx="131" cy="132" r="4.5" fill="#2E8B57"></circle>
+    <circle cx="169" cy="132" r="4.5" fill="#1F6B3F"></circle>
+    <!-- y=169 (swap) -->
+    <circle cx="131" cy="169" r="4.5" fill="#1F6B3F"></circle>
+    <circle cx="169" cy="169" r="4.5" fill="#2E8B57"></circle>
+    <!-- y=205 -->
+    <circle cx="131" cy="205" r="4.5" fill="#2E8B57"></circle>
+    <circle cx="169" cy="205" r="4.5" fill="#1F6B3F"></circle>
+    <!-- y=242 (swap) -->
+    <circle cx="131" cy="242" r="4.5" fill="#1F6B3F"></circle>
+    <circle cx="169" cy="242" r="4.5" fill="#2E8B57"></circle>
+  </g>
 </svg>

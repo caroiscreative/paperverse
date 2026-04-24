@@ -4,23 +4,23 @@
 // La ciencia real, para curiosos reales" (el que vive en index.html) sin
 // importar dónde estuviera el usuario. Problema:
 //
-// · Si alguien tiene 5 pestañas abiertas leyendo distintos papers, todas
-// se llaman igual. Imposible volver a una pestaña específica sin hacer
-// switch-click una por una.
-// · Para un usuario recurrente que bookmarkeó /biblioteca, el bookmark
-// queda guardado como "Paperverse — La ciencia real…" en vez de
-// "Biblioteca — Paperverse". Menos útil cuando tiene 30 bookmarks.
-// · Historial del navegador (Cmd+Y / ctrl+H) queda ilegible: 20 entradas
-// con el mismo string.
+//   · Si alguien tiene 5 pestañas abiertas leyendo distintos papers, todas
+//     se llaman igual. Imposible volver a una pestaña específica sin hacer
+//     switch-click una por una.
+//   · Para un usuario recurrente que bookmarkeó /biblioteca, el bookmark
+//     queda guardado como "Paperverse — La ciencia real…" en vez de
+//     "Biblioteca — Paperverse". Menos útil cuando tiene 30 bookmarks.
+//   · Historial del navegador (Cmd+Y / ctrl+H) queda ilegible: 20 entradas
+//     con el mismo string.
 //
 // Convención que elegimos:
-// · Home/feed sin búsqueda → "Paperverse — La ciencia real, para curiosos reales"
-// (mantenemos el default de index.html — es el landing, la face del proyecto)
-// · Feed con búsqueda activa → "{query} — Paperverse"
-// (patrón Google: el query primero, la marca después, sufijo estable para
-// que la pestaña se pueda reconocer aunque el query sea largo y se trunque)
-// · PaperDetail → "{título ES del paper} — Paperverse"
-// · Otras páginas nombradas → "{seccion} — Paperverse"
+//   · Home/feed sin búsqueda → "Paperverse — La ciencia real, para curiosos reales"
+//     (mantenemos el default de index.html — es el landing, la face del proyecto)
+//   · Feed con búsqueda activa → "{query} — Paperverse"
+//     (patrón Google: el query primero, la marca después, sufijo estable para
+//     que la pestaña se pueda reconocer aunque el query sea largo y se trunque)
+//   · PaperDetail → "{título ES del paper} — Paperverse"
+//   · Otras páginas nombradas → "{seccion} — Paperverse"
 //
 // Implementación: hook que corre en useEffect, aplica el título, y al
 // desmontar lo restaura al default. El restore es importante: si el usuario
@@ -40,8 +40,8 @@ const MAX_LEAD = 60; // Chrome y Firefox truncan alrededor de 60-70 chars en la 
  * colgada una etiqueta vieja.
  *
  * @param lead — la parte "a la izquierda del em dash". Se trunca a ~60 chars
- * agregando "…". Pasar `null` o `''` usa el default directamente
- * (útil para el feed home sin búsqueda activa).
+ *               agregando "…". Pasar `null` o `''` usa el default directamente
+ *               (útil para el feed home sin búsqueda activa).
  */
 export function useDocumentTitle(lead: string | null | undefined) {
   useEffect(() => {

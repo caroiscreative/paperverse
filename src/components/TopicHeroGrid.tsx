@@ -6,13 +6,13 @@
 // Decisiones:
 // - Sin fetches extra: agrupamos en cliente desde los `papers` ya cargados.
 // - Prioridad al paper más citado de cada tema (los papers vienen ordenados
-// por citedByCount desc gracias a fetchFeed).
+//   por citedByCount desc gracias a fetchFeed).
 // - Si un paper no matchea ningún tema (topicForConcepts → null), se lo saltea
-// — preferimos banners reales a uno genérico en una sección que se trata
-// justamente de categorizar.
+//   — preferimos banners reales a uno genérico en una sección que se trata
+//   justamente de categorizar.
 // - Máximo 6 tiles. Si hay menos temas representados, llenamos con menos.
 // - Devuelve `featuredIds` vía callback opcional para que Feed.tsx pueda
-// sacarlos del "Recién publicado" y no duplicarse.
+//   sacarlos del "Recién publicado" y no duplicarse.
 
 import { useMemo } from 'react';
 import type { Paper } from '../lib/openalex';

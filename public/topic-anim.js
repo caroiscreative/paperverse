@@ -3,31 +3,31 @@
    Injects a topic-specific animated SVG into a container element.
 
    Usage: window.mountTopicAnim(el, topicId, variant)
-     - el: container with position: relative (or absolute)
+     - el:      container with position: relative (or absolute)
      - topicId: one of 'espacio', 'clima', 'neuro', 'ia', 'biologia', 'fisica', 'medicina'
      - variant: 'desktop' (16:10) or 'mobile' (9:16)
    ========================================================================== */
 (function () {
   const TOPIC_COLORS = {
-    ia: { color: '#2E4BE0', deep: '#1E34B0', soft: '#E0E6FF' },
-    clima: { color: '#1BA5B8', deep: '#0F7E8E', soft: '#CDEEF2' },
-    neuro: { color: '#8B4FE0', deep: '#6A2FC0', soft: '#E8DCF9' },
-    espacio: { color: '#F5B638', deep: '#C48A1A', soft: '#FDEEC8' },
-    biologia: { color: '#2E8B57', deep: '#1F6B3F', soft: '#D6EEDE' },
-    fisica: { color: '#F2542D', deep: '#C73F1D', soft: '#FDE4DA' },
-    medicina: { color: '#E03E8C', deep: '#B32168', soft: '#FADCEA' },
-    energia: { color: '#E8572C', deep: '#B8401A', soft: '#FBE0D3' },
+    ia:         { color: '#2E4BE0', deep: '#1E34B0', soft: '#E0E6FF' },
+    clima:      { color: '#1BA5B8', deep: '#0F7E8E', soft: '#CDEEF2' },
+    neuro:      { color: '#8B4FE0', deep: '#6A2FC0', soft: '#E8DCF9' },
+    espacio:    { color: '#F5B638', deep: '#C48A1A', soft: '#FDEEC8' },
+    biologia:   { color: '#2E8B57', deep: '#1F6B3F', soft: '#D6EEDE' },
+    fisica:     { color: '#F2542D', deep: '#C73F1D', soft: '#FDE4DA' },
+    medicina:   { color: '#E03E8C', deep: '#B32168', soft: '#FADCEA' },
+    energia:    { color: '#E8572C', deep: '#B8401A', soft: '#FBE0D3' },
     materiales: { color: '#0E1116', deep: '#2A2F38', soft: '#DADCE0' },
     matematica: { color: '#3D6AE0', deep: '#254AB0', soft: '#D9E3FB' },
     psicologia: { color: '#A35FD8', deep: '#7A3FB8', soft: '#ECDCF9' },
-    ecologia: { color: '#4FA068', deep: '#2F7040', soft: '#DFEEDF' },
+    ecologia:   { color: '#4FA068', deep: '#2F7040', soft: '#DFEEDF' },
     tecnologia: { color: '#D89A2C', deep: '#A87818', soft: '#F6E7C7' },
-    quimica: { color: '#E06AA8', deep: '#B34378', soft: '#F9DCE8' },
-    // Ciencia : 15º tema agregado como fallback para papers que no
+    quimica:    { color: '#E06AA8', deep: '#B34378', soft: '#F9DCE8' },
+    // Ciencia: 15º tema agregado como fallback para papers que no
     // caen en los 14 específicos. Paleta slate neutral para que no compita
     // cromáticamente con los otros temas — el banner de ciencia se reconoce
     // por su animación (paper llenándose + sello aprobado), no por el color.
-    ciencia: { color: '#5B6472', deep: '#3F4752', soft: '#E3E6EB' },
+    ciencia:    { color: '#5B6472', deep: '#3F4752', soft: '#E3E6EB' },
   };
 
   // Viewbox picker — svg inside .ta-stage stretches to cover.
@@ -40,7 +40,9 @@
     return variant === 'mobile' ? { cx: 90, cy: 160, r: 58 } : { cx: 160, cy: 100, r: 58 };
   }
 
+  // ————————————————————————————————————————
   // Espacio — planet + orbit + satellite + stars
+  // ————————————————————————————————————————
   function renderEspacio(variant) {
     const c = TOPIC_COLORS.espacio;
     const { cx, cy, r } = centerFor(variant);
@@ -49,11 +51,11 @@
       <svg viewBox="${viewBox(variant)}" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
         <rect width="100%" height="100%" fill="${c.soft}"/>
         <g fill="${c.deep}" opacity="0.65">
-          <circle class="ta-twinkle" cx="${mobile?30:40}" cy="${mobile?40:30}" r="1.4"/>
-          <circle class="ta-twinkle d1" cx="${mobile?150:280}" cy="${mobile?60:40}" r="1.2"/>
-          <circle class="ta-twinkle d2" cx="${mobile?160:60}" cy="${mobile?260:170}" r="1.4"/>
-          <circle class="ta-twinkle d3" cx="${mobile?40:240}" cy="${mobile?280:170}" r="1.1"/>
-          <circle class="ta-twinkle d4" cx="${mobile?90:160}" cy="${mobile?30:20}" r="1.1"/>
+          <circle class="ta-twinkle"    cx="${mobile?30:40}"  cy="${mobile?40:30}"  r="1.4"/>
+          <circle class="ta-twinkle d1" cx="${mobile?150:280}" cy="${mobile?60:40}"  r="1.2"/>
+          <circle class="ta-twinkle d2" cx="${mobile?160:60}"  cy="${mobile?260:170}" r="1.4"/>
+          <circle class="ta-twinkle d3" cx="${mobile?40:240}"  cy="${mobile?280:170}" r="1.1"/>
+          <circle class="ta-twinkle d4" cx="${mobile?90:160}"  cy="${mobile?30:20}"  r="1.1"/>
         </g>
         <!-- Slow outer orbit -->
         <g class="ta-orbit" style="transform-origin:${cx}px ${cy}px; animation-duration:14s;">
@@ -74,7 +76,9 @@
       </svg>`;
   }
 
+  // ————————————————————————————————————————
   // Clima — sun + clouds + rain
+  // ————————————————————————————————————————
   function renderClima(variant) {
     const c = TOPIC_COLORS.clima;
     const mobile = variant === 'mobile';
@@ -105,7 +109,7 @@
         </g>
         <circle cx="${sun.cx}" cy="${sun.cy}" r="${sun.r}" fill="#F5B638"/>
         <!-- Nube (drift). Antes tenía una elipse c.deep abajo que se leía como
-             una sombra oscura rara (feedback de QA). Ahora es una nube
+             una sombra oscura rara (feedback de Carolina). Ahora es una nube
              sólida con 4 lóbulos del mismo color + base plana, sin manchón
              oscuro. El contorno sutil va en c.deep, finito, sólo como delineado. -->
         <g class="ta-drift">
@@ -114,8 +118,8 @@
             <rect x="-28" y="-2" width="56" height="12" rx="6" fill="${c.color}"/>
             <!-- lóbulos superiores -->
             <circle cx="-16" cy="-2" r="12" fill="${c.color}"/>
-            <circle cx="0" cy="-10" r="14" fill="${c.color}"/>
-            <circle cx="16" cy="-4" r="11" fill="${c.color}"/>
+            <circle cx="0"   cy="-10" r="14" fill="${c.color}"/>
+            <circle cx="16"  cy="-4" r="11" fill="${c.color}"/>
             <!-- highlight sutil -->
             <ellipse cx="-6" cy="-12" rx="6" ry="3" fill="#FFFFFF" opacity="0.25"/>
           </g>
@@ -127,8 +131,10 @@
       </svg>`;
   }
 
+  // ————————————————————————————————————————
   // Neuro — sinapsis (bulbos pre/post + neurotransmisores cruzando el cleft)
-  // Rework: cambiar la animación para
+  // ————————————————————————————————————————
+  // Rework 2026-04-20: se pidió cambiar la animación para
   // hacer referencia a la sinapsis real — dos bulbos (pre y post) con las
   // vesículas liberando pelotitas químicas verdes que flotan hasta la otra
   // base. Antes eran 3 neuronas con impulsos viajando por axones; ahora el
@@ -136,17 +142,17 @@
   // icónico de la neurociencia en libros de texto.
   //
   // Elementos narrativos:
-  // - Pre-synaptic bulb (izq desktop / arriba mobile): bulbo morado con
-  // 3 vesículas verdes adentro (cada vesícula = círculo hueco con ~7
-  // puntos verdes representando neurotransmisor acumulado).
-  // - Canales de calcio rojos (media luna) en el borde del bulbo que da
-  // al cleft — los Ca²⁺ channels son los que disparan la liberación.
-  // - Post-synaptic bulb (der / abajo): mismo bulbo morado con T-shapes
-  // (receptores) en el borde que da al cleft.
-  // - Partículas verdes de neurotransmisor cruzando el cleft — 10
-  // circulitos con delays escalonados que salen del pre y llegan al
-  // post con fade in/out. Escala desde 0.4→1→0.5 para simular "aparece,
-  // flota, se une y se absorbe".
+  //   - Pre-synaptic bulb (izq desktop / arriba mobile): bulbo morado con
+  //     3 vesículas verdes adentro (cada vesícula = círculo hueco con ~7
+  //     puntos verdes representando neurotransmisor acumulado).
+  //   - Canales de calcio rojos (media luna) en el borde del bulbo que da
+  //     al cleft — los Ca²⁺ channels son los que disparan la liberación.
+  //   - Post-synaptic bulb (der / abajo): mismo bulbo morado con T-shapes
+  //     (receptores) en el borde que da al cleft.
+  //   - Partículas verdes de neurotransmisor cruzando el cleft — 10
+  //     circulitos con delays escalonados que salen del pre y llegan al
+  //     post con fade in/out. Escala desde 0.4→1→0.5 para simular "aparece,
+  //     flota, se une y se absorbe".
   //
   // Paleta narrativa: los colores de neurotransmisor (#6BC946 verde) y
   // canales de Ca²⁺ (#E74C3C rojo) NO salen del TOPIC_COLORS.neuro porque
@@ -156,13 +162,13 @@
     const c = TOPIC_COLORS.neuro;
     const mobile = variant === 'mobile';
 
-    const NT = '#6BC946'; // neurotransmisor (verde)
-    const NT_dark = '#4A9A2F'; // borde/contorno vesicle + partículas
-    const CHAN = '#E74C3C'; // canal de calcio (rojo media luna)
+    const NT      = '#6BC946';  // neurotransmisor (verde)
+    const NT_dark = '#4A9A2F';  // borde/contorno vesicle + partículas
+    const CHAN    = '#E74C3C';  // canal de calcio (rojo media luna)
 
     // Posición de los dos bulbos. Desktop side-by-side, mobile stacked.
     const pre = mobile
-      ? { cx: 90, cy: 85, rx: 55, ry: 42 }
+      ? { cx: 90, cy: 85,  rx: 55, ry: 42 }
       : { cx: 80, cy: 100, rx: 52, ry: 48 };
     const post = mobile
       ? { cx: 90, cy: 235, rx: 55, ry: 42 }
@@ -171,8 +177,8 @@
     // Vesículas dentro del pre (posiciones deterministas, sin Math.random
     // para que el layout sea igual entre renders).
     const vesicles = mobile
-      ? [{ cx: 70, cy: 68, r: 12 }, { cx: 100, cy: 95, r: 14 }, { cx: 120, cy: 72, r: 11 }]
-      : [{ cx: 60, cy: 82, r: 12 }, { cx: 90, cy: 108, r: 13 }, { cx: 72, cy: 126, r: 10 }];
+      ? [{ cx: 70,  cy: 68, r: 12 }, { cx: 100, cy: 95, r: 14 }, { cx: 120, cy: 72, r: 11 }]
+      : [{ cx: 60,  cy: 82, r: 12 }, { cx: 90,  cy: 108, r: 13 }, { cx: 72,  cy: 126, r: 10 }];
 
     // Contenido de cada vesícula: círculo hueco (membrana) + ~7 dots
     // distribuidos en el interior usando coseno/seno para no repetir patrón.
@@ -195,11 +201,11 @@
     // borde del pre que da al post.
     const crescents = mobile
       ? `
-        <path d="M ${pre.cx-22} ${pre.cy+pre.ry-3} a 6 6 0 0 1 12 0" fill="${CHAN}" stroke="${CHAN}" stroke-width="1.2" stroke-linejoin="round"/>
-        <path d="M ${pre.cx+10} ${pre.cy+pre.ry-3} a 6 6 0 0 1 12 0" fill="${CHAN}" stroke="${CHAN}" stroke-width="1.2" stroke-linejoin="round"/>`
+        <path d="M ${pre.cx-22} ${pre.cy+pre.ry-3} a 6 6 0 0 1 12 0"  fill="${CHAN}" stroke="${CHAN}" stroke-width="1.2" stroke-linejoin="round"/>
+        <path d="M ${pre.cx+10} ${pre.cy+pre.ry-3} a 6 6 0 0 1 12 0"  fill="${CHAN}" stroke="${CHAN}" stroke-width="1.2" stroke-linejoin="round"/>`
       : `
-        <path d="M ${pre.cx+pre.rx-3} ${pre.cy-18} a 6 6 0 0 1 0 12" fill="${CHAN}" stroke="${CHAN}" stroke-width="1.2" stroke-linejoin="round"/>
-        <path d="M ${pre.cx+pre.rx-3} ${pre.cy+6} a 6 6 0 0 1 0 12" fill="${CHAN}" stroke="${CHAN}" stroke-width="1.2" stroke-linejoin="round"/>`;
+        <path d="M ${pre.cx+pre.rx-3} ${pre.cy-18} a 6 6 0 0 1 0 12"  fill="${CHAN}" stroke="${CHAN}" stroke-width="1.2" stroke-linejoin="round"/>
+        <path d="M ${pre.cx+pre.rx-3} ${pre.cy+6}  a 6 6 0 0 1 0 12"  fill="${CHAN}" stroke="${CHAN}" stroke-width="1.2" stroke-linejoin="round"/>`;
 
     // Receptores en el post — T-shapes (tronco + barra horizontal) anclados
     // al borde del bulbo que da al cleft. Representan los receptores
@@ -233,7 +239,7 @@
     const particles = [];
     for (let i = 0; i < particleCount; i++) {
       const delay = (i / particleCount) * 3.5;
-      const offset = ((i % 3) - 1) * 10; // -10, 0, 10 — dispersa las partículas
+      const offset = ((i % 3) - 1) * 10;    // -10, 0, 10 — dispersa las partículas
       const startX = mobile ? pre.cx + offset : pre.cx + pre.rx - 2;
       const startY = mobile ? pre.cy + pre.ry - 2 : pre.cy + offset;
       particles.push(
@@ -261,25 +267,27 @@
       </svg>`;
   }
 
+  // ————————————————————————————————————————
   // IA — lattice of nodes with pulses traveling edges
+  // ————————————————————————————————————————
   function renderIA(variant) {
     const c = TOPIC_COLORS.ia;
     const mobile = variant === 'mobile';
-    // — Re-encuadre de la red neuronal.
-    // Antes (desktop): bbox de los nodos iba de x=60..280, y=40..180. Eso
-    // dejaba al nodo [280,180] prácticamente pegado a la esquina
-    // inferior-derecha del stage (320×200) y hacía que el bbox-centroide
-    // cayera en (170, 110) — descentrado +10 en x y +10 en y respecto al
-    // centro real de la viewBox (160, 100). Visualmente la red "caía" a
-    // la derecha-abajo del canvas.
-    // Ahora: los 7 nodos están repartidos en un trapezoide simétrico con
-    // márgenes parejos (≥35px en los bordes) y el bbox-centroide
-    // coincide con el centro del viewBox. El grafo se lee como una
-    // constelación centrada en su estuche, no como un recorte.
+    // 2026-04-20 — Re-encuadre de la red neuronal.
+    //   Antes (desktop): bbox de los nodos iba de x=60..280, y=40..180. Eso
+    //   dejaba al nodo [280,180] prácticamente pegado a la esquina
+    //   inferior-derecha del stage (320×200) y hacía que el bbox-centroide
+    //   cayera en (170, 110) — descentrado +10 en x y +10 en y respecto al
+    //   centro real de la viewBox (160, 100). Visualmente la red "caía" a
+    //   la derecha-abajo del canvas.
+    //   Ahora: los 7 nodos están repartidos en un trapezoide simétrico con
+    //   márgenes parejos (≥35px en los bordes) y el bbox-centroide
+    //   coincide con el centro del viewBox. El grafo se lee como una
+    //   constelación centrada en su estuche, no como un recorte.
     //
-    // Mobile (180×320): mismo reajuste. El bbox original iba de y=60..280
-    // (centroide y=170, offset +10). Los nuevos puntos caen en y=50..270
-    // (centroide y=160) quedando centrado vertical.
+    //   Mobile (180×320): mismo reajuste. El bbox original iba de y=60..280
+    //   (centroide y=170, offset +10). Los nuevos puntos caen en y=50..270
+    //   (centroide y=160) quedando centrado vertical.
     const pts = mobile
       ? [[50,50],[130,80],[60,150],[140,180],[90,230],[40,270]]
       : [[80,50],[160,35],[240,50],[50,110],[270,110],[110,165],[210,165]];
@@ -323,42 +331,93 @@
       </svg>`;
   }
 
-  // Biología — mitochondria breathing
+  // ————————————————————————————————————————
+  // Biología — doble hélice de ADN rotando
+  // ————————————————————————————————————————
+  // Rediseño 2026-04-23 (Carolina). Antes era una mitocondria respirando
+  // (membrana + crestas que pulsaban); ese motif no matcheaba ni al chip
+  // (doble hélice) ni a la ilustración 300px (también hélice). Ahora los
+  // 3 elementos hablan el mismo idioma.
+  //
+  // Estructura (basada en el patrón que Medicina usaba antes del cambio
+  // a placa de Petri, adaptado a paleta biología):
+  //   · Dos backbones — hebras sinusoidales muestradas con 80 segmentos
+  //     lineales para aproximar la curva continua. Colores: green color
+  //     (claro) + green deep (oscuro) para que se lean como hebras
+  //     distintas, no como una sola gruesa.
+  //   · Base pairs en ink — 11 rungs desktop, 15 mobile. Ink en vez de
+  //     ATGC-colors porque el motif de Paperverse es "un tema una
+  //     paleta", no queremos meter púrpura/naranja/amarillo de otros
+  //     temas aunque sean "semánticos" de ATGC.
+  //   · Caps de nucleósido en los endpoints — color del backbone al que
+  //     se conectan (deep para la hebra oscura, color para la clara).
+  //   · ta-helix anima flip scaleX de todo el grupo → ilusión de rotación
+  //     3D sobre el eje vertical.
   function renderBiologia(variant) {
     const c = TOPIC_COLORS.biologia;
     const mobile = variant === 'mobile';
-    const ox = mobile ? 90 : 160, oy = mobile ? 160 : 100;
-    const rx = mobile ? 68 : 110, ry = mobile ? 40 : 54;
-    // Internal cristae — wavy horizontal paths
-    const cristae = [];
-    const cols = 5;
-    for (let i=0;i<cols;i++) {
-      const t = (i+1)/(cols+1);
-      const cxi = ox - rx + t*rx*2;
-      const yi = oy - ry*0.55;
-      const yf = oy + ry*0.55;
-      cristae.push(`<path class="ta-rung ${['','d1','d2','d3','d4','d5'][i]||''}" d="M ${cxi} ${yi} Q ${cxi+12} ${oy} ${cxi} ${yf}" fill="none" stroke="${c.deep}" stroke-width="2" stroke-linecap="round"/>`);
+    const ox = mobile ? 90 : 160;
+    const top = mobile ? 28 : 18;
+    const bot = mobile ? 292 : 182;
+    const span = bot - top;
+
+    // 11 bp desktop ≈ 1 vuelta completa de helix. Mobile más alta → 15 bp
+    // para mantener densidad visual pareja.
+    const count = mobile ? 15 : 11;
+    const amp = mobile ? 40 : 48;
+
+    const rungs = [];
+    const caps  = [];
+    for (let i = 0; i < count; i++) {
+      const t = (i + 0.5) / count;
+      const y = top + t * span;
+      const phase = t * Math.PI * 2;
+      const x1 = ox - Math.sin(phase) * amp;
+      const x2 = ox + Math.sin(phase) * amp;
+      rungs.push(
+        `<line x1="${x1.toFixed(1)}" y1="${y.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#0E1116" stroke-width="2" stroke-linecap="round" opacity="0.8"/>`
+      );
+      caps.push(
+        `<circle cx="${x1.toFixed(1)}" cy="${y.toFixed(1)}" r="2.6" fill="${c.deep}"/>`,
+        `<circle cx="${x2.toFixed(1)}" cy="${y.toFixed(1)}" r="2.6" fill="${c.color}"/>`
+      );
     }
+
+    // Backbones — mismo phase function que los rungs, así los endpoints de
+    // cada base pair caen EXACTO sobre la hebra correspondiente. Sin esto,
+    // caps y backbone se "despegan" visualmente al rotar.
+    const strand = (sign) => {
+      const steps = 80;
+      let d = `M ${(ox + sign * Math.sin(0) * amp).toFixed(2)} ${top}`;
+      for (let i = 1; i <= steps; i++) {
+        const t = i / steps;
+        const y = top + t * span;
+        const phase = t * Math.PI * 2;
+        const x = ox + sign * Math.sin(phase) * amp;
+        d += ` L ${x.toFixed(2)} ${y.toFixed(2)}`;
+      }
+      return d;
+    };
+
     return `
       <svg viewBox="${viewBox(variant)}" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
         <rect width="100%" height="100%" fill="${c.soft}"/>
-        <!-- Outer membrane -->
-        <g class="ta-breath" style="transform-origin:${ox}px ${oy}px;">
-          <ellipse cx="${ox}" cy="${oy}" rx="${rx}" ry="${ry}" fill="${c.color}" opacity="0.95"/>
-          <ellipse cx="${ox}" cy="${oy}" rx="${rx-6}" ry="${ry-6}" fill="${c.soft}" opacity="0.2" stroke="${c.deep}" stroke-width="1.5"/>
-          ${cristae.join('')}
-        </g>
-        <!-- Energy sparks around -->
-        <g fill="${c.deep}">
-          <circle class="ta-twinkle" cx="${ox-rx-10}" cy="${oy-6}" r="2"/>
-          <circle class="ta-twinkle d1" cx="${ox+rx+8}" cy="${oy+10}" r="1.8"/>
-          <circle class="ta-twinkle d2" cx="${ox-10}" cy="${oy-ry-12}" r="1.6"/>
-          <circle class="ta-twinkle d3" cx="${ox+14}" cy="${oy+ry+12}" r="1.6"/>
+        <g class="ta-helix" style="transform-origin:${ox}px ${(top+bot)/2}px;">
+          <!-- Base pairs (ink, neutro — sin colores de otros temas) -->
+          ${rungs.join('')}
+          <!-- Backbones: green color (claro) + green deep (oscuro). Al flip
+               las hebras intercambian posición visual — ilusión de rotación. -->
+          <path d="${strand(1)}"  fill="none" stroke="${c.color}" stroke-width="3.2" stroke-linecap="round"/>
+          <path d="${strand(-1)}" fill="none" stroke="${c.deep}"  stroke-width="3.2" stroke-linecap="round"/>
+          <!-- Caps de nucleósido (arriba de todo) -->
+          ${caps.join('')}
         </g>
       </svg>`;
   }
 
+  // ————————————————————————————————————————
   // Física — Bohr atom with three electrons
+  // ————————————————————————————————————————
   function renderFisica(variant) {
     const c = TOPIC_COLORS.fisica;
     const mobile = variant === 'mobile';
@@ -393,101 +452,105 @@
       </svg>`;
   }
 
+  // ————————————————————————————————————————
   // Medicina — ADN doble hélice con base pairs ATGC coloreados
-  // Rework: que la animación
+  // ————————————————————————————————————————
+  // Rework 2026-04-20: se flaggeó que la animación
   // anterior no era fiel a la estructura real del ADN — era una hélice 2D
   // con rungs horizontales todos del mismo color y muy pocos (6-8), lo
   // cual lee más como "cadena genérica" que como "ADN de verdad".
   //
   // Cambios para acercarlo a un diagrama de libro de texto:
-  // - Dos backbones con colores distintos (pink primario + deep pink)
-  // que se leen como dos hebras antiparalelas, no como una hélice
-  // monocromática.
-  // - Base pairs en 4 colores cycling (A/T/G/C): purple / red / yellow /
-  // teal. Esto hace evidente que son moléculas distintas, como en
-  // cualquier diagrama científico donde ATGC aparecen con colores
-  // convencionales. Los colores NO vienen del topic palette — son
-  // semánticos (igual que los verdes del neurotransmisor).
-  // - Más base pairs (count=11 desktop, 15 mobile, ~1 vuelta completa)
-  // acercándose a la densidad real (~10.5 bp por vuelta).
-  // - Caps de nucleósido (círculos pequeños) en los endpoints de cada
-  // base pair — representan el azúcar-fosfato que conecta cada base
-  // al backbone.
-  // - Mantengo ta-helix (flip horizontal del grupo entero) para dar la
-  // sensación 3D de la hélice rotando sobre su eje.
+  //   - Dos backbones con colores distintos (pink primario + deep pink)
+  //     que se leen como dos hebras antiparalelas, no como una hélice
+  //     monocromática.
+  //   - Base pairs en 4 colores cycling (A/T/G/C): purple / red / yellow /
+  //     teal. Esto hace evidente que son moléculas distintas, como en
+  //     cualquier diagrama científico donde ATGC aparecen con colores
+  //     convencionales. Los colores NO vienen del topic palette — son
+  //     semánticos (igual que los verdes del neurotransmisor).
+  //   - Más base pairs (count=11 desktop, 15 mobile, ~1 vuelta completa)
+  //     acercándose a la densidad real (~10.5 bp por vuelta).
+  //   - Caps de nucleósido (círculos pequeños) en los endpoints de cada
+  //     base pair — representan el azúcar-fosfato que conecta cada base
+  //     al backbone.
+  //   - Mantengo ta-helix (flip horizontal del grupo entero) para dar la
+  //     sensación 3D de la hélice rotando sobre su eje.
+  // Medicina — placa de Petri con colonias bacterianas pulsando
+  // (rediseño 2026-04-23). Antes era una doble hélice de ADN,
+  // que leía como biología, no medicina. El nuevo motif matchea el chip
+  // cross y la ilustración 300px — los tres hablan el mismo idioma
+  // "cultivo en laboratorio".
+  //
+  // Estructura:
+  //   · Placa de Petri estática (círculo grande con borde ink + aro
+  //     interior sutil tipo "vidrio")
+  //   · 5 colonias distribuidas dentro de la placa, cada una con 3 capas
+  //     concéntricas (halo transparente → anillo medio → núcleo sólido)
+  //     + punto ink central
+  //   · Cada colonia pulsa (scale 0.85 → 1.15 → 0.85) con delays
+  //     escalonados para que no sincronicen — efecto "algo vivo respirando"
+  //
+  // Paleta: sólo los 3 rosas del tema + ink. Zero colores de otros temas
+  // (antes el ADN mezclaba purple/orange/yellow/teal de otras paletas).
   function renderMedicina(variant) {
     const c = TOPIC_COLORS.medicina;
     const mobile = variant === 'mobile';
-    const ox = mobile ? 90 : 160;
-    const top = mobile ? 28 : 18;
-    const bot = mobile ? 292 : 182;
-    const span = bot - top;
+    const cx = mobile ? 90 : 160;
+    const cy = mobile ? 160 : 100;
+    const dishR = 72;
 
-    // Paleta ATGC — 4 colores convencionales de diagrama (purple/red/
-    // yellow/teal). Se ciclan con i%4.
-    const BASE_COLORS = ['#8B4FE0', '#F2542D', '#F5B638', '#2EAFB5'];
+    // Colonias — posición (x,y) y radio del núcleo. Las 3 capas concéntricas
+    // derivan del núcleo: halo=r*2.15, anillo=r*1.6, dot=r*0.4.
+    // `delay` va 0..4 y se traduce a class d1..d4 en el SVG (0 = sin delay).
+    const COLONIES = mobile ? [
+      { x: 85,  y: 185, r: 16, delay: 0 },
+      { x: 65,  y: 140, r: 12, delay: 1 },
+      { x: 115, y: 155, r: 11, delay: 2 },
+      { x: 100, y: 115, r: 8,  delay: 3 },
+      { x: 120, y: 190, r: 7,  delay: 4 },
+    ] : [
+      { x: 155, y: 125, r: 16, delay: 0 },
+      { x: 135, y: 80,  r: 12, delay: 1 },
+      { x: 185, y: 95,  r: 11, delay: 2 },
+      { x: 170, y: 55,  r: 8,  delay: 3 },
+      { x: 190, y: 130, r: 7,  delay: 4 },
+    ];
 
-    // Densidad de base pairs. Una vuelta completa ≈ 10.5 bp — usamos 11
-    // desktop y 15 mobile (más alto → más bp caben bien).
-    const count = mobile ? 15 : 11;
-    const amp = mobile ? 40 : 48;
-
-    const rungs = [];
-    const caps = [];
-    for (let i = 0; i < count; i++) {
-      const t = (i + 0.5) / count;
-      const y = top + t * span;
-      const phase = t * Math.PI * 2;
-      const x1 = ox - Math.sin(phase) * amp;
-      const x2 = ox + Math.sin(phase) * amp;
-      const baseColor = BASE_COLORS[i % 4];
-      // Base pair: línea con stroke grueso + ligera transparencia para
-      // que cuando se cruzan con los backbones no haya "corte duro".
-      rungs.push(
-        `<line x1="${x1.toFixed(1)}" y1="${y.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y.toFixed(1)}" stroke="${baseColor}" stroke-width="2.2" stroke-linecap="round" opacity="0.9"/>`
-      );
-      // Caps de nucleósido — uno por endpoint. Color del backbone al que
-      // "se conecta" (strand1 = c.color, strand2 = c.deep) para que el
-      // observador capte que cada base está anclada a UN backbone.
-      caps.push(
-        `<circle cx="${x1.toFixed(1)}" cy="${y.toFixed(1)}" r="2.6" fill="${c.deep}"/>`,
-        `<circle cx="${x2.toFixed(1)}" cy="${y.toFixed(1)}" r="2.6" fill="${c.color}"/>`
-      );
-    }
-
-    // Backbones (sine strands) — mismo phase function que los rungs, así
-    // los endpoints de cada rung caen EXACTAMENTE sobre el backbone.
-    // Sin esta alineación, los caps y los backbones se despegarían
-    // visualmente en la hélice.
-    const strand = (sign) => {
-      const steps = 80;
-      let d = `M ${(ox + sign * Math.sin(0) * amp).toFixed(2)} ${top}`;
-      for (let i = 1; i <= steps; i++) {
-        const t = i / steps;
-        const y = top + t * span;
-        const phase = t * Math.PI * 2;
-        const x = ox + sign * Math.sin(phase) * amp;
-        d += ` L ${x.toFixed(2)} ${y.toFixed(2)}`;
-      }
-      return d;
-    };
+    const colonies = COLONIES.map(co => {
+      const halo = (co.r * 2.15).toFixed(1);
+      const ring = (co.r * 1.6).toFixed(1);
+      const core = co.r.toFixed(1);
+      const dot  = (co.r * 0.4).toFixed(1);
+      const delayClass = co.delay === 0 ? '' : ` d${co.delay}`;
+      // transform-origin inline apunta al centro exacto de esta colonia
+      // (SVG user coords, NO fill-box) — así scale() bajo animación
+      // crece/encoge desde el centro de la mancha y las capas concéntricas
+      // permanecen alineadas.
+      return `
+        <g class="ta-colony${delayClass}" style="transform-origin: ${co.x}px ${co.y}px;">
+          <circle cx="${co.x}" cy="${co.y}" r="${halo}" fill="${c.color}" opacity="0.22"/>
+          <circle cx="${co.x}" cy="${co.y}" r="${ring}" fill="${c.color}" opacity="0.5"/>
+          <circle cx="${co.x}" cy="${co.y}" r="${core}" fill="${c.deep}" stroke="#0E1116" stroke-width="1.5"/>
+          <circle cx="${co.x}" cy="${co.y}" r="${dot}" fill="#0E1116"/>
+        </g>`;
+    }).join('');
 
     return `
       <svg viewBox="${viewBox(variant)}" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
         <rect width="100%" height="100%" fill="${c.soft}"/>
-        <g class="ta-helix" style="transform-origin:${ox}px ${(top+bot)/2}px;">
-          <!-- Base pairs (detrás de los backbones para que los caps se vean por encima) -->
-          ${rungs.join('')}
-          <!-- Backbones: pink primario + deep pink, se intercambian posición al flip -->
-          <path d="${strand(1)}" fill="none" stroke="${c.color}" stroke-width="3.2" stroke-linecap="round"/>
-          <path d="${strand(-1)}" fill="none" stroke="${c.deep}" stroke-width="3.2" stroke-linecap="round"/>
-          <!-- Caps de nucleósido (arriba de todo) -->
-          ${caps.join('')}
-        </g>
+        <!-- Placa de Petri: fondo cream + borde ink (el "vidrio" del cultivo) -->
+        <circle cx="${cx}" cy="${cy}" r="${dishR}" fill="#FDFAF2" stroke="#0E1116" stroke-width="2.5"/>
+        <!-- Aro interior sutil — lee como "borde biselado" del vidrio -->
+        <circle cx="${cx}" cy="${cy}" r="${dishR - 6}" fill="none" stroke="#0E1116" stroke-width="1" opacity="0.25"/>
+        <!-- Colonias pulsando (staggered) -->
+        ${colonies}
       </svg>`;
   }
 
+  // ————————————————————————————————————————
   // Energía — lightning bolt + pulse on a power grid
+  // ————————————————————————————————————————
   function renderEnergia(variant) {
     const c = TOPIC_COLORS.energia;
     const mobile = variant === 'mobile';
@@ -510,13 +573,15 @@
         <circle cx="${ox}" cy="${oy}" r="6" fill="${c.color}"/>
         <circle cx="${ox}" cy="${oy}" r="2.5" fill="${c.soft}"/>
         <!-- Ondas radiantes (3 con delays escalonados) -->
-        <circle class="ta-ring" cx="${ox}" cy="${oy}" r="30" fill="none" stroke="${c.color}" stroke-width="1.8" opacity="0.8"/>
-        <circle class="ta-ring d1" cx="${ox}" cy="${oy}" r="30" fill="none" stroke="${c.deep}" stroke-width="1.4" opacity="0.6"/>
-        <circle class="ta-ring d2" cx="${ox}" cy="${oy}" r="30" fill="none" stroke="${c.deep}" stroke-width="1" opacity="0.4"/>
+        <circle class="ta-ring"     cx="${ox}" cy="${oy}" r="30" fill="none" stroke="${c.color}" stroke-width="1.8" opacity="0.8"/>
+        <circle class="ta-ring d1"  cx="${ox}" cy="${oy}" r="30" fill="none" stroke="${c.deep}"  stroke-width="1.4" opacity="0.6"/>
+        <circle class="ta-ring d2"  cx="${ox}" cy="${oy}" r="30" fill="none" stroke="${c.deep}"  stroke-width="1"   opacity="0.4"/>
       </svg>`;
   }
 
+  // ————————————————————————————————————————
   // Materiales — wireframe cube rotating (parallax) + inner crystal
+  // ————————————————————————————————————————
   function renderMateriales(variant) {
     const c = TOPIC_COLORS.materiales;
     const mobile = variant === 'mobile';
@@ -524,26 +589,26 @@
     const s = mobile ? 50 : 58;
     // Cubo isométrico "honesto": hexágono exterior + 3 aristas internas al
     // centro. Proporciones 2:1 (ancho:alto de cada rombo) que es el estándar
-    // iso. se indicó que el anterior se veía "raro" — era porque mezclaba
+    // iso. se dijo que el anterior se veía "raro" — era porque mezclaba
     // el hex iso con un "apex" tipo casa que no correspondía a un cubo real.
     //
-    // TOP
-    // / \
-    // TL TR
-    // | \ / | ← 3 aristas internas a C (centro)
-    // | C |
-    // BL / \ BR
-    // \ /
-    // BOT
-    const dx = s; // half-width del hexágono
-    const dy = s * 0.5; // half-height de cada rombo (iso 2:1)
-    const TOP = [ox, oy - s ];
-    const TR = [ox + dx, oy - dy ];
-    const BR = [ox + dx, oy + dy ];
-    const BOT = [ox, oy + s ];
-    const BL = [ox - dx, oy + dy ];
-    const TL = [ox - dx, oy - dy ];
-    const C = [ox, oy ];
+    //         TOP
+    //        /    \
+    //     TL        TR
+    //     |  \    /  |       ← 3 aristas internas a C (centro)
+    //     |    C     |
+    //     BL  /  \  BR
+    //        \    /
+    //         BOT
+    const dx = s;            // half-width del hexágono
+    const dy = s * 0.5;      // half-height de cada rombo (iso 2:1)
+    const TOP = [ox,       oy - s     ];
+    const TR  = [ox + dx,  oy - dy    ];
+    const BR  = [ox + dx,  oy + dy    ];
+    const BOT = [ox,       oy + s     ];
+    const BL  = [ox - dx,  oy + dy    ];
+    const TL  = [ox - dx,  oy - dy    ];
+    const C   = [ox,       oy         ];
     const hex = [TOP, TR, BR, BOT, BL, TL];
     const hexPath = 'M ' + hex.map(p => p.join(' ')).join(' L ') + ' Z';
     // 4 aristas internas de C: a los 4 puntos cardinales del hex (TOP, BOT,
@@ -552,8 +617,8 @@
     const innerEdges = [
       `<line x1="${C[0]}" y1="${C[1]}" x2="${TOP[0]}" y2="${TOP[1]}" stroke="${c.color}" stroke-width="1.5" opacity="0.55" stroke-linecap="round"/>`,
       `<line x1="${C[0]}" y1="${C[1]}" x2="${BOT[0]}" y2="${BOT[1]}" stroke="${c.color}" stroke-width="1.5" opacity="0.55" stroke-linecap="round"/>`,
-      `<line x1="${C[0]}" y1="${C[1]}" x2="${BL[0]}" y2="${BL[1]}" stroke="${c.color}" stroke-width="1.5" opacity="0.55" stroke-linecap="round"/>`,
-      `<line x1="${C[0]}" y1="${C[1]}" x2="${BR[0]}" y2="${BR[1]}" stroke="${c.color}" stroke-width="1.5" opacity="0.55" stroke-linecap="round"/>`,
+      `<line x1="${C[0]}" y1="${C[1]}" x2="${BL[0]}"  y2="${BL[1]}"  stroke="${c.color}" stroke-width="1.5" opacity="0.55" stroke-linecap="round"/>`,
+      `<line x1="${C[0]}" y1="${C[1]}" x2="${BR[0]}"  y2="${BR[1]}"  stroke="${c.color}" stroke-width="1.5" opacity="0.55" stroke-linecap="round"/>`,
     ].join('');
     // Átomos ESTÁTICOS en los vértices (se pidió que no se "levanten"
     // — antes usaban ta-pulse y, con el fix de transform-box de Fase A, algunos
@@ -576,7 +641,9 @@
       </svg>`;
   }
 
+  // ————————————————————————————————————————
   // Matemática — coordinate grid + sine wave being drawn + π glyph
+  // ————————————————————————————————————————
   function renderMatematica(variant) {
     const c = TOPIC_COLORS.matematica;
     const mobile = variant === 'mobile';
@@ -611,22 +678,24 @@
       </svg>`;
   }
 
+  // ————————————————————————————————————————
   // Psicología — two mirrored head silhouettes with thought ripples
+  // ————————————————————————————————————————
   function renderPsicologia(variant) {
     const c = TOPIC_COLORS.psicologia;
     const mobile = variant === 'mobile';
     const ox = mobile ? 90 : 160, oy = mobile ? 180 : 120;
     const sep = mobile ? 52 : 72;
     // Silueta humana: cabeza (círculo) + cuello + torso (trapecio de hombros).
-    // Antes era un path continuo que parecía feto (feedback de QA) — ahora
+    // Antes era un path continuo que parecía feto (feedback de Carolina) — ahora
     // separamos cabeza y hombros como en un avatar clásico.
     const person = (cx, cy, faceFill) => {
       const headR = 14;
-      const headCy = cy - 8; // centro de la cabeza
+      const headCy = cy - 8;                 // centro de la cabeza
       const shoulderTopY = headCy + headR + 4; // arranque de hombros
       const shoulderBotY = shoulderTopY + 18;
-      const shoulderHalfTop = 4; // cuello angosto
-      const shoulderHalfBot = 22; // hombros anchos
+      const shoulderHalfTop = 4;             // cuello angosto
+      const shoulderHalfBot = 22;            // hombros anchos
       const torso =
         `M ${cx - shoulderHalfTop} ${shoulderTopY}
          L ${cx + shoulderHalfTop} ${shoulderTopY}
@@ -643,7 +712,7 @@
     // etapas de expansión: lee como un pulso radial continuo, sin pisarse.
     const rippleCx = ox, rippleCy = oy - 18;
     const r = mobile ? 16 : 20;
-    const h = mobile ? 9 : 11;
+    const h = mobile ? 9  : 11;
     const arc = `M ${rippleCx-r} ${rippleCy} Q ${rippleCx} ${rippleCy - h} ${rippleCx+r} ${rippleCy}`;
     return `
       <svg viewBox="${viewBox(variant)}" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
@@ -654,14 +723,16 @@
         ${person(ox + sep, oy, c.deep)}
         <!-- Pulso radial de pensamiento entre ambas -->
         <g fill="none" stroke="${c.deep}" stroke-width="1.8" stroke-linecap="round">
-          <path class="ta-ripple" d="${arc}"/>
+          <path class="ta-ripple"    d="${arc}"/>
           <path class="ta-ripple d1" d="${arc}"/>
           <path class="ta-ripple d2" d="${arc}"/>
         </g>
       </svg>`;
   }
 
+  // ————————————————————————————————————————
   // Ecología — leaf with growing veins + falling/rising particles
+  // ————————————————————————————————————————
   function renderEcologia(variant) {
     const c = TOPIC_COLORS.ecologia;
     const mobile = variant === 'mobile';
@@ -691,7 +762,7 @@
         </g>
         <!-- Floating particles (pollen / O2) -->
         <g fill="${c.deep}">
-          <circle class="ta-float-up" cx="${ox-w/2-14}" cy="${oy+20}" r="1.6"/>
+          <circle class="ta-float-up"    cx="${ox-w/2-14}" cy="${oy+20}" r="1.6"/>
           <circle class="ta-float-up d1" cx="${ox+w/2+16}" cy="${oy-10}" r="1.6"/>
           <circle class="ta-float-up d2" cx="${ox-w/2-22}" cy="${oy-20}" r="1.2"/>
           <circle class="ta-float-up d3" cx="${ox+w/2+24}" cy="${oy+16}" r="1.4"/>
@@ -699,7 +770,9 @@
       </svg>`;
   }
 
+  // ————————————————————————————————————————
   // Tecnología — concentric signal rings + circuit traces
+  // ————————————————————————————————————————
   function renderTecnologia(variant) {
     const c = TOPIC_COLORS.tecnologia;
     const mobile = variant === 'mobile';
@@ -707,25 +780,25 @@
     const W = mobile ? 180 : 320, H = mobile ? 320 : 200;
     // Chip: 32×32 centrado en (ox,oy). Las pistas llegan a la MITAD de cada
     // lado (top / right / bottom / left), no a las esquinas — así se leen como
-    // cables que entran al chip, no como rayas sueltas (feedback de QA).
+    // cables que entran al chip, no como rayas sueltas (feedback de Carolina).
     const chipR = 16;
-    const edgeTop = oy - chipR; // y del borde superior
-    const edgeBot = oy + chipR;
-    const edgeLeft = ox - chipR;
-    const edgeRight = ox + chipR;
+    const edgeTop    = oy - chipR;   // y del borde superior
+    const edgeBot    = oy + chipR;
+    const edgeLeft   = ox - chipR;
+    const edgeRight  = ox + chipR;
     // Pads uniformes: los 4 en los lados IZQ y DER del chip, uno arriba y uno
     // abajo en cada lado (configuración espejo). Antes había dos arriba/abajo
-    // y dos a la derecha — se detectó la inconsistencia.
+    // y dos a la derecha — se flaggeó la inconsistencia.
     const padOffset = 8; // separación del pad al centro del chip en Y
-    const padTopY = oy - padOffset;
-    const padBotY = oy + padOffset;
+    const padTopY   = oy - padOffset;
+    const padBotY   = oy + padOffset;
     // Cada pista hace una L: entra horizontal desde el borde del stage, baja/sube
     // en vertical, y remata en horizontal contra el lado lateral del chip.
     const traces = mobile
       ? [
-          `M 10 40 L 50 40 L 50 ${padTopY} L ${edgeLeft} ${padTopY}`, // TL → lado izq arriba
+          `M 10 40  L 50 40  L 50 ${padTopY} L ${edgeLeft} ${padTopY}`,           // TL → lado izq arriba
           `M ${W-10} 40 L ${W-50} 40 L ${W-50} ${padTopY} L ${edgeRight} ${padTopY}`, // TR → lado der arriba
-          `M 10 ${H-40} L 50 ${H-40} L 50 ${padBotY} L ${edgeLeft} ${padBotY}`, // BL → lado izq abajo
+          `M 10 ${H-40} L 50 ${H-40} L 50 ${padBotY} L ${edgeLeft} ${padBotY}`,   // BL → lado izq abajo
           `M ${W-10} ${H-40} L ${W-50} ${H-40} L ${W-50} ${padBotY} L ${edgeRight} ${padBotY}`, // BR → lado der abajo
         ]
       : [
@@ -735,8 +808,8 @@
           `M ${W-10} ${H-40} L ${W-70} ${H-40} L ${W-70} ${padBotY} L ${edgeRight} ${padBotY}`,
         ];
     const pads = [
-      [edgeLeft, padTopY], [edgeRight, padTopY],
-      [edgeLeft, padBotY], [edgeRight, padBotY],
+      [edgeLeft,  padTopY], [edgeRight, padTopY],
+      [edgeLeft,  padBotY], [edgeRight, padBotY],
     ];
     const traceSvg = traces.map((d,i) => `
       <path d="${d}" fill="none" stroke="${c.deep}" stroke-width="1.4" opacity="0.5" stroke-linejoin="round"/>
@@ -748,7 +821,7 @@
         <rect width="100%" height="100%" fill="${c.soft}"/>
         ${traceSvg}
         <!-- Anillos de señal (pulso que sale del chip) -->
-        <circle class="ta-ring" cx="${ox}" cy="${oy}" r="22" fill="none" stroke="${c.color}" stroke-width="1.6"/>
+        <circle class="ta-ring"    cx="${ox}" cy="${oy}" r="22" fill="none" stroke="${c.color}" stroke-width="1.6"/>
         <circle class="ta-ring d1" cx="${ox}" cy="${oy}" r="22" fill="none" stroke="${c.color}" stroke-width="1.4" opacity="0.7"/>
         <circle class="ta-ring d2" cx="${ox}" cy="${oy}" r="22" fill="none" stroke="${c.deep}" stroke-width="1.2" opacity="0.5"/>
         <!-- Chip central -->
@@ -759,7 +832,9 @@
       </svg>`;
   }
 
+  // ————————————————————————————————————————
   // Química — flask bubbling + molecule rotating
+  // ————————————————————————————————————————
   function renderQuimica(variant) {
     const c = TOPIC_COLORS.quimica;
     const mobile = variant === 'mobile';
@@ -783,10 +858,10 @@
     const liquidY = ny - 4;
     // Bubbles
     const bubbles = [
-      `<circle class="ta-bubble" cx="${nx-6}" cy="${liquidY-4}" r="2.4" fill="${c.color}"/>`,
-      `<circle class="ta-bubble d1" cx="${nx+4}" cy="${liquidY-10}" r="1.8" fill="${c.deep}"/>`,
-      `<circle class="ta-bubble d2" cx="${nx+10}" cy="${liquidY-6}" r="2.0" fill="${c.color}"/>`,
-      `<circle class="ta-bubble d3" cx="${nx-2}" cy="${liquidY-16}" r="1.4" fill="${c.deep}"/>`,
+      `<circle class="ta-bubble"    cx="${nx-6}"  cy="${liquidY-4}"  r="2.4" fill="${c.color}"/>`,
+      `<circle class="ta-bubble d1" cx="${nx+4}"  cy="${liquidY-10}" r="1.8" fill="${c.deep}"/>`,
+      `<circle class="ta-bubble d2" cx="${nx+10}" cy="${liquidY-6}"  r="2.0" fill="${c.color}"/>`,
+      `<circle class="ta-bubble d3" cx="${nx-2}"  cy="${liquidY-16}" r="1.4" fill="${c.deep}"/>`,
     ];
     // Molecule: hexagonal ring of 6 atoms
     const atoms = [];
@@ -823,8 +898,10 @@
       </svg>`;
   }
 
+  // ————————————————————————————————————————
   // Ciencia — paper filling with text + approved stamp
-  // Concepto : es el fallback genérico para papers que no caen
+  // ————————————————————————————————————————
+  // Concepto: es el fallback genérico para papers que no caen
   // en los 14 temas específicos. La animación reproduce la ilustración
   // illus-paper.svg (dos papers apilados y rotados ±°) y luego "escribe"
   // las líneas de texto una por una (scaleX: 0→1 left-anchored, tipo
@@ -839,29 +916,29 @@
     // Dos papers — el de atrás con tilt negativo, el de adelante con tilt
     // positivo. Mismas proporciones que illus-paper.svg pero escaladas
     // para el viewBox de topic-anim (320×200 desktop, 180×320 mobile).
-    const back = mobile
-      ? { x: 22, y: 70, w: 138, h: 195 }
-      : { x: 62, y: 50, w: 175, h: 120 };
+    const back  = mobile
+      ? { x: 22, y: 70,  w: 138, h: 195 }
+      : { x: 62, y: 50,  w: 175, h: 120 };
     const front = mobile
-      ? { x: 36, y: 55, w: 138, h: 195 }
-      : { x: 85, y: 36, w: 175, h: 120 };
-    const backCx = back.x + back.w / 2;
-    const backCy = back.y + back.h / 2;
+      ? { x: 36, y: 55,  w: 138, h: 195 }
+      : { x: 85, y: 36,  w: 175, h: 120 };
+    const backCx  = back.x  + back.w  / 2;
+    const backCy  = back.y  + back.h  / 2;
     const frontCx = front.x + front.w / 2;
     const frontCy = front.y + front.h / 2;
 
     // Layout interno del contenido dentro del front paper.
-    // una línea que "se escapa" del
+    // 2026-04-20: se reportó una línea que "se escapa" del
     // paper — pasaba cuando widthFrac=1.00 llegaba al borde exacto del maxW
     // interior; con el tilt +3° + anti-aliasing del stroke, visualmente se
     // veía cruzando el borde del rect. Fix: cap widthFrac a 0.88 y bajar
     // step a 8 (desktop) para que el row 12 final quede bien adentro del
     // bottom edge del paper en lugar de rozarlo.
-    const pad = mobile ? 14 : 16;
-    const x0 = front.x + pad;
-    const y0 = front.y + (mobile ? 24 : 16);
+    const pad  = mobile ? 14 : 16;
+    const x0   = front.x + pad;
+    const y0   = front.y + (mobile ? 24 : 16);
     const maxW = front.w - pad * 2;
-    const step = mobile ? 13 : 8; // separación vertical entre líneas
+    const step = mobile ? 13 : 8;   // separación vertical entre líneas
 
     // Cada fila: [rowIdx, widthFrac, height, fill, delay, xFrac?]
     // rowIdx es múltiplo de "step" — los huecos (rows 1, 5, 7, 11) dejan
@@ -874,18 +951,18 @@
     // paper. El título (0.82) es un poco más corto aún para sugerir que
     // es un headline, no una línea de cuerpo.
     const rows = [
-      // [rowIdx, widthFrac, height, fill, delay, xFrac]
-      [0, 0.82, 5, '#0E1116', 0.00, 0], // título (bold, ink negro)
-      [2, 0.88, 3, '#5A6170', 0.18, 0],
-      [3, 0.78, 3, '#5A6170', 0.34, 0],
-      [4, 0.84, 3, '#5A6170', 0.50, 0],
+      // [rowIdx, widthFrac, height, fill,       delay, xFrac]
+      [0,    0.82, 5,  '#0E1116', 0.00, 0],     // título (bold, ink negro)
+      [2,    0.88, 3,  '#5A6170', 0.18, 0],
+      [3,    0.78, 3,  '#5A6170', 0.34, 0],
+      [4,    0.84, 3,  '#5A6170', 0.50, 0],
       // Tags de colores en la misma línea (como en illus-paper.svg)
-      [6, 0.30, 12, '#2E4BE0', 0.72, 0], // tag azul
-      [6, 0.22, 12, '#F2542D', 0.88, 0.34], // tag rojo a la derecha del azul
-      [8, 0.88, 3, '#5A6170', 1.08, 0],
-      [9, 0.80, 3, '#5A6170', 1.24, 0],
-      [10, 0.70, 3, '#5A6170', 1.40, 0],
-      [12, 0.42, 3, '#5A6170', 1.58, 0], // última línea (corta)
+      [6,    0.30, 12, '#2E4BE0', 0.72, 0],     // tag azul
+      [6,    0.22, 12, '#F2542D', 0.88, 0.34],  // tag rojo a la derecha del azul
+      [8,    0.88, 3,  '#5A6170', 1.08, 0],
+      [9,    0.80, 3,  '#5A6170', 1.24, 0],
+      [10,   0.70, 3,  '#5A6170', 1.40, 0],
+      [12,   0.42, 3,  '#5A6170', 1.58, 0],     // última línea (corta)
     ];
 
     const lineSvg = rows.map((row) => {

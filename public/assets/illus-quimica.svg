@@ -1,36 +1,36 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300" role="img" aria-label="Chemistry flask with benzene ring">
- <rect width="300" height="300" fill="#F9DCE8"></rect>
- <g>
- <line x1="246" y1="110" x2="228" y2="141" stroke="#B34378" stroke-width="2"></line>
- <line x1="228" y1="141" x2="192" y2="141" stroke="#B34378" stroke-width="2"></line>
- <line x1="192" y1="141" x2="174" y2="110" stroke="#B34378" stroke-width="2"></line>
- <line x1="174" y1="110" x2="192" y2="79" stroke="#B34378" stroke-width="2"></line>
- <line x1="192" y1="79" x2="228" y2="79" stroke="#B34378" stroke-width="2"></line>
- <line x1="228" y1="79" x2="246" y2="110" stroke="#B34378" stroke-width="2"></line>
- <circle cx="222" cy="104" r="14" fill="none" stroke="#B34378" stroke-width="1.5" opacity="0.55"></circle>
- <!-- Outline ink en atoms del benzene : stroke 1.5 ink para
- emparejar con el outline del resto de las ilustraciones. -->
- <circle cx="246" cy="110" r="5.5" fill="#E06AA8" stroke="#0E1116" stroke-width="1.5"></circle>
- <circle cx="228" cy="141" r="5.5" fill="#B34378" stroke="#0E1116" stroke-width="1.5"></circle>
- <circle cx="192" cy="141" r="5.5" fill="#E06AA8" stroke="#0E1116" stroke-width="1.5"></circle>
- <circle cx="174" cy="110" r="5.5" fill="#B34378" stroke="#0E1116" stroke-width="1.5"></circle>
- <circle cx="192" cy="79" r="5.5" fill="#E06AA8" stroke="#0E1116" stroke-width="1.5"></circle>
- <circle cx="228" cy="79" r="5.5" fill="#B34378" stroke="#0E1116" stroke-width="1.5"></circle>
- </g>
- <g>
- <path d="M 94 95 L 94 142 Q 62 142 62 176 A 38 38 0 0 0 138 176 Q 138 142 106 142 L 106 95 Z" fill="none" stroke="#B34378" stroke-width="2.2" stroke-linejoin="round"></path>
- <clipPath id="flask-clip-thumb">
- <path d="M 94 95 L 94 142 Q 62 142 62 176 A 38 38 0 0 0 138 176 Q 138 142 106 142 L 106 95 Z"></path>
- </clipPath>
- <g clip-path="url(#flask-clip-thumb)">
- <rect x="58" y="168" width="84" height="52" fill="#E06AA8" opacity="0.78"></rect>
- <path d="M 62 168 Q 80 164 100 168 T 138 168 L 138 173 L 62 173 Z" fill="#B34378" opacity="0.55"></path>
- <circle cx="94" cy="162" r="2.6" fill="#E06AA8"></circle>
- <circle cx="104" cy="154" r="2" fill="#B34378"></circle>
- <circle cx="110" cy="160" r="2.2" fill="#E06AA8"></circle>
- <circle cx="100" cy="146" r="1.6" fill="#B34378"></circle>
- <circle cx="88" cy="148" r="2" fill="#E06AA8"></circle>
- </g>
- <line x1="88" y1="95" x2="112" y2="95" stroke="#B34378" stroke-width="2.4" stroke-linecap="round"></line>
- </g>
+  <rect width="300" height="300" fill="#F9DCE8"></rect>
+  <g>
+    <line x1="246" y1="110" x2="228" y2="141" stroke="#B34378" stroke-width="2"></line>
+    <line x1="228" y1="141" x2="192" y2="141" stroke="#B34378" stroke-width="2"></line>
+    <line x1="192" y1="141" x2="174" y2="110" stroke="#B34378" stroke-width="2"></line>
+    <line x1="174" y1="110" x2="192" y2="79" stroke="#B34378" stroke-width="2"></line>
+    <line x1="192" y1="79" x2="228" y2="79" stroke="#B34378" stroke-width="2"></line>
+    <line x1="228" y1="79" x2="246" y2="110" stroke="#B34378" stroke-width="2"></line>
+    <circle cx="222" cy="104" r="14" fill="none" stroke="#B34378" stroke-width="1.5" opacity="0.55"></circle>
+    <!-- Outline ink en atoms del benzene: stroke 1.5 ink para
+         emparejar con el outline del resto de las ilustraciones. -->
+    <circle cx="246" cy="110" r="5.5" fill="#E06AA8" stroke="#0E1116" stroke-width="1.5"></circle>
+    <circle cx="228" cy="141" r="5.5" fill="#B34378" stroke="#0E1116" stroke-width="1.5"></circle>
+    <circle cx="192" cy="141" r="5.5" fill="#E06AA8" stroke="#0E1116" stroke-width="1.5"></circle>
+    <circle cx="174" cy="110" r="5.5" fill="#B34378" stroke="#0E1116" stroke-width="1.5"></circle>
+    <circle cx="192" cy="79" r="5.5" fill="#E06AA8" stroke="#0E1116" stroke-width="1.5"></circle>
+    <circle cx="228" cy="79" r="5.5" fill="#B34378" stroke="#0E1116" stroke-width="1.5"></circle>
+  </g>
+  <g>
+    <path d="M 94 95 L 94 142 Q 62 142 62 176 A 38 38 0 0 0 138 176 Q 138 142 106 142 L 106 95 Z" fill="none" stroke="#B34378" stroke-width="2.2" stroke-linejoin="round"></path>
+    <clipPath id="flask-clip-thumb">
+      <path d="M 94 95 L 94 142 Q 62 142 62 176 A 38 38 0 0 0 138 176 Q 138 142 106 142 L 106 95 Z"></path>
+    </clipPath>
+    <g clip-path="url(#flask-clip-thumb)">
+      <rect x="58" y="168" width="84" height="52" fill="#E06AA8" opacity="0.78"></rect>
+      <path d="M 62 168 Q 80 164 100 168 T 138 168 L 138 173 L 62 173 Z" fill="#B34378" opacity="0.55"></path>
+      <circle cx="94" cy="162" r="2.6" fill="#E06AA8"></circle>
+      <circle cx="104" cy="154" r="2" fill="#B34378"></circle>
+      <circle cx="110" cy="160" r="2.2" fill="#E06AA8"></circle>
+      <circle cx="100" cy="146" r="1.6" fill="#B34378"></circle>
+      <circle cx="88" cy="148" r="2" fill="#E06AA8"></circle>
+    </g>
+    <line x1="88" y1="95" x2="112" y2="95" stroke="#B34378" stroke-width="2.4" stroke-linecap="round"></line>
+  </g>
 </svg>

@@ -8,7 +8,7 @@
 // archive section can render "cosas que ya leí" without re-fetching from
 // OpenAlex on every visit.
 //
-// Arquitectura : se migró al mismo patrón de store
+// Arquitectura (QA2 P2.1, 2026-04-20): se migró al mismo patrón de store
 // module-level que useLibrary. Antes cada `useReadPapers()` mantenía su
 // propio `useState`, y el contador "pendientes" del Header dependía
 // simultáneamente de useLibrary + useReadPapers — si alguno de los dos no
@@ -122,7 +122,7 @@ function hasPaper(id: string): boolean {
   return currentEntries.some(e => e.paper.id === id);
 }
 
-// ─── Bulk import (QA2 #68, ) ────────────────────────────────────
+// ─── Bulk import (QA2 #68, 2026-04-20) ────────────────────────────────────
 // Espejo de `importLibraryEntries` en library.ts — misma lógica, distinto
 // shape. Respetamos el `readAt` original del archivo (no estampamos
 // Date.now()) para que el orden "leídos recientemente" del archivo del
