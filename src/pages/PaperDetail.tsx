@@ -93,15 +93,12 @@ export function PaperDetail() {
   // Explicámelo tiene 3 niveles de lectura. Todo va en español neutro
   // (Paperverse es single-language — ver notas en explain.ts).
   //
-  // Default = 'kid' ("5 años"): se pidió que al abrir
-  // cualquier paper siempre se cargue la explicación más simple. La idea
-  // es que el reader entre por la puerta más accesible — el paper
-  // "explicado como a un niño/a" — y si quiere subir de nivel, use la
-  // perilla. El abstract original queda a un click en el toggle de
-  // arriba, pero no es el default. Antes era 'teen' (Adolescente) como
-  // término medio, pero el cambio a 'kid' prioriza accesibilidad sobre
-  // neutralidad editorial.
-  const [level, setLevel] = useState<ExplainLevel>('kid');
+  // Default = 'teen' (Adolescente): el nivel medio del Explicámelo. Lee
+  // claro sin infantilizar al lector — balance entre accesibilidad y
+  // rigor editorial. El usuario puede bajar a 'kid' o subir a 'sci' con
+  // la perilla si quiere; el abstract original queda a un click en el
+  // toggle de arriba.
+  const [level, setLevel] = useState<ExplainLevel>('teen');
   // Cache por nivel. Antes era `${level}_${lang}` cuando soportábamos 5
   // idiomas para Explicámelo; al eliminar multi-idioma simplificamos a la
   // clave del nivel directamente.
@@ -164,7 +161,7 @@ export function PaperDetail() {
     setExplainError(null);
     setExplainLoading(false);
     setMode('explain');
-    setLevel('kid');
+    setLevel('teen');
 
     fetchPaper(id)
       .then(p => {
@@ -184,7 +181,7 @@ export function PaperDetail() {
           setMode('original');
           return;
         }
-        if (cached.kid) return; // already hot
+        if (cached.teen) return; // already hot — default level ya cacheado
 
         setExplainLoading(true);
 
@@ -225,16 +222,16 @@ export function PaperDetail() {
         // .then() de abajo con el texto completo que devuelve la promesa
         // — eso sobreescribe cualquier fragmento sucio que hayamos
         // pintado en vivo.
-        fetchExplanation(p.id, titleForExplain, p.abstract, 'kid', delta => {
+        fetchExplanation(p.id, titleForExplain, p.abstract, 'teen', delta => {
           if (cancelled) return;
           setExplanations(prev => ({
             ...prev,
-            kid: (prev.kid ?? '') + delta,
+            teen: (prev.teen ?? '') + delta,
           }));
         })
           .then(text => {
             if (!cancelled)
-              setExplanations(prev => ({ ...prev, kid: text }));
+              setExplanations(prev => ({ ...prev, teen: text }));
           })
           .catch(err => {
             if (!cancelled) {
@@ -243,7 +240,7 @@ export function PaperDetail() {
               // para no dejar basura debajo del mensaje de error.
               setExplanations(prev => {
                 const next = { ...prev };
-                delete next.kid;
+                delete next.teen;
                 return next;
               });
             }

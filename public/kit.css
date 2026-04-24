@@ -45,7 +45,7 @@ body {
 .pv-header .brand { display: flex; align-items: center; gap: 10px; cursor: pointer; justify-self: start; }
 .pv-header .brand img { width: 30px; height: 30px; display: block; }
 .pv-header .wordmark { font-family: var(--font-display); font-size: 26px; letter-spacing: -0.02em; color: var(--pv-ink); line-height: 1; font-weight: 400; }
-/* El "." final del wordmark lleva color cobalto. Revert:
+/* El "." final del wordmark lleva color cobalto. Revert (2026-04-21):
    habíamos probado magma para unificar con el wordmark SVG, pero Carolina
    pidió volver al cobalto original. Consistente con el dot en dark mode
    (que siempre fue cobalto). */
@@ -70,7 +70,7 @@ body {
 .sidebar { position: sticky; top: 96px; align-self: start; display: flex; flex-direction: column; gap: 24px; }
 
 /* ————————————————————————————————————————— Topic chips ————————— */
-/* Restyle estético Fase 3.2. El chip mantiene su personalidad
+/* Restyle estético Fase 3.2 (2026-04-21). El chip mantiene su personalidad
    "stamp editorial" (borde 2px ink, casi sin radio, tile cuadrado con
    color de tema) pero recibe pulido:
      · `border-radius: 2px` para harmonizar con .btn (que también usa 2px) —
@@ -89,7 +89,7 @@ body {
      · Padding 6/12/6/8 — quité 2px del lado derecho para que el chip no
        quede tan ancho en la fila densa del sidebar; el tile sigue pegado
        al borde izquierdo y el label respira con el extra del gap. */
-/* Fase 3.2 redo. Dirección final de los chips:
+/* Fase 3.2 redo (2026-04-21, Carolina). Dirección final de los chips:
    · border-radius 0 (se quedan cuadrados, alineados con el lenguaje
      editorial del resto del sistema).
    · SIN bordes en ningún estado. Las chips se comunican por fondo, no
@@ -114,7 +114,7 @@ body {
   display: inline-flex; align-items: center; gap: 10px;
   font-family: var(--font-sans); font-size: 13px; font-weight: 600;
   border-radius: 0;
-  /* Padding vertical reducido de 6 → 4. Con el tile
+  /* Padding vertical reducido de 6 → 4 (2026-04-23, Carolina). Con el tile
      a 24px y font-size 13, total ≈ 32px de alto (antes ≈ 40px). La caja se
      siente compacta sin perder generosidad de tap target en mobile. */
   padding: 4px 12px 4px 8px;
@@ -142,7 +142,7 @@ body {
   display: inline-flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
-/* Tamaño estable a 16px. Antes estaba en 14 y los
+/* Tamaño estable a 16px (2026-04-23, Carolina). Antes estaba en 14 y los
    íconos se veían chicos e inconsistentes entre sí porque cada SVG pintaba
    en una zona distinta del viewBox. Con el pase de normalización en
    TopicIcon.tsx cada ícono ahora pinta dentro de una caja 3-21 centrada
@@ -157,7 +157,7 @@ body {
 .topic-chip.plus:hover { border-color: var(--pv-cobalto); color: var(--pv-cobalto); border-style: dashed; filter: none; }
 
 /* "Limpiar (N)" — chip de reset para los filtros de "Tus temas" del sidebar.
-   QA2 extra: antes era una palabra ("limpiar") con underline
+   QA2 extra (2026-04-20): antes era una palabra ("limpiar") con underline
    sutil en mono uppercase, indistinguible visualmente de un label. El QA
    lo leyó como texto inerte y no intuyó que era clickeable. Ahora comparte
    el vocabulary de los TopicChip (border ink, Sentence case, padding
@@ -299,11 +299,11 @@ body {
 /* Sticky feed top bar — se pega debajo del header y mantiene visible
    "N papers · Xd" + toggle Lista/Tarjetas mientras las cards scrollean.
 
-   Trampa pasada: el primer intento usaba top: 96px (copiado
+   Trampa pasada (2026-04-19): el primer intento usaba top: 96px (copiado
    del sidebar viejo). Pero el header sticky es ~70-75px en desktop; eso
    dejaba un GAP de ~20px entre el borde inferior del header y el borde
    superior de la barra donde las cards pasaban a la vista completamente.
-   se reportó "se siguen viendo por detrás, debería poder esconderse"
+   Carolina reportó "se siguen viendo por detrás, debería poder esconderse"
    porque lo que se veía NO era transparencia de la barra (el bg es
    #FDFAF2 opaco), sino cards en ese gap donde NADA sticky las tapaba.
 
@@ -318,7 +318,7 @@ body {
   top: 60px; /* header desktop ~70px → solapamos 10px para cerrar el gap */
   z-index: 40;
   isolation: isolate;
-  /* Fase 4.1: el contador de papers dejó el top-bar. Ahora
+  /* Fase 4.1 (2026-04-21): el contador de papers dejó el top-bar. Ahora
      sólo viven acá los controles (SortDropdown + ViewToggle), alineados
      a la derecha. Con flex-end no necesitamos el "space-between" del
      section-head heredado — lo pisamos acá. */
@@ -335,11 +335,11 @@ body {
   align-items: center;
   margin: 0 0 0 0;
   /* Ritmo vertical (Fase 4.1, 2026-04-21):
-     · Divider ARRIBA de los controles (se pidió que el separador
+     · Divider ARRIBA de los controles (Carolina pidió que el separador
        del sidebar y el del feed queden coherentes visualmente — el
        divider "abre" el bloque de controles en vez de cerrar el bar).
      · padding-top 0 — los controles se apoyan directo sobre el divider
-       sin aire extra. lo pidió explícito: el "gap" entre
+       sin aire extra. Carolina lo pidió explícito: el "gap" entre
        divider y controles es demasiado, mejor que lean como un bloque
        compacto y dejar el aire sólo donde hace falta (abajo).
      · 16px abajo — separación entre controles y meta-row.
@@ -394,7 +394,7 @@ body {
    serlo. */
 .pv-sort { position: relative; display: inline-flex; }
 
-/* Fase 4 redo: el trigger ahora es un botón secundario
+/* Fase 4 redo (2026-04-21): el trigger ahora es un botón secundario
    cuadrado, con el mismo lenguaje visual que pv-view-group y
    pv-window-group — border 2px ink + fondo bg-2 + mono 11px uppercase.
    Esto lo alinea con el resto de los controles de la toolbar en vez de
@@ -492,7 +492,7 @@ body {
 }
 
 /* ————————————————————————————————————————— Feed meta row —————
-   Fase 4.1. Vive debajo del divider del feed-top-bar y
+   Fase 4.1 (2026-04-21). Vive debajo del divider del feed-top-bar y
    concentra la metadata del resultset: conteo de papers, hint de leídos
    ocultos/visibles, y un toggle discreto (Ver/Ocultar) para que el
    usuario pueda traer de vuelta los papers que ya leyó.
@@ -501,18 +501,41 @@ body {
    que los overlines de las cards. Flex-wrap + column-gap para que en
    mobile los elementos rebalanceen a dos líneas sin amontonarse. */
 .feed-meta-row {
+  /* Sticky debajo del top-bar (2026-04-23, Carolina): antes esta línea
+     se scrolleaba con las cards y perdíamos la visibilidad del conteo y
+     del toggle "Ver" leídos. Ahora se pega justo abajo del top-bar
+     (~48px de alto incluyendo sus paddings) para que todo el header
+     editorial — controles + metadata — viaje como bloque con el scroll.
+
+     top = 60px (header) + 48px (top-bar): 108px. Si el top-bar crece
+     por algún cambio futuro, ajustá acá también. Mobile override más
+     abajo, mismo cálculo con el header de 48px. */
+  position: sticky;
+  top: 108px;
+  z-index: 39; /* un punto debajo del top-bar (z=40) así si hay overlap, gana el top-bar */
+  /* Fondo opaco — mismo --bg-canvas que usa el top-bar, para que las
+     cards se oculten detrás al scrollear y no quede "transparencia"
+     entre sticky elements. */
+  background: var(--bg-canvas);
+  /* Negative margin-x + padding-x compensatorio igual que el top-bar,
+     para que el fondo opaco cubra el ancho completo de la col-feed
+     sin dejar franjas por los bordes subpíxel. */
+  margin-left: -2px;
+  margin-right: -2px;
+  padding-left: 2px;
+  padding-right: 2px;
+
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   column-gap: 8px;
   row-gap: 4px;
-  /* Ritmo vertical (Fase 4.1, 2026-04-21): el padding-top 0 deja que el
-     padding-bottom del feed-top-bar sea el único gap entre controles y
-     meta (16px, coherente con el gap divider↔controles). El padding-bottom
-     20px da un poco más de aire antes de la primera card  lo
-     pidió explícitamente: el texto de resultado no debe lamerse con las
-     cards, necesita que se lea como metadata separada del contenido. */
-  padding: 0 0 20px 0;
+  /* padding-bottom 20px: aire entre la meta-row y la primera card — se
+     ve como gap tipográfico claro, evita que el texto "se lame" con el
+     contenido de la card. padding-top 0 mantiene el gap con el top-bar
+     aportado por el padding-bottom del top-bar (16px). */
+  padding-top: 0;
+  padding-bottom: 20px;
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.04em;
@@ -574,9 +597,9 @@ body {
 .paper-card:hover { background: var(--bg-sunken); }
 .paper-card .thumb {
   width: 112px; height: 112px; overflow: hidden;
-  /* Peso del borde: subimos de 0.35 → 0.55 porque las líneas
+  /* Peso del borde (2026-04-20): subimos de 0.35 → 0.55 porque las líneas
      internas del SVG de la ilustración se dibujan en ink casi sólido y el
-     35% dejaba al frame "washed out" frente al contenido  lo
+     35% dejaba al frame "washed out" frente al contenido — Carolina lo
      flaggeó mirando Ciencia (donde el soft tint #E3E6EB es neutro gris
      claro, así que el desbalance frame/ilustración era más evidente). 55%
      es el sweet spot: sigue leyéndose como marco secundario (no compite
@@ -978,7 +1001,7 @@ body {
   }
   .search-overlay .search { flex: 1; max-width: 100%; }
   /* Botón "enviar" — avioncito de papel al lado del input. Pedido de
-     Carolina: cobalto lleno con borde ink, para que lea
+     Carolina (2026-04-19): cobalto lleno con borde ink, para que lea
      como botón primario-secundario (fill coloreado + borde negro es el
      lenguaje del kit para CTAs de peso medio — más grito que un ghost,
      menos que un primario puro). 38x38 cuadrado igual que el input
@@ -1033,10 +1056,13 @@ body {
   /* Meta-row en mobile: menos aire antes de las cards, pero manteniendo
      una diferencia clara con los 12px de arriba. */
   .feed-meta-row {
+    /* Mobile: header ~48px + top-bar ~44px = 92px. Padding-bottom algo
+       más compacto que desktop. */
+    top: 92px;
     padding-bottom: 16px;
   }
 
-  /* Topics — carrusel horizontal en mobile. se pidió volver al
+  /* Topics — carrusel horizontal en mobile. Carolina pidió volver al
      scroll horizontal pero con affordance clara: antes (sin nada) se leía
      como un bug. Ahora damos dos pistas:
        1. Fade-out en el borde derecho via mask-image — sugiere "hay más
@@ -1132,7 +1158,7 @@ body {
      del toggle-row, así que los dos botones tienen que crecer en
      partes iguales para rellenar el ancho. Si no, los botones se
      quedan pegados a la izquierda y queda un rectángulo crema vacío
-     a la derecha — eso era el "botón roto" que se reportó. */
+     a la derecha — eso era el "botón roto" que Carolina reportó. */
   .toggle { display: flex; width: 100%; }
   .toggle button { flex: 1; justify-content: center; padding: 9px 12px; }
 
