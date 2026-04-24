@@ -23,7 +23,7 @@ import { fetchRandomQuote, type Quote } from '../lib/quoteLibrary';
 import { useLibrary } from '../lib/library';
 import { useReadPapers } from '../lib/read';
 import { showToast } from '../lib/toast';
-import { useTranslated, fetchTranslation, getCachedTranslation } from '../lib/translate';
+import { useTranslated, fetchTranslation, getCachedTranslation, retranslatePaper } from '../lib/translate';
 import { useDocumentTitle } from '../lib/useDocumentTitle';
 import { useAbstractTranslation } from '../lib/abstractTranslate';
 import { languageLabel, isSpanish } from '../lib/language';
@@ -40,14 +40,14 @@ type AbstractMode = 'original' | 'explain';
  * que lo elegimos adrede para que aguante quedarse visible: editorial,
  * divulgativo, sin sugerir error.
  *
- * sacamos el nombre del provider ("Pollinations") del
+ * QA 3.5: sacamos el nombre del provider ("Pollinations") del
  * copy visible. Era un leak de infra que no aportaba nada al lector —
  * confundía más que informaba. Lo reemplaza "Conectando con el modelo…"
  * que narra la misma etapa en términos que el usuario sí entiende. El
  * provider sigue siendo Pollinations internamente; es sólo el label de
  * UI el que se neutraliza.
  *
- * el último mensaje era "Traduciendo a cristiano…",
+ * QA2 P1.3: el último mensaje era "Traduciendo a cristiano…",
  * un idiom castellano para "poner en palabras simples". Funcionaba bien
  * pero pareaba con un easter egg de versículos bíblicos (ver
  * quoteLibrary.ts, que reemplazó a bibleVerse.ts) y decidió
@@ -93,11 +93,14 @@ export function PaperDetail() {
   // Explicámelo tiene 3 niveles de lectura. Todo va en español neutro
   // (Paperverse es single-language — ver notas en explain.ts).
   //
-  // Default = 'teen' (Adolescente): el nivel medio del Explicámelo. Lee
-  // claro sin infantilizar al lector — balance entre accesibilidad y
-  // rigor editorial. El usuario puede bajar a 'kid' o subir a 'sci' con
-  // la perilla si quiere; el abstract original queda a un click en el
-  // toggle de arriba.
+  // Default = 'teen' (Adolescente): el nivel medio del Explicámelo.
+  // Fuimos moviendo este default: arrancó en 'teen', pasó a 'kid' por un
+  // tiempo priorizando accesibilidad máxima, y volvió a 'teen' (2026-04-23,
+  // Carolina) porque "5 años" simplifica demasiado y pierde info útil.
+  // Adolescente lee claro sin infantilizar al lector — balance entre
+  // accesibilidad y rigor editorial. El usuario puede bajar a 'kid' o
+  // subir a 'sci' con la perilla si quiere; el abstract original queda
+  // a un click en el toggle de arriba.
   const [level, setLevel] = useState<ExplainLevel>('teen');
   // Cache por nivel. Antes era `${level}_${lang}` cuando soportábamos 5
   // idiomas para Explicámelo; al eliminar multi-idioma simplificamos a la
@@ -281,7 +284,7 @@ export function PaperDetail() {
     window.scrollTo({ top: 0 });
   }, [id]);
 
-  // Auto-marcar como leído. "siempre me olvido de
+  // Auto-marcar como leído. Carolina: "siempre me olvido de
   // marcar el botón de leído". Disparamos `markRead(paper)` cada vez que
   // tenemos un paper cargado. El effect depende de `paper` (no sólo de
   // `paper?.id`) para garantizar que tengamos el objeto Paper completo,
@@ -424,7 +427,7 @@ export function PaperDetail() {
    * appendendo al state conforme llega del modelo, así el lector ve la
    * explicación "tipeándose" en vez de un loader que tarda 6-15s.
    *
-   * la cache es por (paperId, nivel). Esta función
+   * QA2 P2.2: la cache es por (paperId, nivel). Esta función
    * es el único punto de entrada para asegurar que un nivel esté disponible
    * en state, y chequea en dos niveles antes de decidir fetchear:
    *   1. ¿Está en React state? → no-op, ya tenemos el texto montado.
@@ -510,9 +513,21 @@ export function PaperDetail() {
   // Priority HIGH: el título de la página de detalle es la lectura activa
   // del usuario — tiene que saltarse la cola del feed (60-150 traducciones
   // en background) para no quedar esperando detrás de cards que ni se ven.
-  const { title: titleEs, original: titleOriginal } = useTranslated(paper, { priority: 'high' });
+  const { title: titleEs, original: titleOriginal, loading: titleTranslating } = useTranslated(paper, { priority: 'high' });
 
-  // tab title = "{título} — Paperverse". Usamos
+  // Handler del botón "re-traducir título". Cuando Pollinations
+  // devuelve el título original por saturación o error transitorio, el
+  // usuario quiere poder pedir una traducción fresca sin recargar toda la
+  // página. retranslatePaper() limpia sólo la cache de ESE paper (no borra
+  // los demás títulos del feed), libera el slot de Pollinations si quedó
+  // zombie, y bumpea el refresh global → useTranslated re-corre su effect,
+  // ve cache vacía para este id, y dispara un fetchTranslation fresco.
+  const handleRetranslateTitle = () => {
+    if (!paper) return;
+    retranslatePaper(paper.id);
+  };
+
+  // QA2 P3.4: tab title = "{título} — Paperverse". Usamos
   // `titleEs` cuando la traducción ya está lista, y caemos al título
   // original (o a null, si tampoco llegó) mientras tanto. IMPORTANTE: este
   // hook también va antes de los early returns — react hooks order rule.
@@ -522,7 +537,7 @@ export function PaperDetail() {
   // Paperverse" que pasaría si concatenáramos sin este check.
   useDocumentTitle(titleEs || paper?.title || null);
 
-  // traducción del abstract completo. Es opt-in — sólo se dispara
+  // QA 3.12: traducción del abstract completo. Es opt-in — sólo se dispara
   // cuando el usuario está en el tab "Abstract original". Si el paper ya
   // está en español, el hook lo detecta y devuelve el abstract sin pasar
   // por el LLM. IMPORTANTE: este hook va ANTES de los early returns —
@@ -595,7 +610,51 @@ export function PaperDetail() {
         {paper.openAccess && <> · <span style={{ color: 'var(--pv-clorofila-deep)' }}>acceso abierto</span></>}
       </span>
 
-      <h1>{displayTitle}</h1>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+        <h1 style={{ flex: 1, margin: 0 }}>{displayTitle}</h1>
+        {/* Botón re-traducir título. Aparece siempre, permite
+            pedir una traducción fresca del título cuando Pollinations
+            devolvió el original por saturación. Mientras la traducción
+            está en vuelo, el botón queda deshabilitado y el ícono
+            "pulsa" levemente via CSS animation — feedback claro de que
+            algo está pasando. */}
+        <button
+          type="button"
+          onClick={handleRetranslateTitle}
+          disabled={titleTranslating}
+          title={titleTranslating ? 'Traduciendo…' : 'Re-traducir título al español'}
+          aria-label={titleTranslating ? 'Traduciendo título' : 'Re-traducir título al español'}
+          style={{
+            flexShrink: 0,
+            marginTop: 12,
+            width: 34,
+            height: 34,
+            padding: 0,
+            border: '1px solid var(--border-1)',
+            borderRadius: 0,
+            background: 'var(--bg-surface)',
+            color: 'var(--fg-3)',
+            cursor: titleTranslating ? 'wait' : 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            opacity: titleTranslating ? 0.5 : 1,
+            transition: 'color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out)',
+          }}
+          onMouseEnter={e => {
+            if (!titleTranslating) {
+              e.currentTarget.style.color = 'var(--pv-ink)';
+              e.currentTarget.style.borderColor = 'var(--pv-ink)';
+            }
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.color = 'var(--fg-3)';
+            e.currentTarget.style.borderColor = 'var(--border-1)';
+          }}
+        >
+          <Icon name="refresh" size={15} strokeWidth={1.75} />
+        </button>
+      </div>
 
       <div className="authors" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
         {/* The users icon makes the byline scannable at a glance — it's the
@@ -686,8 +745,8 @@ export function PaperDetail() {
       <div className="abstract-body">
         {mode === 'original' ? (
           paper.abstract ? (
-            // mostramos ambos — texto original en su
-            // idioma + traducción al español siempre. "en la 2,
+            // QA 3.12: mostramos ambos — texto original en su
+            // idioma + traducción al español siempre. Carolina: "en la 2,
             // muestres ambas, que se vea el idio original pero me traduzca
             // siempre al español".
             //

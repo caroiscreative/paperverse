@@ -176,6 +176,43 @@ export function clearTranslationCache(): void {
   bumpRefresh();
 }
 
+/**
+ * Borra la entrada de traducción de UN paper específico y notifica a los
+ * consumidores que re-fetchen. Usado por el botón "re-traducir título" del
+ * PaperDetail: cuando Pollinations devolvió el título en idioma
+ * original por saturación y el usuario quiere pedir una traducción fresca
+ * sin recargar toda la página.
+ *
+ * Qué limpia:
+ *   · Entry del paper en localStorage (pv_translate_cache_v5)
+ *   · Promise in-flight para ese paperId (si hubiera una zombie)
+ *   · Aborta cualquier request en vuelo que pudiera pisarnos la cache limpia
+ *
+ * Después bumpea `refreshVersion` → `useTranslated` re-corre su effect y,
+ * sin cache hit, dispara un fetchTranslation fresco que landea en la card.
+ *
+ * vs clearTranslationCache (que nuketea TODO):
+ *   · clearTranslationCache se usa para el botón global de refresh del
+ *     ThemeDock. Invalida todos los papers del feed.
+ *   · retranslatePaper es quirúrgico: sólo afecta al paper que lo pidió.
+ *     Así el usuario puede re-traducir el que se quedó en inglés sin
+ *     blankear los 60+ títulos del feed que vinieron bien.
+ */
+export function retranslatePaper(paperId: string): void {
+  cacheVersion++;
+  try {
+    const c = readCache();
+    if (paperId in c) {
+      delete c[paperId];
+      writeCache(c);
+    }
+  } catch {
+    /* storage bloqueado — no-op */
+  }
+  inflight.delete(paperId);
+  bumpRefresh();
+}
+
 export function getCachedTranslation(paperId: string): TranslatedPaper | null {
   const hit = readCache()[paperId];
   if (!hit) return null;

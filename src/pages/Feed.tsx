@@ -119,7 +119,7 @@ function readStoredTopics(): TopicId[] {
 export function Feed() {
   const [params, setParams] = useSearchParams();
   const nav = useNavigate();
-  // useLocation nos da pathname+search en un solo
+  // QA2 P1.2: useLocation nos da pathname+search en un solo
   // objeto reactivo. Lo usamos para memorizar la URL exacta del feed en
   // sessionStorage cada vez que cambia — ver effect abajo. El Header
   // consume esa memoria para devolver al usuario al mismo estado del
@@ -137,7 +137,7 @@ export function Feed() {
     ? 'citedBy'
     : 'feed';
 
-  // Sort (Fase 4, 2026-04-21). El orden vive en el URL param ?sort=… para
+  // Sort. El orden vive en el URL param ?sort=… para
   // que viaje entre feed/refs/cites y sea compartible. Si no hay param,
   // cada modo tiene su default "natural": search → relevancia (lo que
   // busca el usuario), feed/refs/cites → latest_cited (lo nuevo + citado).
@@ -190,7 +190,7 @@ export function Feed() {
 
   const currentWindow = useMemo(() => windowFor(daysBack), [daysBack]);
 
-  // Ocultar leídos en feed home + búsqueda. "cuando
+  // Ocultar leídos en feed home + búsqueda. Carolina: "cuando
   // leo o abro un articulo me gustaria que ademas lo esconda del feed
   // porque ya lo lei" + "del feed y de los filtros, bien sea de categoria
   // o de periodo". Scope:
@@ -225,7 +225,7 @@ export function Feed() {
   const readInFeedCount = canHideRead ? papers.filter(p => readIds.has(p.id)).length : 0;
   const hiddenReadCount = shouldHideRead ? papers.length - visiblePapers.length : 0;
 
-  // títulos de pestaña por ruta. El Feed soporta 4
+  // QA2 P3.4: títulos de pestaña por ruta. El Feed soporta 4
   // modos y cada uno tiene un "lead" distinto:
   //   · feed  → null (mantenemos el landing title "Paperverse — …")
   //   · search → el query textual, al estilo Google
@@ -398,7 +398,7 @@ export function Feed() {
   // active topics. If the API hiccups or returns nothing we keep the user on
   // the feed rather than flashing a broken state.
   //
-  // el botón antes se llamaba "Dato random" — un
+  // QA2 P3.4: el botón antes se llamaba "Dato random" — un
   // spanglish que mezclaba "dato" (ES) con "random" (EN) y además era
   // impreciso, porque lo que abre no es "un dato" sino un paper entero.
   // Renombrado a "Paper al azar": mismo ritmo, deja claro que es un paper,
@@ -501,7 +501,7 @@ export function Feed() {
           // línea extra sentía ruido. Mantenemos `paddingTop: 20` para
           // respiración, sin hairline.
           //
-          // incluimos también `mode === 'search'` para
+          // QA 3.1: incluimos también `mode === 'search'` para
           // que la perilla de Período no desaparezca cuando el usuario activa
           // la búsqueda. Antes la perilla se ocultaba al escribir en el
           // buscador y eso rompía la expectativa: el usuario que llegó al
@@ -670,7 +670,7 @@ export function Feed() {
       </aside>
 
       <main className="col-feed">
-        {/* jerarquía de encabezados.
+        {/* QA 3.6: jerarquía de encabezados.
             El Feed en modo 'feed' y 'search' no tenía un <h1> visible —
             la página arrancaba en <h2> ("20 papers · 5 años" / "X
             resultados para 'quantum'") lo que creaba un "skip from H2"
@@ -716,84 +716,65 @@ export function Feed() {
         )}
 
         {(mode === 'feed' || mode === 'search') && (
-          // Fase 4.1: se pidió mover el contador de papers
-          // ("199 papers · 5 años") del top-bar hacia DEBAJO del divider, para
-          // que la barra sticky quede exclusivamente de controles (Ordenar
-          // por + Lista/Tarjetas). Razones:
-          //   · La barra sticky se siente más ordenada sin el h2 rompiendo
-          //     el balance visual con los dos botones cuadrados alineados.
-          //   · El contador se lee mejor "en contexto" junto al hint de
-          //     "N leídos ocultos" — ambos son metadata descriptiva del
-          //     resultset, no controles.
-          //   · Libera espacio horizontal en mobile: dos botones cuadrados
-          //     + contador largo ("199 resultados para 'quantum'") no
-          //     cabían sin truncar.
-          //
-          // La clase `feed-top-bar` sigue haciéndola sticky debajo del header;
-          // sólo que ahora `justify-content: flex-end` alinea los controles
-          // a la derecha (CSS ajustado en kit.css).
-          //
-          // search y feed comparten esta barra, así el
-          // usuario que busca sigue teniendo acceso a sort + view toggle.
-          <div className="section-head feed-top-bar">
-            <div className="head-right">
-              {/* SortDropdown — hasSearch=true sólo en modo search, para que
-                  el item "Relevancia" aparezca únicamente cuando tiene
-                  sentido (OpenAlex sólo devuelve relevance_score si hay
-                  ?search=…). El valor/handler son los mismos que usan las
-                  vistas de refs/cites, así el orden viaja entre las cuatro. */}
-              <SortDropdown
-                value={sort}
-                onChange={handleSortChange}
-                hasSearch={mode === 'search'}
-              />
-              <ViewToggle view={view} onChange={setView} />
+          /* Bloque sticky del Feed: top-bar (controles) + meta-row (conteo)
+             viajan JUNTOS al scrollear. Antes eran
+             dos sticky separados con tops distintos, pero el pixel-perfect
+             entre ambos (top-bar height + meta-row top = ...) dependía de
+             valores hardcoded que no matcheaban exacto y dejaban un gap de
+             2-3px donde las cards se "asomaban" detrás de los controles.
+             Al envolverlos en un contenedor sticky único, el bloque viaja
+             como una sola pieza y es IMPOSIBLE que se filtren cards por
+             entre ellos. */
+          <div className="feed-sticky-head">
+            <div className="section-head feed-top-bar">
+              <div className="head-right">
+                {/* SortDropdown — hasSearch=true sólo en modo search, para
+                    que "Relevancia" aparezca únicamente cuando tiene sentido
+                    (OpenAlex sólo devuelve relevance_score si hay ?search=…).
+                    El valor/handler son los mismos que usan refs/cites, así
+                    el orden viaja entre las cuatro. */}
+                <SortDropdown
+                  value={sort}
+                  onChange={handleSortChange}
+                  hasSearch={mode === 'search'}
+                />
+                <ViewToggle view={view} onChange={setView} />
+              </div>
             </div>
-          </div>
-        )}
 
-        {/* Meta-row debajo del divider (Fase 4.1, 2026-04-21). Consolida en
-            una sola línea: (a) contador de resultados, (b) hint de leídos
-            ocultos / mostrados, (c) toggle para verlos / volverlos a
-            ocultar. Tipografía mono uppercase para que lea como metadata
-            editorial, no como título. Flex-wrap para que en mobile baje
-            a dos líneas si no cabe. */}
-        {(mode === 'feed' || mode === 'search') && (
-          <div className="feed-meta-row" role="status" aria-live="polite">
-            <span className="feed-meta-count">
-              {mode === 'search'
-                ? `${visiblePapers.length} resultados para "${q}"`
-                : `${visiblePapers.length} papers · ${currentWindow.label.toLowerCase()}`}
-            </span>
-            {/* Hint + toggle de leídos. Sólo tiene sentido cuando hay
-                leídos presentes en la tanda actual (readInFeedCount > 0).
-                Si el usuario nunca leyó nada de esta ventana, escondemos
-                el bloque entero — no queremos ofrecer una acción que
-                no cambia nada visible. */}
-            {readInFeedCount > 0 && (
-              <>
-                <span className="feed-meta-sep" aria-hidden="true">·</span>
-                <span className="feed-meta-hint">
-                  {shouldHideRead
-                    ? (hiddenReadCount === 1
-                        ? '1 paper ya leído oculto'
-                        : `${hiddenReadCount} papers ya leídos ocultos`)
-                    : (readInFeedCount === 1
-                        ? '1 paper ya leído visible'
-                        : `${readInFeedCount} papers ya leídos visibles`)}
-                </span>
-                <button
-                  type="button"
-                  className="feed-meta-toggle"
-                  onClick={() => setShowRead(v => !v)}
-                  aria-pressed={showRead}
-                  // Tooltip explica qué pasa al click, útil en desktop.
-                  title={showRead ? 'Volver a ocultar los papers ya leídos' : 'Mostrar los papers ya leídos'}
-                >
-                  {showRead ? 'Ocultar' : 'Ver'}
-                </button>
-              </>
-            )}
+            {/* Meta-row — consolida en una sola línea: (a) contador de
+                resultados, (b) hint de leídos ocultos/mostrados, (c) toggle
+                para verlos/volverlos a ocultar. */}
+            <div className="feed-meta-row" role="status" aria-live="polite">
+              <span className="feed-meta-count">
+                {mode === 'search'
+                  ? `${visiblePapers.length} resultados para "${q}"`
+                  : `${visiblePapers.length} papers · ${currentWindow.label.toLowerCase()}`}
+              </span>
+              {readInFeedCount > 0 && (
+                <>
+                  <span className="feed-meta-sep" aria-hidden="true">·</span>
+                  <span className="feed-meta-hint">
+                    {shouldHideRead
+                      ? (hiddenReadCount === 1
+                          ? '1 paper ya leído oculto'
+                          : `${hiddenReadCount} papers ya leídos ocultos`)
+                      : (readInFeedCount === 1
+                          ? '1 paper ya leído visible'
+                          : `${readInFeedCount} papers ya leídos visibles`)}
+                  </span>
+                  <button
+                    type="button"
+                    className="feed-meta-toggle"
+                    onClick={() => setShowRead(v => !v)}
+                    aria-pressed={showRead}
+                    title={showRead ? 'Volver a ocultar los papers ya leídos' : 'Mostrar los papers ya leídos'}
+                  >
+                    {showRead ? 'Ocultar' : 'Ver'}
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         )}
 
