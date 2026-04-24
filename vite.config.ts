@@ -5,7 +5,7 @@ import react from '@vitejs/plugin-react';
 // src/lib/explain.ts), so there is no local `/api` server to proxy anymore.
 // If you bring back a Vercel function under /api/, re-add the proxy block.
 export default defineConfig({
- plugins: [react],
+ plugins: [react()],
  server: {
  port: 5173,
  },
